@@ -158,6 +158,100 @@
 
 // export default AppNavigator;
 
+// import React from 'react';
+// import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { Ionicons } from '@expo/vector-icons';
+// import { useAuth } from '../context/AuthContext';
+// import { WateringProvider } from '../context/WateringContext';
+// import { DeviceProvider } from '../context/DeviceContext';
+// import AuthNavigator from './AuthNavigator';
+// import WateringNavigator from './WateringNavigator';
+// import DeviceNavigator from './DeviceNavigator';
+// import HomeScreen from '../components/screens/home/HomeScreen';
+// import Loading from '../components/common/Loading';
+// import { colors } from '../constants/colors';
+
+// // Import navigation for Locations - to be added later
+// // import LocationNavigator from './LocationNavigator';
+
+// const Stack = createNativeStackNavigator();
+// const Tab = createBottomTabNavigator();
+
+// // Main tab navigator when logged in
+// const MainTabNavigator = () => {
+//   return (
+//     <Tab.Navigator
+//       screenOptions={({ route }) => ({
+//         tabBarIcon: ({ focused, color, size }) => {
+//           let iconName;
+
+//           if (route.name === 'Home') {
+//             iconName = focused ? 'home' : 'home-outline';
+//           } else if (route.name === 'Watering') {
+//             iconName = focused ? 'water' : 'water-outline';
+//           } else if (route.name === 'Locations') {
+//             iconName = focused ? 'location' : 'location-outline';
+//           } else if (route.name === 'Devices') {
+//             iconName = focused ? 'hardware-chip' : 'hardware-chip-outline';
+//           }
+
+//           return <Ionicons name={iconName as any} size={size} color={color} />;
+//         },
+//         tabBarActiveTintColor: colors.primary,
+//         tabBarInactiveTintColor: colors.gray500,
+//         headerShown: false,
+//         tabBarStyle: {
+//           borderTopWidth: 1,
+//           borderTopColor: colors.gray200,
+//           paddingTop: 8,
+//           paddingBottom: 5,
+//           height: 60,
+//         },
+//         tabBarLabelStyle: {
+//           fontSize: 12,
+//           fontWeight: '500',
+//         },
+//       })}
+//     >
+//       <Tab.Screen name="Home" component={HomeScreen} />
+//       <Tab.Screen name="Watering" component={WateringNavigator} />
+//       <Tab.Screen name="Devices" component={DeviceNavigator} />
+//     </Tab.Navigator>
+//   );
+// };
+
+// const AppNavigator = () => {
+//   const { user, isLoading } = useAuth();
+
+//   if (isLoading) {
+//     return <Loading fullScreen message="Loading..." />;
+//   }
+
+//   return (
+//     <Stack.Navigator screenOptions={{ headerShown: false }}>
+//       {user ? (
+//         // Wrap the main navigator with the necessary providers
+//         <Stack.Screen name="Main">
+//           {() => (
+//             <WateringProvider>
+//               <DeviceProvider>
+//                 <MainTabNavigator />
+//               </DeviceProvider>
+//             </WateringProvider>
+//           )}
+//         </Stack.Screen>
+//       ) : (
+//         // Auth Stack
+//         <Stack.Screen name="Auth" component={AuthNavigator} />
+//       )}
+//     </Stack.Navigator>
+//   );
+// };
+
+// export default AppNavigator;
+
+
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -165,15 +259,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { WateringProvider } from '../context/WateringContext';
 import { DeviceProvider } from '../context/DeviceContext';
+import { LocationProvider } from '../context/LocationContext';
 import AuthNavigator from './AuthNavigator';
 import WateringNavigator from './WateringNavigator';
 import DeviceNavigator from './DeviceNavigator';
+import LocationNavigator from './LocationNavigator';
 import HomeScreen from '../components/screens/home/HomeScreen';
 import Loading from '../components/common/Loading';
 import { colors } from '../constants/colors';
-
-// Import navigation for Locations - to be added later
-// import LocationNavigator from './LocationNavigator';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -216,6 +309,7 @@ const MainTabNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Watering" component={WateringNavigator} />
+      <Tab.Screen name="Locations" component={LocationNavigator} />
       <Tab.Screen name="Devices" component={DeviceNavigator} />
     </Tab.Navigator>
   );
@@ -236,7 +330,9 @@ const AppNavigator = () => {
           {() => (
             <WateringProvider>
               <DeviceProvider>
-                <MainTabNavigator />
+                <LocationProvider>
+                  <MainTabNavigator />
+                </LocationProvider>
               </DeviceProvider>
             </WateringProvider>
           )}
