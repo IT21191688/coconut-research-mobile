@@ -12,7 +12,7 @@ import StatusBadge from '../common/StatusBadge';
 import { colors } from '../../constants/colors';
 
 interface ScheduleCardProps {
-  schedule: WateringSchedule;
+  schedule: WateringSchedule | any;
   onPress?: () => void;
   showDetails?: boolean;
   style?: ViewStyle;

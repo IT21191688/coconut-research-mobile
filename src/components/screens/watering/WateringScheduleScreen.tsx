@@ -18,6 +18,7 @@ import ScheduleCard from '../../../components/watering/ScheduleCard';
 import Button from '../../../components/common/Button';
 import Card from '../../../components/common/Card';
 import { colors } from '../../../constants/colors';
+import { DEVICE_ROUTES } from '../../../constants/routes';
 
 const WateringScheduleScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -49,7 +50,7 @@ const WateringScheduleScreen: React.FC = () => {
   };
 
   const handleViewDevices = () => {
-    navigation.navigate('DeviceList');
+    navigation.navigate('Devices');
   };
 
   const renderTodaySection = () => {

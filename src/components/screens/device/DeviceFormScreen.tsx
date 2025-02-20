@@ -95,7 +95,7 @@ const DeviceFormScreen: React.FC = () => {
   const setFormDataFromDevice = (device: Device) => {
     setDeviceId(device.deviceId);
     setDeviceType(device.type);
-    setFirmware(device.firmware);
+    //setFirmware(device.firmware);
     setIsActive(device.status === "active");
     setReadingInterval(device.settings?.readingInterval?.toString() || "30");
     setReportingInterval(
@@ -211,7 +211,7 @@ const DeviceFormScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      const deviceData = {
+      const deviceData:any = {
         deviceId,
         type: deviceType,
         firmware,
@@ -317,7 +317,7 @@ const DeviceFormScreen: React.FC = () => {
                 disabled={mode === "edit"} // Disable in edit mode
               >
                 <Ionicons
-                  name={getDeviceTypeIcon(deviceType)}
+                  //name={getDeviceTypeIcon(deviceType)}
                   size={20}
                   color={colors.primary}
                 />
@@ -367,7 +367,7 @@ const DeviceFormScreen: React.FC = () => {
             </View>
 
             {/* Battery Level Slider or Input */}
-            {mode === "edit" && (
+            {/* {mode === "edit" && (
               <Input
                 label="Battery Level (%)"
                 value={batteryLevel}
@@ -378,11 +378,11 @@ const DeviceFormScreen: React.FC = () => {
                 leftIcon="battery-full-outline"
                 containerStyle={styles.inputContainer}
               />
-            )}
+            )} */}
           </View>
 
           {/* Device Settings Section */}
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <Text style={styles.sectionTitle}>Reading Settings</Text>
 
             <View style={styles.rowInputs}>
@@ -409,7 +409,6 @@ const DeviceFormScreen: React.FC = () => {
               />
             </View>
 
-            {/* Advanced Settings Toggle */}
             <TouchableOpacity
               style={styles.advancedSettingsToggle}
               onPress={() => setShowAdvancedSettings(!showAdvancedSettings)}
@@ -425,8 +424,6 @@ const DeviceFormScreen: React.FC = () => {
                 color={colors.primary}
               />
             </TouchableOpacity>
-
-            {/* Advanced Settings (Thresholds) */}
             {showAdvancedSettings && (
               <View style={styles.advancedSettings}>
                 <Text style={styles.advancedTitle}>Alert Thresholds</Text>
@@ -475,7 +472,7 @@ const DeviceFormScreen: React.FC = () => {
                 </Text>
               </View>
             )}
-          </View>
+          </View> */}
 
           {/* Submit Buttons */}
           <View style={styles.buttonsContainer}>
@@ -526,7 +523,7 @@ const DeviceFormScreen: React.FC = () => {
                   }}
                 >
                   <Ionicons
-                    name={getDeviceTypeIcon(type.value)}
+                    //name={getDeviceTypeIcon(type.value)}
                     size={24}
                     color={
                       deviceType === type.value

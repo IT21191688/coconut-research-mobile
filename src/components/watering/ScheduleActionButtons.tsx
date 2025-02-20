@@ -46,7 +46,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
   const handleMarkAsCompleted = async () => {
     try {
       setIsSubmitting(true);
-      const details = {
+      const details:any = {
         actualAmount: Number(actualAmount),
         notes: notes.trim() || undefined,
         executedBy: "manual",
@@ -74,7 +74,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
   const handleSkipWatering = async () => {
     try {
       setIsSubmitting(true);
-      const details = {
+      const details:any = {
         notes: skipReason.trim() || undefined,
         executedBy: "manual",
       };
@@ -121,7 +121,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
       variant="outline"
       leftIcon={
         <Ionicons
-          name="alert-triangle-outline"
+          //name="alert-triangle-outline"
           size={20}
           color={colors.gray600}
         />
@@ -188,8 +188,8 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
               <TextInput
                 style={styles.notesInput}
                 value={notes}
-                style={styles.notesInput}
-                value={notes}
+                //style={styles.notesInput}
+                //value={notes}
                 onChangeText={setNotes}
                 placeholder="E.g., Used drip irrigation method"
                 multiline
@@ -306,7 +306,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
                 title="Confirm Skip"
                 variant="primary"
                 onPress={handleSkipWatering}
-                style={[styles.modalConfirmButton, styles.skipConfirmButton]}
+                //style={[styles.modalConfirmButton, styles.skipConfirmButton]}
                 isLoading={isSubmitting}
               />
             </View>

@@ -1,8 +1,3 @@
-/**
- * Navigation route names used throughout the app
- * Using constants helps prevent typos and makes refactoring easier
- */
-
 // Auth Routes
 export const AUTH_ROUTES = {
     LOGIN: 'Login',
@@ -63,7 +58,7 @@ export const AUTH_ROUTES = {
   
   export type LocationRouteParams = {
     [LOCATION_ROUTES.LOCATION_DETAILS]: { locationId: string };
-    [LOCATION_ROUTES.LOCATION_FORM]: { 
+    [LOCATION_ROUTES.LOCATION_FORM]: {
       mode: 'create' | 'edit';
       locationId?: string;
       locationData?: any;
@@ -71,13 +66,13 @@ export const AUTH_ROUTES = {
   };
   
   export type DeviceRouteParams = {
-    [DEVICE_ROUTES.DEVICE_DETAILS]: { deviceId: string };
     [DEVICE_ROUTES.DEVICE_FORM]: {
       mode: 'create' | 'edit';
       deviceId?: string;
       deviceData?: any;
     };
   };
+  
   
   // Root navigation type
   export type RootStackParamList = {

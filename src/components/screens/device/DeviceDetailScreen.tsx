@@ -8,43 +8,32 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
-  Dimensions,
 } from "react-native";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  getDeviceById,
-  deleteDevice,
-  getDeviceReadingHistory,
-  updateDevice,
-} from "../../../api/deviceApi";
+import { getDeviceById, deleteDevice, updateDevice } from "../../../api/deviceApi";
 import { Device } from "../../../types";
 import Card from "../../common/Card";
 import StatusBadge from "../../common/StatusBadge";
 import Button from "../../common/Button";
 import { colors } from "../../../constants/colors";
-import { LineChart } from "react-native-chart-kit";
-
-type DeviceDetailScreenRouteProp = RouteProp<
-  { DeviceDetails: { deviceId: string } },
-  "DeviceDetails"
->;
-
-const screenWidth = Dimensions.get("window").width;
+import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const DeviceDetailScreen: React.FC = () => {
   const [device, setDevice] = useState<Device | null>(null);
-  const [readingHistory, setReadingHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [showMaintenance, setShowMaintenance] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const navigation = useNavigation();
-  const route = useRoute<DeviceDetailScreenRouteProp>();
-  const { deviceId } = route.params;
+  const route = useRoute();
+  const { deviceId } = (route.params as any) || {};
 
   useEffect(() => {
-    loadDevice();
+    if (deviceId) {
+      loadDevice();
+    } else {
+      navigation.goBack();
+    }
   }, [deviceId]);
 
   const loadDevice = async () => {
@@ -52,7 +41,6 @@ const DeviceDetailScreen: React.FC = () => {
       setIsLoading(true);
       const fetchedDevice = await getDeviceById(deviceId);
       setDevice(fetchedDevice);
-      loadReadingHistory(deviceId);
     } catch (error) {
       console.error(`Failed to load device ${deviceId}:`, error);
       Alert.alert(
@@ -65,67 +53,31 @@ const DeviceDetailScreen: React.FC = () => {
     }
   };
 
-  const loadReadingHistory = async (deviceId: string) => {
-    try {
-      setIsHistoryLoading(true);
-      // Get readings from the past 7 days
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-      const history = await getDeviceReadingHistory(deviceId, {
-        startDate: sevenDaysAgo.toISOString().split("T")[0],
-        limit: 100,
-      });
-
-      setReadingHistory(history);
-    } catch (error) {
-      console.error(`Failed to load reading history:`, error);
-      // Don't show an alert here, just fail silently for the chart
-    } finally {
-      setIsHistoryLoading(false);
-    }
-  };
-
   const handleEditDevice = () => {
     if (device) {
-      navigation.navigate("DeviceForm", {
+      navigation.navigate('RegisterDevice' as never, {
         mode: "edit",
         deviceId: device.deviceId,
         deviceData: device,
-      });
+      } as never);
     }
   };
 
   const handleDeleteDevice = async () => {
-    Alert.alert(
-      "Delete Device",
-      "Are you sure you want to delete this device? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteDevice(deviceId);
-              Alert.alert("Success", "Device deleted successfully");
-              navigation.goBack();
-            } catch (error) {
-              console.error(`Failed to delete device ${deviceId}:`, error);
-              Alert.alert(
-                "Error",
-                "Failed to delete device. Please try again later."
-              );
-            }
-          },
-        },
-      ]
-    );
+    try {
+      await deleteDevice(deviceId);
+      Alert.alert("Success", "Device deleted successfully");
+      navigation.goBack();
+    } catch (error) {
+      console.error(`Failed to delete device ${deviceId}:`, error);
+      Alert.alert(
+        "Error",
+        "Failed to delete device. Please try again later."
+      );
+    }
   };
 
-  const handleStatusChange = async (
-    newStatus: "active" | "inactive" | "maintenance"
-  ) => {
+  const handleStatusChange = async (newStatus: "active" | "inactive" | "maintenance") => {
     try {
       await updateDevice(deviceId, { status: newStatus });
       loadDevice(); // Reload device to get updated status
@@ -139,13 +91,7 @@ const DeviceDetailScreen: React.FC = () => {
     }
   };
 
-  const handleViewLocation = () => {
-    if (device?.locationId) {
-      navigation.navigate("LocationDetails", { locationId: device.locationId });
-    }
-  };
-
-  const getDeviceTypeIcon = (type: string): string => {
+  const getDeviceTypeIcon = (type: string = ""): string => {
     switch (type) {
       case "soil_sensor":
         return "water-outline";
@@ -158,7 +104,7 @@ const DeviceDetailScreen: React.FC = () => {
     }
   };
 
-  const getDeviceTypeLabel = (type: string): string => {
+  const getDeviceTypeLabel = (type: string = ""): string => {
     switch (type) {
       case "soil_sensor":
         return "Soil Sensor";
@@ -189,52 +135,13 @@ const DeviceDetailScreen: React.FC = () => {
     return colors.error;
   };
 
-  const prepareChartData = () => {
-    if (readingHistory.length === 0 || !device?.type) return null;
-
-    // Sort by timestamp
-    const sortedData = [...readingHistory].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    );
-
-    // Only take the most recent 10 readings for better visibility
-    const recentData = sortedData.slice(Math.max(sortedData.length - 10, 0));
-
-    if (device.type === "soil_sensor") {
-      return {
-        labels: recentData.map((item) =>
-          new Date(item.timestamp).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        ),
-        datasets: [
-          {
-            data: recentData.map((item) => item.moisture10cm || 0),
-            color: () => colors.primary,
-            strokeWidth: 2,
-          },
-          {
-            data: recentData.map((item) => item.moisture20cm || 0),
-            color: () => colors.secondary,
-            strokeWidth: 2,
-          },
-          {
-            data: recentData.map((item) => item.moisture30cm || 0),
-            color: () => colors.info,
-            strokeWidth: 2,
-          },
-        ],
-        legend: ["10cm", "20cm", "30cm"],
-      };
-    }
-
-    // For other device types like weather station
-    return null;
+  const getMoistureColor = (level: number) => {
+    if (level < 20) return colors.error; // Too dry
+    if (level < 40) return colors.warning; // Dry
+    if (level < 60) return colors.success; // Optimal
+    if (level < 80) return colors.info; // Moist
+    return colors.primary; // Very moist
   };
-
-  const chartData = prepareChartData();
 
   if (isLoading) {
     return (
@@ -382,22 +289,9 @@ const DeviceDetailScreen: React.FC = () => {
                       color={colors.primary}
                     />
                     <Text style={styles.assignedLocationText}>
-                      Assigned to: {device.locationName || "Farm Location"}
+                      Assigned to: {device?.assignedLocation.name || "Farm Location"}
                     </Text>
                   </View>
-                  <Button
-                    title="View Location Details"
-                    variant="outline"
-                    leftIcon={
-                      <Ionicons
-                        name="eye-outline"
-                        size={18}
-                        color={colors.primary}
-                      />
-                    }
-                    onPress={handleViewLocation}
-                    style={styles.viewLocationButton}
-                  />
                 </View>
               ) : (
                 <View style={styles.unassignedContainer}>
@@ -491,68 +385,6 @@ const DeviceDetailScreen: React.FC = () => {
               </Card>
             )}
 
-            {/* Readings History Chart */}
-            {device.type === "soil_sensor" && chartData && (
-              <Card style={styles.chartCard}>
-                <Text style={styles.sectionTitle}>Reading History</Text>
-                {isHistoryLoading ? (
-                  <View style={styles.chartLoading}>
-                    <ActivityIndicator size="small" color={colors.primary} />
-                    <Text style={styles.chartLoadingText}>
-                      Loading history...
-                    </Text>
-                  </View>
-                ) : readingHistory.length > 1 ? (
-                  <View style={styles.chartContainer}>
-                    <LineChart
-                      data={chartData}
-                      width={screenWidth - 64}
-                      height={220}
-                      chartConfig={{
-                        backgroundColor: colors.white,
-                        backgroundGradientFrom: colors.white,
-                        backgroundGradientTo: colors.white,
-                        decimalPlaces: 0,
-                        color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
-                        labelColor: (opacity = 1) =>
-                          `rgba(0, 0, 0, ${opacity})`,
-                        style: {
-                          borderRadius: 16,
-                        },
-                        propsForDots: {
-                          r: "4",
-                          strokeWidth: "2",
-                        },
-                      }}
-                      bezier
-                      style={styles.chart}
-                    />
-                    <View style={styles.legendContainer}>
-                      {chartData.legend.map((label, index) => (
-                        <View key={label} style={styles.legendItem}>
-                          <View
-                            style={[
-                              styles.legendColor,
-                              {
-                                backgroundColor:
-                                  chartData.datasets[index].color(),
-                              },
-                            ]}
-                          />
-                          <Text style={styles.legendLabel}>{label} depth</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                ) : (
-                  <Text style={styles.noHistoryText}>
-                    Not enough data to display chart. Please wait for more
-                    readings.
-                  </Text>
-                )}
-              </Card>
-            )}
-
             {/* Device Status Actions */}
             <Card style={styles.actionsCard}>
               <Text style={styles.sectionTitle}>Device Status</Text>
@@ -560,7 +392,7 @@ const DeviceDetailScreen: React.FC = () => {
               {device.status === "active" ? (
                 <View style={styles.statusActions}>
                   <Button
-                    title="Put in Maintenance"
+                    title="Mark as Maintenance"
                     variant="outline"
                     leftIcon={
                       <Ionicons
@@ -569,7 +401,7 @@ const DeviceDetailScreen: React.FC = () => {
                         color={colors.warning}
                       />
                     }
-                    onPress={() => setShowMaintenance(true)}
+                    onPress={() => handleStatusChange("maintenance")}
                     style={styles.maintenanceButton}
                     textStyle={{ color: colors.warning }}
                   />
@@ -631,7 +463,7 @@ const DeviceDetailScreen: React.FC = () => {
                     color={colors.error}
                   />
                 }
-                onPress={handleDeleteDevice}
+                onPress={() => setShowDeleteConfirm(true)}
                 style={styles.deleteButton}
                 textStyle={{ color: colors.error }}
               />
@@ -640,14 +472,14 @@ const DeviceDetailScreen: React.FC = () => {
         )}
       </ScrollView>
 
-      {/* Maintenance Mode Modal */}
-      {showMaintenance && (
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Maintenance Mode</Text>
+              <Text style={styles.modalTitle}>Delete Device</Text>
               <TouchableOpacity
-                onPress={() => setShowMaintenance(false)}
+                onPress={() => setShowDeleteConfirm(false)}
                 style={styles.modalCloseButton}
               >
                 <Ionicons name="close" size={24} color={colors.gray700} />
@@ -656,49 +488,16 @@ const DeviceDetailScreen: React.FC = () => {
 
             <View style={styles.modalContent}>
               <Ionicons
-                name="construct"
+                name="trash"
                 size={48}
-                color={colors.warning}
+                color={colors.error}
                 style={styles.modalIcon}
               />
               <Text style={styles.modalText}>
-                You're about to put this device in maintenance mode. During
-                maintenance:
+                Are you sure you want to delete this device? This action cannot be undone.
               </Text>
-              <View style={styles.bulletPoints}>
-                <View style={styles.bulletPoint}>
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={16}
-                    color={colors.warning}
-                  />
-                  <Text style={styles.bulletText}>
-                    The device won't send data or control irrigation
-                  </Text>
-                </View>
-                <View style={styles.bulletPoint}>
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={16}
-                    color={colors.warning}
-                  />
-                  <Text style={styles.bulletText}>
-                    Watering schedules using this device will be paused
-                  </Text>
-                </View>
-                <View style={styles.bulletPoint}>
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={16}
-                    color={colors.warning}
-                  />
-                  <Text style={styles.bulletText}>
-                    The device will remain assigned to its location
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.maintenanceQuestion}>
-                Do you want to continue?
+              <Text style={styles.modalWarning}>
+                All associated data will be permanently deleted.
               </Text>
             </View>
 
@@ -706,24 +505,21 @@ const DeviceDetailScreen: React.FC = () => {
               <Button
                 title="Cancel"
                 variant="outline"
-                onPress={() => setShowMaintenance(false)}
+                onPress={() => setShowDeleteConfirm(false)}
                 style={styles.modalCancelButton}
               />
               <Button
-                title="Put in Maintenance"
+                title="Delete"
                 variant="primary"
                 leftIcon={
                   <Ionicons
-                    name="construct-outline"
+                    name="trash-outline"
                     size={18}
                     color={colors.white}
                   />
                 }
-                onPress={() => {
-                  handleStatusChange("maintenance");
-                  setShowMaintenance(false);
-                }}
-                style={styles.modalConfirmButton}
+                onPress={handleDeleteDevice}
+                style={styles.modalDeleteButton}
               />
             </View>
           </View>
@@ -731,15 +527,6 @@ const DeviceDetailScreen: React.FC = () => {
       )}
     </SafeAreaView>
   );
-};
-
-// Helper functions
-const getMoistureColor = (level: number) => {
-  if (level < 20) return colors.error; // Too dry
-  if (level < 40) return colors.warning; // Dry
-  if (level < 60) return colors.success; // Optimal
-  if (level < 80) return colors.info; // Moist
-  return colors.primary; // Very moist
 };
 
 const styles = StyleSheet.create({
@@ -938,55 +725,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.textPrimary,
   },
-  chartCard: {
-    margin: 16,
-    marginTop: 4,
-    marginBottom: 12,
-    paddingBottom: 8,
-  },
-  chartLoading: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 220,
-  },
-  chartLoadingText: {
-    marginTop: 8,
-    color: colors.gray600,
-  },
-  chartContainer: {
-    alignItems: "center",
-  },
-  chart: {
-    marginTop: 8,
-    borderRadius: 12,
-  },
-  legendContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 12,
-    paddingHorizontal: 16,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 10,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
-  },
-  legendLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  noHistoryText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: "center",
-    padding: 40,
-  },
   actionsCard: {
     margin: 16,
     marginTop: 4,
@@ -1056,27 +794,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  bulletPoints: {
-    alignSelf: "stretch",
-    marginBottom: 20,
-  },
-  bulletPoint: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 10,
-  },
-  bulletText: {
+  modalWarning: {
     fontSize: 14,
-    color: colors.textPrimary,
-    marginLeft: 8,
-    flex: 1,
-  },
-  maintenanceQuestion: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.textPrimary,
+    color: colors.error,
+    textAlign: "center",
+    fontWeight: "500",
   },
   modalActions: {
     flexDirection: "row",
@@ -1088,11 +812,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
-  modalConfirmButton: {
+  modalDeleteButton: {
     flex: 1,
     marginLeft: 8,
-    backgroundColor: colors.warning,
-  },
+    backgroundColor: colors.error,
+  }
 });
 
 export default DeviceDetailScreen;

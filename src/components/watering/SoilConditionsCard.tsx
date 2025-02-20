@@ -152,7 +152,7 @@ const SoilConditionsCard: React.FC<SoilConditionsCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.white,
   },
   title: {
     fontSize: 16,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,38 +12,40 @@ import {
   Modal,
   FlatList,
   SafeAreaView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { createSchedule } from '../../../api/wateringApi';
-import { getLocations } from '../../../api/locationApi';
-import { Location } from '../../../types';
-import { colors } from '../../../constants/colors';
-import Card from '../../../components/common/Card';
-import Input from '../../../components/common/Input';
-import Button from '../../../components/common/Button';
-import { estimateWaterNeed } from '../../../utils/wateringHelpers';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { createSchedule } from "../../../api/wateringApi";
+import { getLocations } from "../../../api/locationApi";
+import { Location } from "../../../types";
+import { colors } from "../../../constants/colors";
+import Card from "../../../components/common/Card";
+import Input from "../../../components/common/Input";
+import Button from "../../../components/common/Button";
+import { estimateWaterNeed } from "../../../utils/wateringHelpers";
 
 type CreateScheduleScreenRouteProp = RouteProp<
-  { 
-    CreateSchedule: { 
+  {
+    CreateSchedule: {
       locationId?: string;
-    } 
+    };
   },
-  'CreateSchedule'
+  "CreateSchedule"
 >;
 
 const CreateScheduleScreen: React.FC = () => {
   // Form state
   const [locationId, setLocationId] = useState<string | undefined>(undefined);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [soilMoisture10cm, setSoilMoisture10cm] = useState('');
-  const [soilMoisture20cm, setSoilMoisture20cm] = useState('');
-  const [soilMoisture30cm, setSoilMoisture30cm] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null
+  );
+  const [soilMoisture10cm, setSoilMoisture10cm] = useState("");
+  const [soilMoisture20cm, setSoilMoisture20cm] = useState("");
+  const [soilMoisture30cm, setSoilMoisture30cm] = useState("");
   const [scheduleDate, setScheduleDate] = useState(new Date());
   const [isNow, setIsNow] = useState(true);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,14 +53,16 @@ const CreateScheduleScreen: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [estimatedWaterAmount, setEstimatedWaterAmount] = useState<number | null>(null);
+  const [estimatedWaterAmount, setEstimatedWaterAmount] = useState<
+    number | null
+  >(null);
 
   const navigation = useNavigation();
   const route = useRoute<CreateScheduleScreenRouteProp>();
 
   useEffect(() => {
     loadLocations();
-    
+
     // If locationId is provided in route params, use it
     if (route.params?.locationId) {
       setLocationId(route.params.locationId);
@@ -68,7 +72,7 @@ const CreateScheduleScreen: React.FC = () => {
   useEffect(() => {
     // When locationId changes, find the corresponding location
     if (locationId && locations.length > 0) {
-      const location = locations.find(loc => loc._id === locationId);
+      const location = locations.find((loc) => loc._id === locationId);
       if (location) {
         setSelectedLocation(location);
       }
@@ -78,9 +82,9 @@ const CreateScheduleScreen: React.FC = () => {
   // Estimate water need when soil moisture values change
   useEffect(() => {
     if (
-      soilMoisture10cm && 
-      soilMoisture20cm && 
-      soilMoisture30cm && 
+      soilMoisture10cm &&
+      soilMoisture20cm &&
+      soilMoisture30cm &&
       !isNaN(Number(soilMoisture10cm)) &&
       !isNaN(Number(soilMoisture20cm)) &&
       !isNaN(Number(soilMoisture30cm))
@@ -93,9 +97,9 @@ const CreateScheduleScreen: React.FC = () => {
           moisture30cm: Number(soilMoisture30cm),
         },
         28, // Default temperature
-        0   // Default rainfall (none)
+        0 // Default rainfall (none)
       );
-      
+
       setEstimatedWaterAmount(estimatedAmount);
     } else {
       setEstimatedWaterAmount(null);
@@ -110,20 +114,25 @@ const CreateScheduleScreen: React.FC = () => {
 
       if (fetchedLocations.length === 0) {
         Alert.alert(
-          'No Locations',
-          'You need to create a location before creating a watering schedule. Would you like to create one now?',
+          "No Locations",
+          "You need to create a location before creating a watering schedule. Would you like to create one now?",
           [
-            { text: 'Cancel', style: 'cancel', onPress: () => navigation.goBack() },
-            { text: 'Create Location', onPress: () => navigation.navigate('LocationForm', { mode: 'create' }) }
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => navigation.goBack(),
+            },
+            {
+              text: "Create Location",
+              onPress: () =>
+                navigation.navigate("LocationForm", { mode: "create" }),
+            },
           ]
         );
       }
     } catch (error) {
-      console.error('Failed to load locations:', error);
-      Alert.alert(
-        'Error',
-        'Failed to load locations. Please try again later.'
-      );
+      console.error("Failed to load locations:", error);
+      Alert.alert("Error", "Failed to load locations. Please try again later.");
     } finally {
       setIsLoadingLocations(false);
     }
@@ -131,25 +140,7 @@ const CreateScheduleScreen: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (!locationId) {
-      Alert.alert('Error', 'Please select a location');
-      return false;
-    }
-
-    if (!soilMoisture10cm || !soilMoisture20cm || !soilMoisture30cm) {
-      Alert.alert('Error', 'Please enter soil moisture values for all depths');
-      return false;
-    }
-
-    const moisture10 = Number(soilMoisture10cm);
-    const moisture20 = Number(soilMoisture20cm);
-    const moisture30 = Number(soilMoisture30cm);
-
-    if (
-      isNaN(moisture10) || moisture10 < 0 || moisture10 > 100 ||
-      isNaN(moisture20) || moisture20 < 0 || moisture20 > 100 ||
-      isNaN(moisture30) || moisture30 < 0 || moisture30 > 100
-    ) {
-      Alert.alert('Error', 'Soil moisture values must be between 0 and 100');
+      Alert.alert("Error", "Please select a location");
       return false;
     }
 
@@ -175,23 +166,19 @@ const CreateScheduleScreen: React.FC = () => {
       };
 
       if (!locationId) {
-        throw new Error('No location selected');
+        throw new Error("No location selected");
       }
 
       await createSchedule(locationId, scheduleData);
-      
-      Alert.alert(
-        'Success', 
-        'Watering schedule created successfully',
-        [
-          { text: 'OK', onPress: () => navigation.goBack() }
-        ]
-      );
+
+      Alert.alert("Success", "Watering schedule created successfully", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
     } catch (error) {
-      console.error('Failed to create schedule:', error);
+      console.error("Failed to create schedule:", error);
       Alert.alert(
-        'Error',
-        'Failed to create watering schedule. Please try again.'
+        "Error",
+        "Failed to create watering schedule. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -199,12 +186,12 @@ const CreateScheduleScreen: React.FC = () => {
   };
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
       hour12: true,
     });
   };
@@ -227,7 +214,7 @@ const CreateScheduleScreen: React.FC = () => {
           color={locationId === item._id ? colors.primary : colors.gray600}
         />
         <View style={styles.locationItemInfo}>
-          <Text 
+          <Text
             style={[
               styles.locationItemName,
               locationId === item._id && styles.selectedLocationItemText,
@@ -249,7 +236,7 @@ const CreateScheduleScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -281,7 +268,8 @@ const CreateScheduleScreen: React.FC = () => {
                           {selectedLocation.name}
                         </Text>
                         <Text style={styles.selectedLocationDetails}>
-                          {selectedLocation.totalTrees} trees • {selectedLocation.area} acres
+                          {selectedLocation.totalTrees} trees •{" "}
+                          {selectedLocation.area} acres
                         </Text>
                       </View>
                       <Ionicons
@@ -311,7 +299,7 @@ const CreateScheduleScreen: React.FC = () => {
               </View>
 
               {/* Soil moisture inputs */}
-              <Card style={styles.section}>
+              {/* <Card style={styles.section}>
                 <Text style={styles.sectionTitle}>Soil Moisture Readings</Text>
                 
                 <View style={styles.moistureInputRow}>
@@ -375,50 +363,54 @@ const CreateScheduleScreen: React.FC = () => {
                     </Text>
                   </View>
                 )}
-              </Card>
+              </Card> */}
 
               {/* Schedule timing */}
               <Card style={styles.section}>
                 <Text style={styles.sectionTitle}>Timing</Text>
-                
+
                 <View style={styles.timingOptions}>
                   <TouchableOpacity
                     style={[
                       styles.timingOption,
-                      isNow && styles.selectedTimingOption
+                      isNow && styles.selectedTimingOption,
                     ]}
                     onPress={() => setIsNow(true)}
                   >
-                    <View 
+                    <View
                       style={[
                         styles.radioButton,
-                        isNow && styles.selectedRadioButton
+                        isNow && styles.selectedRadioButton,
                       ]}
                     >
                       {isNow && <View style={styles.radioButtonInner} />}
                     </View>
-                    <Text style={styles.timingOptionText}>Schedule for now</Text>
+                    <Text style={styles.timingOptionText}>
+                      Schedule for now
+                    </Text>
                   </TouchableOpacity>
-                  
+
                   <TouchableOpacity
                     style={[
                       styles.timingOption,
-                      !isNow && styles.selectedTimingOption
+                      !isNow && styles.selectedTimingOption,
                     ]}
                     onPress={() => setIsNow(false)}
                   >
-                    <View 
+                    <View
                       style={[
                         styles.radioButton,
-                        !isNow && styles.selectedRadioButton
+                        !isNow && styles.selectedRadioButton,
                       ]}
                     >
                       {!isNow && <View style={styles.radioButtonInner} />}
                     </View>
-                    <Text style={styles.timingOptionText}>Schedule for later</Text>
+                    <Text style={styles.timingOptionText}>
+                      Schedule for later
+                    </Text>
                   </TouchableOpacity>
                 </View>
-                
+
                 {!isNow && (
                   <TouchableOpacity
                     style={styles.datePickerButton}
@@ -519,14 +511,15 @@ const CreateScheduleScreen: React.FC = () => {
                 />
                 <Text style={styles.noLocationsTitle}>No locations found</Text>
                 <Text style={styles.noLocationsText}>
-                  You need to create a location before creating a watering schedule
+                  You need to create a location before creating a watering
+                  schedule
                 </Text>
                 <Button
                   title="Create New Location"
                   variant="primary"
                   onPress={() => {
                     setShowLocationPicker(false);
-                    navigation.navigate('LocationForm', { mode: 'create' });
+                    navigation.navigate("LocationForm", { mode: "create" });
                   }}
                   style={styles.createLocationButton}
                 />
@@ -553,8 +546,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 40,
   },
   loadingText: {
@@ -567,13 +560,13 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 12,
   },
   locationSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.gray300,
@@ -585,9 +578,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.primary + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.primary + "20",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   selectedLocationInfo: {
@@ -595,7 +588,7 @@ const styles = StyleSheet.create({
   },
   selectedLocationName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.textPrimary,
     marginBottom: 2,
   },
@@ -610,8 +603,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   moistureInputRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   moistureInputContainer: {
@@ -622,22 +615,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 6,
-    textAlign: 'center',
+    textAlign: "center",
   },
   moistureInput: {
     marginBottom: 0,
   },
   unitText: {
-    position: 'absolute',
+    position: "absolute",
     right: 12,
     top: 40,
     fontSize: 16,
     color: colors.textSecondary,
   },
   fetchFromDeviceButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 8,
     marginTop: 4,
   },
@@ -647,10 +640,10 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   estimationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.primary + '10',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.primary + "10",
     padding: 12,
     borderRadius: 8,
     marginTop: 12,
@@ -661,16 +654,16 @@ const styles = StyleSheet.create({
   },
   estimationValue: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
   },
   timingOptions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
   },
   timingOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 24,
   },
   selectedTimingOption: {
@@ -682,8 +675,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: colors.gray400,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
   },
   selectedRadioButton: {
@@ -700,8 +693,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   datePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.gray300,
@@ -724,26 +717,26 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   modalContainer: {
     backgroundColor: colors.white,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    maxHeight: '80%',
+    maxHeight: "80%",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray200,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
   },
   closeButton: {
@@ -753,20 +746,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   locationItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray100,
   },
   selectedLocationItem: {
-    backgroundColor: colors.primary + '10',
+    backgroundColor: colors.primary + "10",
   },
   locationItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   locationItemInfo: {
@@ -775,7 +768,7 @@ const styles = StyleSheet.create({
   },
   locationItemName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.textPrimary,
     marginBottom: 2,
   },
@@ -787,12 +780,12 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   noLocationsContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 40,
   },
   noLocationsTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginTop: 16,
     marginBottom: 8,
@@ -800,7 +793,7 @@ const styles = StyleSheet.create({
   noLocationsText: {
     fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
   createLocationButton: {

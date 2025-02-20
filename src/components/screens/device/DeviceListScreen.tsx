@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,26 +9,28 @@ import {
   RefreshControl,
   Alert,
   SafeAreaView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { getDevices } from '../../../api/deviceApi';
-import { Device } from '../../../types';
-import Card from '../../common/Card';
-import StatusBadge from '../../common/StatusBadge';
-import { colors } from '../../../constants/colors';
-import Button from '../../common/Button';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { getDevices } from "../../../api/deviceApi";
+import { Device } from "../../../types";
+import Card from "../../common/Card";
+import StatusBadge from "../../common/StatusBadge";
+import { colors } from "../../../constants/colors";
+import Button from "../../common/Button";
+import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const DeviceListScreen: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
-    loadDevices();
-  }, []);
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadDevices();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const loadDevices = async () => {
     try {
@@ -36,62 +38,31 @@ const DeviceListScreen: React.FC = () => {
       const fetchedDevices = await getDevices();
       setDevices(fetchedDevices);
     } catch (error) {
-      console.error('Failed to load devices:', error);
-      Alert.alert(
-        'Error',
-        'Failed to load devices. Please try again later.'
-      );
+      console.error("Failed to load devices:", error);
+      Alert.alert("Error", "Failed to load devices. Please try again later.");
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
-  };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    loadDevices();
   };
 
   const handleAddDevice = () => {
-    navigation.navigate('DeviceForm', { mode: 'create' });
+    navigation.navigate('RegisterDevice' as never, {
+      mode: "create"
+    } as never);
   };
 
   const handleDevicePress = (deviceId: string) => {
-    navigation.navigate('DeviceDetails', { deviceId });
-  };
-
-  const getDeviceTypeIcon = (type: string) => {
-    switch (type) {
-      case 'soil_sensor':
-        return 'water-outline';
-      case 'weather_station':
-        return 'thermometer-outline';
-      case 'irrigation_controller':
-        return 'construct-outline';
-      default:
-        return 'hardware-chip-outline';
-    }
-  };
-
-  const getDeviceTypeLabel = (type: string) => {
-    switch (type) {
-      case 'soil_sensor':
-        return 'Soil Sensor';
-      case 'weather_station':
-        return 'Weather Station';
-      case 'irrigation_controller':
-        return 'Irrigation Controller';
-      default:
-        return type;
-    }
+    navigation.navigate(DEVICE_ROUTES.DEVICE_DETAILS as never, {
+      deviceId
+    } as never);
   };
 
   const getBatteryIcon = (level?: number) => {
-    if (!level) return 'battery-dead-outline';
-    if (level >= 90) return 'battery-full-outline';
-    if (level >= 50) return 'battery-half-outline';
-    if (level >= 20) return 'battery-low-outline';
-    return 'battery-dead-outline';
+    if (!level) return "battery-dead-outline";
+    if (level >= 90) return "battery-full-outline";
+    if (level >= 50) return "battery-half-outline";
+    if (level >= 20) return "battery-low-outline";
+    return "battery-dead-outline";
   };
 
   const getBatteryColor = (level?: number) => {
@@ -99,6 +70,32 @@ const DeviceListScreen: React.FC = () => {
     if (level >= 50) return colors.success;
     if (level >= 20) return colors.warning;
     return colors.error;
+  };
+
+  const getDeviceTypeIcon = (type: string): string => {
+    switch (type) {
+      case "soil_sensor":
+        return "water-outline";
+      case "weather_station":
+        return "thermometer-outline";
+      case "irrigation_controller":
+        return "construct-outline";
+      default:
+        return "hardware-chip-outline";
+    }
+  };
+
+  const getDeviceTypeLabel = (type: string): string => {
+    switch (type) {
+      case "soil_sensor":
+        return "Soil Sensor";
+      case "weather_station":
+        return "Weather Station";
+      case "irrigation_controller":
+        return "Irrigation Controller";
+      default:
+        return type;
+    }
   };
 
   const renderDeviceItem = ({ item }: { item: Device }) => (
@@ -196,7 +193,7 @@ const DeviceListScreen: React.FC = () => {
           title="Register Your First Device"
           onPress={handleAddDevice}
           variant="primary"
-          style={styles.addButton}
+          style={styles.addFirstButton}
         />
       </View>
     );
@@ -222,8 +219,8 @@ const DeviceListScreen: React.FC = () => {
         ListEmptyComponent={renderEmptyComponent}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
+            refreshing={isLoading}
+            onRefresh={loadDevices}
             colors={[colors.primary]}
           />
         }
@@ -358,6 +355,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  addFirstButton: {
+    width: 240,
+  }
 });
 
 export default DeviceListScreen;

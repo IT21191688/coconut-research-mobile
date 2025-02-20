@@ -86,21 +86,16 @@ const ScheduleDetailScreen: React.FC = () => {
 
       // Fetch schedule details
       const fetchedSchedule = await getScheduleById(scheduleId);
+      setSchedule(fetchedSchedule);
 
-      // Load related location if available
       if (fetchedSchedule?.locationId?._id) {
-        const locationId = fetchedSchedule.locationId._id; // Extract the _id property
-        const fetchedLocation = await getLocationById(locationId); // Pass the _id
+        const locationId = fetchedSchedule.locationId._id;
+        const fetchedLocation = await getLocationById(locationId);
         setLocation(fetchedLocation);
 
-        console.log("Fetched Location:", fetchedLocation);
-
-        // Load device if available
         if (fetchedLocation?.deviceId) {
           const fetchedDevice = await getDeviceById(fetchedLocation.deviceId);
           setDevice(fetchedDevice);
-
-          console.log("Fetched Device:", fetchedDevice);
         }
       }
     } catch (error) {
