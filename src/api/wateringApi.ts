@@ -1,5 +1,6 @@
 import api from './axios';
 import { WateringSchedule, WateringStatus } from '../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ScheduleResponse {
   status: string;
@@ -16,6 +17,36 @@ interface SchedulesResponse {
 }
 
 /**
+ * Helper function to get auth token and set in headers
+ */
+const getAuthHeaders = async () => {
+  const token = await AsyncStorage.getItem('token');
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  };
+};
+
+/**
+ * Get schedule by ID
+ */
+export const getScheduleById = async (scheduleId: string): Promise<WateringSchedule> => {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await api.get<ScheduleResponse>(
+      `/watering/schedule/${scheduleId}`,
+      headers
+    );
+    return response.data.data.schedule;
+  } catch (error) {
+    console.error(`Error fetching schedule ${scheduleId}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Create a new watering schedule for a location
  */
 export const createSchedule = async (
@@ -27,12 +58,15 @@ export const createSchedule = async (
       moisture30cm: number;
     };
     date?: string;
+    notes?: string;
   }
 ): Promise<WateringSchedule> => {
   try {
+    const headers = await getAuthHeaders();
     const response = await api.post<ScheduleResponse>(
       `/watering/schedule/${locationId}`,
-      scheduleData
+      scheduleData,
+      headers
     );
     return response.data.data.schedule;
   } catch (error) {
@@ -46,7 +80,11 @@ export const createSchedule = async (
  */
 export const getTodaySchedules = async (): Promise<WateringSchedule[]> => {
   try {
-    const response = await api.get<SchedulesResponse>('/watering/today');
+    const headers = await getAuthHeaders();
+    const response = await api.get<SchedulesResponse>(
+      '/watering/today',
+      headers
+    );
     return response.data.data.schedules;
   } catch (error) {
     console.error('Error fetching today\'s schedules:', error);
@@ -65,7 +103,14 @@ export const getScheduleHistory = async (
   }
 ): Promise<WateringSchedule[]> => {
   try {
-    const response = await api.get<SchedulesResponse>('/watering/history', { params });
+    const headers = await getAuthHeaders();
+    const response = await api.get<SchedulesResponse>(
+      '/watering/history', 
+      { 
+        ...headers,
+        params 
+      }
+    );
     return response.data.data.schedules;
   } catch (error) {
     console.error('Error fetching schedule history:', error);
@@ -84,9 +129,13 @@ export const getLocationSchedules = async (
   }
 ): Promise<WateringSchedule[]> => {
   try {
+    const headers = await getAuthHeaders();
     const response = await api.get<SchedulesResponse>(
       `/watering/location/${locationId}`,
-      { params }
+      { 
+        ...headers,
+        params 
+      }
     );
     return response.data.data.schedules;
   } catch (error) {
@@ -110,12 +159,14 @@ export const updateScheduleStatus = async (
   }
 ): Promise<WateringSchedule> => {
   try {
+    const headers = await getAuthHeaders();
     const response = await api.put<ScheduleResponse>(
       `/watering/schedule/${scheduleId}/status`,
       { 
         status,
         details
-      }
+      },
+      headers
     );
     return response.data.data.schedule;
   } catch (error) {
@@ -129,7 +180,11 @@ export const updateScheduleStatus = async (
  */
 export const deleteSchedule = async (scheduleId: string): Promise<void> => {
   try {
-    await api.delete(`/watering/schedule/${scheduleId}`);
+    const headers = await getAuthHeaders();
+    await api.delete(
+      `/watering/schedule/${scheduleId}`,
+      headers
+    );
   } catch (error) {
     console.error(`Error deleting schedule ${scheduleId}:`, error);
     throw error;

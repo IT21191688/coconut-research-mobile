@@ -73,7 +73,8 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
       icon: 'water-outline',
       color: '#4DA3FF',
       bgColor: '#EBF5FF',
-      onPress: () => navigation.navigate('WaterScheduling')
+      // Change this line:
+      onPress: () => navigation.navigate('Watering')
     },
     {
       id: 'yield',
