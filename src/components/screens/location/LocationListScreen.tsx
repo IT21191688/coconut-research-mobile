@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,26 +9,32 @@ import {
   RefreshControl,
   Alert,
   SafeAreaView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { getLocations } from '../../../api/locationApi';
-import { Location } from '../../../types';
-import Card from '../../common/Card';
-import StatusBadge from '../../common/StatusBadge';
-import { colors } from '../../../constants/colors';
-import Button from '../../common/Button';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { getLocations } from "../../../api/locationApi";
+import { Location } from "../../../types";
+import Card from "../../common/Card";
+import StatusBadge from "../../common/StatusBadge";
+import { colors } from "../../../constants/colors";
+import Button from "../../common/Button";
 
 const LocationListScreen: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const navigation = useNavigation();
 
-  useEffect(() => {
-    loadLocations();
-  }, []);
+  // Add useFocusEffect to reload data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadLocations();
+      return () => {
+        // Optional cleanup if needed
+      };
+    }, [])
+  );
 
   const loadLocations = async () => {
     try {
@@ -36,11 +42,8 @@ const LocationListScreen: React.FC = () => {
       const fetchedLocations = await getLocations();
       setLocations(fetchedLocations);
     } catch (error) {
-      console.error('Failed to load locations:', error);
-      Alert.alert(
-        'Error',
-        'Failed to load locations. Please try again later.'
-      );
+      console.error("Failed to load locations:", error);
+      Alert.alert("Error", "Failed to load locations. Please try again later.");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -53,38 +56,36 @@ const LocationListScreen: React.FC = () => {
   };
 
   const handleAddLocation = () => {
-    navigation.navigate('LocationForm', { mode: 'create' });
+    navigation.navigate("LocationForm", { mode: "create" });
   };
 
   const handleLocationPress = (locationId: string) => {
-    navigation.navigate('LocationDetails', { locationId });
+    navigation.navigate("LocationDetails", { locationId });
   };
 
   const renderSoilTypeIcon = (soilType: string) => {
     let color;
     switch (soilType) {
-      case 'Lateritic':
-        color = '#CD7F32'; // Bronze
+      case "Lateritic":
+        color = "#CD7F32"; // Bronze
         break;
-      case 'Sandy Loam':
-        color = '#DAA520'; // Golden
+      case "Sandy Loam":
+        color = "#DAA520"; // Golden
         break;
-      case 'Cinnamon Sand':
-        color = '#D2691E'; // Cinnamon
+      case "Cinnamon Sand":
+        color = "#D2691E"; // Cinnamon
         break;
-      case 'Red Yellow Podzolic':
-        color = '#A52A2A'; // Brown
+      case "Red Yellow Podzolic":
+        color = "#A52A2A"; // Brown
         break;
-      case 'Alluvial':
-        color = '#708090'; // Slate gray
+      case "Alluvial":
+        color = "#708090"; // Slate gray
         break;
       default:
-        color = '#8B4513'; // Default brown
+        color = "#8B4513"; // Default brown
     }
 
-    return (
-      <View style={[styles.soilIcon, { backgroundColor: color }]} />
-    );
+    return <View style={[styles.soilIcon, { backgroundColor: color }]} />;
   };
 
   const renderLocationItem = ({ item }: { item: Location }) => (
@@ -95,44 +96,43 @@ const LocationListScreen: React.FC = () => {
     >
       <View style={styles.locationHeader}>
         <Text style={styles.locationName}>{item.name}</Text>
-        <StatusBadge
-          status={item.status as any}
-          size="small"
-        />
+        <StatusBadge status={item.status as any} size="small" />
       </View>
 
       <View style={styles.locationDetails}>
         <View style={styles.detailRow}>
           <Ionicons name="resize-outline" size={16} color={colors.gray600} />
-          <Text style={styles.detailText}>
-            {item.area} acres
-          </Text>
+          <Text style={styles.detailText}>{item.area} acres</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Ionicons name="leaf-outline" size={16} color={colors.gray600} />
-          <Text style={styles.detailText}>
-            {item.totalTrees} trees
-          </Text>
+          <Text style={styles.detailText}>{item.totalTrees} trees</Text>
         </View>
 
         <View style={styles.detailRow}>
           {renderSoilTypeIcon(item.soilType)}
-          <Text style={styles.detailText}>
-            {item.soilType}
-          </Text>
+          <Text style={styles.detailText}>{item.soilType}</Text>
         </View>
       </View>
 
       <View style={styles.deviceStatus}>
         {item.deviceId ? (
           <View style={styles.deviceContainer}>
-            <Ionicons name="hardware-chip-outline" size={16} color={colors.primary} />
+            <Ionicons
+              name="hardware-chip-outline"
+              size={16}
+              color={colors.primary}
+            />
             <Text style={styles.deviceText}>Device attached</Text>
           </View>
         ) : (
           <View style={styles.deviceContainer}>
-            <Ionicons name="alert-circle-outline" size={16} color={colors.gray500} />
+            <Ionicons
+              name="alert-circle-outline"
+              size={16}
+              color={colors.gray500}
+            />
             <Text style={styles.noDeviceText}>No device</Text>
           </View>
         )}
@@ -176,10 +176,7 @@ const LocationListScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Locations</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleAddLocation}
-        >
+        <TouchableOpacity style={styles.addButton} onPress={handleAddLocation}>
           <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
       </View>
@@ -208,9 +205,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: colors.white,
@@ -219,7 +216,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
   },
   addButton: {
@@ -233,14 +230,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   locationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   locationName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     flex: 1,
   },
@@ -248,8 +245,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   detailText: {
@@ -268,8 +265,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   deviceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   deviceText: {
     fontSize: 14,
@@ -282,8 +279,8 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
     marginTop: 60,
   },
@@ -292,14 +289,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
 });

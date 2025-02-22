@@ -56,6 +56,8 @@ const CreateScheduleScreen: React.FC = () => {
   const [estimatedWaterAmount, setEstimatedWaterAmount] = useState<
     number | null
   >(null);
+  // New state for date picker mode
+  const [mode, setMode] = useState<'date' | 'time'>('date');
 
   const navigation = useNavigation();
   const route = useRoute<CreateScheduleScreenRouteProp>();
@@ -194,6 +196,44 @@ const CreateScheduleScreen: React.FC = () => {
       minute: "2-digit",
       hour12: true,
     });
+  };
+
+  // New function to handle showing the date picker
+  const showDateTimePicker = () => {
+    if (Platform.OS === 'android') {
+      // First show date picker on Android
+      setMode('date');
+    }
+    setShowDatePicker(true);
+  };
+
+  // New function to handle date/time change
+  const handleDateChange = (event, selectedDate) => {
+    if (event.type === 'dismissed') {
+      setShowDatePicker(false);
+      return;
+    }
+    
+    const currentDate = selectedDate || scheduleDate;
+    
+    if (Platform.OS === 'android') {
+      if (mode === 'date') {
+        // After selecting date on Android, show time picker
+        setScheduleDate(currentDate);
+        setMode('time');
+      } else {
+        // After selecting time on Android, combine date and time and hide picker
+        const combinedDate = new Date(scheduleDate);
+        combinedDate.setHours(currentDate.getHours());
+        combinedDate.setMinutes(currentDate.getMinutes());
+        setScheduleDate(combinedDate);
+        setShowDatePicker(false);
+      }
+    } else {
+      // iOS handles date and time in one picker
+      setScheduleDate(currentDate);
+      setShowDatePicker(false);
+    }
   };
 
   const renderLocationItem = ({ item }: { item: Location }) => (
@@ -414,7 +454,7 @@ const CreateScheduleScreen: React.FC = () => {
                 {!isNow && (
                   <TouchableOpacity
                     style={styles.datePickerButton}
-                    onPress={() => setShowDatePicker(true)}
+                    onPress={showDateTimePicker}
                   >
                     <Ionicons
                       name="calendar-outline"
@@ -460,19 +500,16 @@ const CreateScheduleScreen: React.FC = () => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Date Picker Modal */}
+      {/* Date Picker Modal - FIXED */}
       {showDatePicker && (
         <DateTimePicker
+          testID="dateTimePicker"
           value={scheduleDate}
-          mode="datetime"
+          mode={mode}
+          is24Hour={false}
           display="default"
+          onChange={handleDateChange}
           minimumDate={new Date()}
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) {
-              setScheduleDate(selectedDate);
-            }
-          }}
         />
       )}
 
