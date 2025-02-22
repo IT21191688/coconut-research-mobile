@@ -31,7 +31,7 @@ const WateringNavigator = () => {
               onPress={() => navigation.goBack()}
               style={{ marginRight: 8 }}
             >
-              <Ionicons name="arrow-back" size={24} color={colors.primary} />
+              <Ionicons name="arrow-back" size={24} color={colors.black} />
             </TouchableOpacity>
           ) : null,
       })}

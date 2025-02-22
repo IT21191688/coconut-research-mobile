@@ -83,7 +83,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       <View style={styles.header}>
         <View>
           <Text style={styles.locationName}>
-            {schedule.locationName || 'Location'}
+            {schedule.locationId.name || 'Location'}
           </Text>
           <Text style={styles.dateTime}>
             {formatDate(schedule.date)}, {formatTime(schedule.date)}

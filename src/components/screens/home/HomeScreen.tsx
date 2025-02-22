@@ -7,7 +7,8 @@ import {
   Image, 
   Dimensions, 
   FlatList,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext';
@@ -36,6 +37,12 @@ const slideImages = [
     title: 'Weather Integration',
     subtitle: 'Optimize irrigation based on forecasts'
   },
+  { 
+    id: '4',
+    image: 'https://images.unsplash.com/photo-1600673925282-a6bdc9f4f75f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
+    title: 'Remote Control',
+    subtitle: 'Automate irrigation and fertilization'
+  }
 ];
 
 const HomeScreen: React.FC = ({ navigation }: any) => {
@@ -50,18 +57,13 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
   // Auto scroll for image slider
   useEffect(() => {
     const timerId = setInterval(() => {
-      if (currentIndex < slideImages.length - 1) {
-        flatListRef.current?.scrollToIndex({
-          index: currentIndex + 1,
-          animated: true
-        });
-      } else {
-        flatListRef.current?.scrollToIndex({
-          index: 0,
-          animated: true
-        });
-      }
-    }, 1000);
+      const nextIndex = (currentIndex + 1) % slideImages.length;
+      flatListRef.current?.scrollToIndex({
+        index: nextIndex,
+        animated: true
+      });
+      setCurrentIndex(nextIndex);
+    }, 5000);
 
     return () => clearInterval(timerId);
   }, [currentIndex]);
@@ -73,7 +75,6 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
       icon: 'water-outline',
       color: '#4DA3FF',
       bgColor: '#EBF5FF',
-      // Change this line:
       onPress: () => navigation.navigate('Watering')
     },
     {
@@ -176,75 +177,75 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with profile */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Welcome back</Text>
-          <Text style={styles.nameText}>{user?.name || 'John Doe'}</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.profileButton}
-          onPress={() => navigation.navigate('Profile')}
-        >
-          {user?.photoURL ? (
-            <Image source={{ uri: user.photoURL }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profilePlaceholder}>
-              <Text style={styles.profileInitial}>
-                {user?.name?.charAt(0) || 'J'}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* Image slider */}
-      <View style={styles.sliderContainer}>
-        <FlatList
-          ref={flatListRef}
-          data={slideImages}
-          renderItem={renderSlideItem}
-          keyExtractor={item => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: false, listener: onSlideChange }
-          )}
-        />
-        {renderDotIndicator()}
-      </View>
-
-      {/* Menu grid */}
-      <View style={styles.menuContainer}>
-        <Text style={styles.sectionTitle}>Services</Text>
-        <View style={styles.menuGrid}>
-          {menuItems.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.menuItem, { backgroundColor: item.bgColor }]}
-              onPress={item.onPress}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
-                <Ionicons name={item.icon} size={30} color={item.color} />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header with profile */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.welcomeText}>Welcome back</Text>
+            <Text style={styles.nameText}>{user?.name || 'John Doe'}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            {user?.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.profilePlaceholder}>
+                <Text style={styles.profileInitial}>
+                  {user?.name?.charAt(0) || 'J'}
+                </Text>
               </View>
-              <Text style={styles.menuTitle}>{item.title}</Text>
-            </TouchableOpacity>
-          ))}
+            )}
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Signout button */}
-      <TouchableOpacity 
-        style={styles.signOutButton} 
-        onPress={logout}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="log-out-outline" size={20} color="#6B7280" />
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </TouchableOpacity>
+        {/* Image slider */}
+        <View style={styles.sliderContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={slideImages}
+            renderItem={({ item, index }) => renderSlideItem(item, index)}
+            keyExtractor={item => item.id}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            scrollEventThrottle={16}
+          />
+          {renderDotIndicator()}
+        </View>
+
+        {/* Menu grid */}
+        <View style={styles.menuContainer}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          <View style={styles.menuGrid}>
+            {menuItems.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                style={[styles.menuItem, { backgroundColor: item.bgColor }]}
+                onPress={item.onPress}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
+                  <Ionicons name={item.icon} size={30} color={item.color} />
+                </View>
+                <Text style={styles.menuTitle}>{item.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Signout button */}
+        <TouchableOpacity 
+          style={styles.signOutButton} 
+          onPress={logout}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="log-out-outline" size={20} color="#6B7280" />
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 };
