@@ -11,7 +11,12 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { getDeviceById, deleteDevice, updateDevice } from "../../../api/deviceApi";
+import {
+  getDeviceById,
+  deleteDevice,
+  updateDevice,
+} from "../../../api/deviceApi";
+import { getLocationByDeviceId } from "../../../api/locationApi";
 import { Device } from "../../../types";
 import Card from "../../common/Card";
 import StatusBadge from "../../common/StatusBadge";
@@ -23,6 +28,8 @@ const DeviceDetailScreen: React.FC = () => {
   const [device, setDevice] = useState<Device | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [location, setLocation] = useState<any>(null);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
   const navigation = useNavigation();
   const route = useRoute();
@@ -31,6 +38,7 @@ const DeviceDetailScreen: React.FC = () => {
   useEffect(() => {
     if (deviceId) {
       loadDevice();
+      loadLocationForDevice();
     } else {
       navigation.goBack();
     }
@@ -53,13 +61,29 @@ const DeviceDetailScreen: React.FC = () => {
     }
   };
 
+  const loadLocationForDevice = async () => {
+    try {
+      setIsLocationLoading(true);
+      const locationData = await getLocationByDeviceId(deviceId);
+      setLocation(locationData);
+    } catch (error) {
+      console.error('Failed to load location for device:', error);
+      setLocation(null);
+    } finally {
+      setIsLocationLoading(false);
+    }
+  };
+
   const handleEditDevice = () => {
     if (device) {
-      navigation.navigate('RegisterDevice' as never, {
-        mode: "edit",
-        deviceId: device.deviceId,
-        deviceData: device,
-      } as never);
+      navigation.navigate(
+        "RegisterDevice" as never,
+        {
+          mode: "edit",
+          deviceId: device.deviceId,
+          deviceData: device,
+        } as never
+      );
     }
   };
 
@@ -77,17 +101,35 @@ const DeviceDetailScreen: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (newStatus: "active" | "inactive" | "maintenance") => {
+  const handleStatusChange = async (
+    newStatus: "active" | "inactive" | "maintenance"
+  ) => {
     try {
+      // Check if device is assigned to a location
+      if (
+        (newStatus === "inactive" || newStatus === "maintenance") &&
+        location
+      ) {
+        Alert.alert(
+          "Cannot Change Status",
+          "This device is currently assigned to a location. Please unassign it first before changing to inactive or maintenance status.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
       await updateDevice(deviceId, { status: newStatus });
       loadDevice(); // Reload device to get updated status
       Alert.alert("Success", `Device status updated to ${newStatus}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Failed to update device status:`, error);
-      Alert.alert(
-        "Error",
-        "Failed to update device status. Please try again later."
-      );
+
+      // Check if it's our specific error
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to update device status. Please try again later.";
+
+      Alert.alert("Error", errorMessage);
     }
   };
 
@@ -280,7 +322,12 @@ const DeviceDetailScreen: React.FC = () => {
             <Card style={styles.locationCard}>
               <Text style={styles.sectionTitle}>Location Assignment</Text>
 
-              {device.locationId ? (
+              {isLocationLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={styles.loadingText}>Loading location details...</Text>
+                </View>
+              ) : location ? (
                 <View>
                   <View style={styles.assignedLocationContainer}>
                     <Ionicons
@@ -289,7 +336,7 @@ const DeviceDetailScreen: React.FC = () => {
                       color={colors.primary}
                     />
                     <Text style={styles.assignedLocationText}>
-                      Assigned to: {device?.assignedLocation.name || "Farm Location"}
+                      Assigned to: {location.name}
                     </Text>
                   </View>
                 </View>
@@ -391,34 +438,50 @@ const DeviceDetailScreen: React.FC = () => {
 
               {device.status === "active" ? (
                 <View style={styles.statusActions}>
-                  <Button
-                    title="Mark as Maintenance"
-                    variant="outline"
-                    leftIcon={
+                  {location ? (
+                    <View style={styles.statusWarning}>
                       <Ionicons
-                        name="construct-outline"
-                        size={18}
+                        name="information-circle-outline"
+                        size={20}
                         color={colors.warning}
                       />
-                    }
-                    onPress={() => handleStatusChange("maintenance")}
-                    style={styles.maintenanceButton}
-                    textStyle={{ color: colors.warning }}
-                  />
-                  <Button
-                    title="Mark as Inactive"
-                    variant="outline"
-                    leftIcon={
-                      <Ionicons
-                        name="power-outline"
-                        size={18}
-                        color={colors.error}
+                      <Text style={styles.statusWarningText}>
+                        This device is assigned to a location. Unassign it to
+                        change status.
+                      </Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Button
+                        title="Mark as Maintenance"
+                        variant="outline"
+                        leftIcon={
+                          <Ionicons
+                            name="construct-outline"
+                            size={18}
+                            color={colors.warning}
+                          />
+                        }
+                        onPress={() => handleStatusChange("maintenance")}
+                        style={styles.maintenanceButton}
+                        textStyle={{ color: colors.warning }}
                       />
-                    }
-                    onPress={() => handleStatusChange("inactive")}
-                    style={styles.inactiveButton}
-                    textStyle={{ color: colors.error }}
-                  />
+                      <Button
+                        title="Mark as Inactive"
+                        variant="outline"
+                        leftIcon={
+                          <Ionicons
+                            name="power-outline"
+                            size={18}
+                            color={colors.error}
+                          />
+                        }
+                        onPress={() => handleStatusChange("inactive")}
+                        style={styles.inactiveButton}
+                        textStyle={{ color: colors.error }}
+                      />
+                    </>
+                  )}
                 </View>
               ) : device.status === "maintenance" ? (
                 <Button
@@ -494,7 +557,8 @@ const DeviceDetailScreen: React.FC = () => {
                 style={styles.modalIcon}
               />
               <Text style={styles.modalText}>
-                Are you sure you want to delete this device? This action cannot be undone.
+                Are you sure you want to delete this device? This action cannot
+                be undone.
               </Text>
               <Text style={styles.modalWarning}>
                 All associated data will be permanently deleted.
@@ -535,14 +599,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
   },
   loadingContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.backgroundLight,
+    padding: 16,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: 8,
+    fontSize: 14,
     color: colors.gray600,
   },
   header: {
@@ -660,6 +723,7 @@ const styles = StyleSheet.create({
   },
   viewLocationButton: {
     alignSelf: "flex-start",
+    marginTop: 4,
   },
   unassignedContainer: {
     alignItems: "center",
@@ -816,7 +880,21 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     backgroundColor: colors.error,
-  }
+  },
+  statusWarning: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.warning + "15",
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  statusWarningText: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: colors.warning,
+  },
 });
 
 export default DeviceDetailScreen;

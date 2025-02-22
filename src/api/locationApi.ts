@@ -147,3 +147,13 @@ export const removeDeviceFromLocation = async (locationId: string): Promise<Loca
     throw error;
   }
 };
+
+export const getLocationByDeviceId = async (deviceId: string): Promise<any> => {
+  try {
+    const response = await api.get(`/locations/by-device/${deviceId}`);
+    return response.data.data.location;
+  } catch (error) {
+    console.error(`Error fetching location for device ${deviceId}:`, error);
+    return null;
+  }
+};

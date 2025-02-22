@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { getDevices } from "../../../api/deviceApi";
+import { getLocationByDeviceId } from "../../../api/locationApi";
 import { Device } from "../../../types";
 import Card from "../../common/Card";
 import StatusBadge from "../../common/StatusBadge";
@@ -23,6 +24,7 @@ import { DEVICE_ROUTES } from "../../../constants/routes";
 const DeviceListScreen: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [locationMap, setLocationMap] = useState<Record<string, any>>({});
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -37,6 +39,23 @@ const DeviceListScreen: React.FC = () => {
       setIsLoading(true);
       const fetchedDevices = await getDevices();
       setDevices(fetchedDevices);
+      
+      // Load locations for devices
+      const locationsData: Record<string, any> = {};
+      for (const device of fetchedDevices) {
+        if (device.deviceId) {
+          try {
+            const location = await getLocationByDeviceId(device.deviceId);
+            if (location) {
+              locationsData[device.deviceId] = location;
+            }
+          } catch (error) {
+            console.error(`Failed to load location for device ${device.deviceId}:`, error);
+          }
+        }
+      }
+      setLocationMap(locationsData);
+      
     } catch (error) {
       console.error("Failed to load devices:", error);
       Alert.alert("Error", "Failed to load devices. Please try again later.");
@@ -98,74 +117,78 @@ const DeviceListScreen: React.FC = () => {
     }
   };
 
-  const renderDeviceItem = ({ item }: { item: Device }) => (
-    <Card
-      style={styles.deviceCard}
-      onPress={() => handleDevicePress(item.deviceId)}
-      variant="elevated"
-    >
-      <View style={styles.deviceHeader}>
-        <View style={styles.deviceInfo}>
-          <Text style={styles.deviceId}>{item.deviceId}</Text>
-          <StatusBadge
-            status={item.status as any}
-            size="small"
-          />
-        </View>
-        
-        {item.batteryLevel !== undefined && (
-          <View style={styles.batteryContainer}>
-            <Ionicons
-              name={getBatteryIcon(item.batteryLevel)}
-              size={16}
-              color={getBatteryColor(item.batteryLevel)}
+  const renderDeviceItem = ({ item }: { item: Device }) => {
+    const locationData = locationMap[item.deviceId];
+    
+    return (
+      <Card
+        style={styles.deviceCard}
+        onPress={() => handleDevicePress(item.deviceId)}
+        variant="elevated"
+      >
+        <View style={styles.deviceHeader}>
+          <View style={styles.deviceInfo}>
+            <Text style={styles.deviceId}>{item.deviceId}</Text>
+            <StatusBadge
+              status={item.status as any}
+              size="small"
             />
-            <Text style={styles.batteryText}>{item.batteryLevel}%</Text>
           </View>
-        )}
-      </View>
-
-      <View style={styles.deviceDetails}>
-        <View style={styles.deviceTypeContainer}>
-          <Ionicons
-            name={getDeviceTypeIcon(item.type)}
-            size={20}
-            color={colors.primary}
-          />
-          <Text style={styles.deviceType}>
-            {getDeviceTypeLabel(item.type)}
-          </Text>
+          
+          {item.batteryLevel !== undefined && (
+            <View style={styles.batteryContainer}>
+              <Ionicons
+                name={getBatteryIcon(item.batteryLevel)}
+                size={16}
+                color={getBatteryColor(item.batteryLevel)}
+              />
+              <Text style={styles.batteryText}>{item.batteryLevel}%</Text>
+            </View>
+          )}
         </View>
 
-        {item.lastReading && (
-          <View style={styles.lastReadingContainer}>
-            <Text style={styles.lastReadingLabel}>Last Reading:</Text>
-            <Text style={styles.lastReadingTime}>
-              {new Date(item.lastReading.timestamp).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-              })}
+        <View style={styles.deviceDetails}>
+          <View style={styles.deviceTypeContainer}>
+            <Ionicons
+              name={getDeviceTypeIcon(item.type)}
+              size={20}
+              color={colors.primary}
+            />
+            <Text style={styles.deviceType}>
+              {getDeviceTypeLabel(item.type)}
             </Text>
           </View>
-        )}
-      </View>
 
-      {item.locationId ? (
-        <View style={styles.locationContainer}>
-          <Ionicons name="location-outline" size={16} color={colors.gray600} />
-          <Text style={styles.locationText}>
-            Assigned to: {item.locationName || 'Location'}
-          </Text>
+          {item.lastReading && (
+            <View style={styles.lastReadingContainer}>
+              <Text style={styles.lastReadingLabel}>Last Reading:</Text>
+              <Text style={styles.lastReadingTime}>
+                {new Date(item.lastReading.timestamp).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </Text>
+            </View>
+          )}
         </View>
-      ) : (
-        <View style={styles.unassignedContainer}>
-          <Ionicons name="alert-circle-outline" size={16} color={colors.warning} />
-          <Text style={styles.unassignedText}>Not assigned to any location</Text>
-        </View>
-      )}
-    </Card>
-  );
+
+        {locationData ? (
+          <View style={styles.locationContainer}>
+            <Ionicons name="location-outline" size={16} color={colors.gray600} />
+            <Text style={styles.locationText}>
+              Assigned to: {locationData.name}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.unassignedContainer}>
+            <Ionicons name="alert-circle-outline" size={16} color={colors.warning} />
+            <Text style={styles.unassignedText}>Not assigned to any location</Text>
+          </View>
+        )}
+      </Card>
+    );
+  };
 
   const renderEmptyComponent = () => {
     if (isLoading) {
