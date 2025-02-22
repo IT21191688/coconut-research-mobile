@@ -146,7 +146,8 @@ const LocationDetailScreen: React.FC = () => {
       console.error("Failed to assign device:", error);
       Alert.alert(
         "Error",
-        "Failed to assign device to location. Please try again."
+        String(error) ||
+          "Failed to assign device to location. Please try again."
       );
     } finally {
       setIsAssigningDevice(false);

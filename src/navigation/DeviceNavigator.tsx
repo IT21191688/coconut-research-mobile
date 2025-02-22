@@ -22,6 +22,10 @@ const DeviceNavigator = () => {
         headerTitleStyle: {
           fontWeight: '600',
         },
+        headerStatusBarHeight: 0,
+        contentStyle: {
+          backgroundColor: colors.white
+        },
         headerShadowVisible: false,
         headerLeft: ({ canGoBack }) =>
           canGoBack ? (
