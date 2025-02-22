@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -10,47 +10,49 @@ import {
   Alert,
   SafeAreaView,
   ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { useWatering } from '../../../context/WateringContext';
-import ScheduleCard from '../../../components/watering/ScheduleCard';
-import Button from '../../../components/common/Button';
-import Card from '../../../components/common/Card';
-import { colors } from '../../../constants/colors';
-import { DEVICE_ROUTES } from '../../../constants/routes';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { useWatering } from "../../../context/WateringContext";
+import ScheduleCard from "../../../components/watering/ScheduleCard";
+import Button from "../../../components/common/Button";
+import Card from "../../../components/common/Card";
+import { colors } from "../../../constants/colors";
+import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const WateringScheduleScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { 
-    todaySchedules, 
-    upcomingSchedules, 
-    isLoading, 
+  const {
+    todaySchedules,
+    upcomingSchedules,
+    isLoading,
     refreshWateringData,
-    wateringStats 
+    wateringStats,
   } = useWatering();
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const unsubscribe = navigation.addListener("focus", () => {
       refreshWateringData();
     });
     return unsubscribe;
   }, [navigation]);
 
   const handleSchedulePress = (scheduleId: string) => {
-    navigation.navigate('ScheduleDetail', { scheduleId });
+    navigation.navigate("ScheduleDetail", { scheduleId });
   };
 
   const handleCreateSchedule = () => {
-    navigation.navigate('CreateSchedule');
+    navigation.navigate("CreateSchedule");
   };
 
   const handleViewLocations = () => {
-    navigation.navigate('LocationList');
+    // Navigate to the LocationNavigator's main screen
+    navigation.navigate("LocationNavigator", { screen: "LocationList" });
   };
 
   const handleViewDevices = () => {
-    navigation.navigate('Devices');
+    // Navigate to the DeviceNavigator's main screen
+    navigation.navigate("DeviceNavigator", { screen: "DeviceList" });
   };
 
   const renderTodaySection = () => {
@@ -58,14 +60,22 @@ const WateringScheduleScreen: React.FC = () => {
       return (
         <Card style={styles.emptyTodayContainer} variant="flat">
           <Ionicons name="water-outline" size={48} color={colors.gray300} />
-          <Text style={styles.emptyTodayTitle}>No watering scheduled today</Text>
+          <Text style={styles.emptyTodayTitle}>
+            No watering scheduled today
+          </Text>
           <Text style={styles.emptyTodayText}>
             You don't have any watering tasks scheduled for today.
           </Text>
           <Button
             title="Create Watering Schedule"
             variant="primary"
-            leftIcon={<Ionicons name="add-circle-outline" size={18} color={colors.white} />}
+            leftIcon={
+              <Ionicons
+                name="add-circle-outline"
+                size={18}
+                color={colors.white}
+              />
+            }
             onPress={handleCreateSchedule}
             style={styles.createButton}
           />
@@ -81,11 +91,15 @@ const WateringScheduleScreen: React.FC = () => {
             <Text style={styles.countLabel}>pending</Text>
           </View>
           <View style={styles.countBadge}>
-            <Text style={styles.countNumber}>{wateringStats.completedCount}</Text>
+            <Text style={styles.countNumber}>
+              {wateringStats.completedCount}
+            </Text>
             <Text style={styles.countLabel}>completed</Text>
           </View>
           <View style={styles.countBadge}>
-            <Text style={styles.countNumber}>{wateringStats.totalWaterUsed}</Text>
+            <Text style={styles.countNumber}>
+              {wateringStats.totalWaterUsed}
+            </Text>
             <Text style={styles.countLabel}>liters used</Text>
           </View>
         </View>
@@ -102,7 +116,13 @@ const WateringScheduleScreen: React.FC = () => {
         <Button
           title="Create New Schedule"
           variant="outline"
-          leftIcon={<Ionicons name="add-circle-outline" size={18} color={colors.primary} />}
+          leftIcon={
+            <Ionicons
+              name="add-circle-outline"
+              size={18}
+              color={colors.primary}
+            />
+          }
           onPress={handleCreateSchedule}
           style={styles.createButton}
         />
@@ -112,9 +132,7 @@ const WateringScheduleScreen: React.FC = () => {
 
   const renderUpcomingSection = () => {
     if (upcomingSchedules.length === 0) {
-      return (
-        <Text style={styles.noUpcomingText}>No upcoming schedules</Text>
-      );
+      return <Text style={styles.noUpcomingText}>No upcoming schedules</Text>;
     }
 
     return (
@@ -133,7 +151,7 @@ const WateringScheduleScreen: React.FC = () => {
         {upcomingSchedules.length > 3 && (
           <TouchableOpacity
             style={styles.viewAllButton}
-            onPress={() => navigation.navigate('ScheduleHistory')}
+            onPress={() => navigation.navigate("ScheduleHistory")}
           >
             <Text style={styles.viewAllText}>
               View All ({upcomingSchedules.length})
@@ -153,18 +171,32 @@ const WateringScheduleScreen: React.FC = () => {
           style={styles.resourceButton}
           onPress={handleViewLocations}
         >
-          <View style={[styles.resourceIcon, { backgroundColor: colors.primary + '20' }]}>
+          <View
+            style={[
+              styles.resourceIcon,
+              { backgroundColor: colors.primary + "20" },
+            ]}
+          >
             <Ionicons name="location" size={24} color={colors.primary} />
           </View>
           <Text style={styles.resourceText}>Locations</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.resourceButton}
           onPress={handleViewDevices}
         >
-          <View style={[styles.resourceIcon, { backgroundColor: colors.secondary + '20' }]}>
-            <Ionicons name="hardware-chip-outline" size={24} color={colors.secondary} />
+          <View
+            style={[
+              styles.resourceIcon,
+              { backgroundColor: colors.secondary + "20" },
+            ]}
+          >
+            <Ionicons
+              name="hardware-chip-outline"
+              size={24}
+              color={colors.secondary}
+            />
           </View>
           <Text style={styles.resourceText}>Devices</Text>
         </TouchableOpacity>
@@ -223,8 +255,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 12,
@@ -240,18 +272,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 12,
   },
   todaySummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   countBadge: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     padding: 12,
     backgroundColor: colors.white,
     borderRadius: 8,
@@ -264,7 +296,7 @@ const styles = StyleSheet.create({
   },
   countNumber: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
     marginBottom: 4,
   },
@@ -279,13 +311,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   emptyTodayContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 32,
     marginBottom: 16,
   },
   emptyTodayTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginTop: 16,
     marginBottom: 8,
@@ -293,26 +325,26 @@ const styles = StyleSheet.create({
   emptyTodayText: {
     fontSize: 14,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
   },
   upcomingTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.textSecondary,
     marginBottom: 12,
   },
   noUpcomingText: {
     fontSize: 14,
     color: colors.textSecondary,
-    fontStyle: 'italic',
-    textAlign: 'center',
+    fontStyle: "italic",
+    textAlign: "center",
     padding: 20,
   },
   viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: colors.gray200,
@@ -320,7 +352,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 14,
     color: colors.primary,
-    fontWeight: '500',
+    fontWeight: "500",
     marginRight: 4,
   },
   resourceButtonsContainer: {
@@ -328,17 +360,17 @@ const styles = StyleSheet.create({
   },
   resourceTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 12,
   },
   resourceButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   resourceButton: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: 12,
     padding: 16,
@@ -353,25 +385,25 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
   },
   resourceText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.textPrimary,
   },
   floatingButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     right: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
     backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,

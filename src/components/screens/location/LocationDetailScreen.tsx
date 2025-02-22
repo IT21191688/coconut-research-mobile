@@ -31,7 +31,7 @@ type LocationDetailScreenRouteProp = RouteProp<
 >;
 
 const LocationDetailScreen: React.FC = () => {
-  const [location, setLocation] = useState<Location | null>(null);
+  const [location, setLocation] = useState<any | null>(null);
   const [device, setDevice] = useState<Device | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeviceLoading, setIsDeviceLoading] = useState(false);
@@ -92,11 +92,6 @@ const LocationDetailScreen: React.FC = () => {
       });
     }
   };
-
-  const handleCreateWateringSchedule = () => {
-    navigation.navigate("CreateWateringSchedule", { locationId });
-  };
-
   const handleDeleteLocation = async () => {
     Alert.alert(
       "Delete Location",
@@ -183,12 +178,6 @@ const LocationDetailScreen: React.FC = () => {
         },
       ]
     );
-  };
-
-  const handleViewDeviceDetails = () => {
-    if (location?.deviceId) {
-      navigation.navigate("DeviceDetails", { deviceId: location.deviceId });
-    }
   };
 
   const handleOpenMap = () => {
@@ -379,7 +368,7 @@ const LocationDetailScreen: React.FC = () => {
                       </Text>
                       <StatusBadge status={device.status as any} size="small" />
                     </View>
-                    <View style={styles.batteryContainer}>
+                    {/* <View style={styles.batteryContainer}>
                       <Ionicons
                         name={getBatteryIcon(device.batteryLevel)}
                         size={18}
@@ -388,23 +377,8 @@ const LocationDetailScreen: React.FC = () => {
                       <Text style={styles.batteryText}>
                         {device.batteryLevel || "N/A"}%
                       </Text>
-                    </View>
+                    </View> */}
                   </View>
-
-                  <TouchableOpacity
-                    style={styles.viewDeviceButton}
-                    onPress={handleViewDeviceDetails}
-                  >
-                    <Text style={styles.viewDeviceText}>
-                      View Device Details
-                    </Text>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={16}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-
                   <Button
                     title="Remove Device"
                     leftIcon={
@@ -451,7 +425,7 @@ const LocationDetailScreen: React.FC = () => {
 
             {/* Action Buttons */}
             <View style={styles.actionButtonsContainer}>
-              <Button
+              {/* <Button
                 title="Create Watering Schedule"
                 variant="primary"
                 leftIcon={
@@ -463,7 +437,7 @@ const LocationDetailScreen: React.FC = () => {
                 }
                 onPress={handleCreateWateringSchedule}
                 style={styles.scheduleButton}
-              />
+              /> */}
               <Button
                 title="Delete Location"
                 variant="outline"

@@ -122,7 +122,7 @@ export const assignDeviceToLocation = async (
 ): Promise<Location> => {
   try {
     const response = await api.put<LocationResponse>(
-      `/locations/${locationId}`,
+      `/locations/${locationId}/assign-device`,
       { deviceId }
     );
     return response.data.data.location;
@@ -131,17 +131,15 @@ export const assignDeviceToLocation = async (
     throw error;
   }
 };
-
 /**
  * Remove a device from a location
  */
-export const removeDeviceFromLocation = async (
-  locationId: string
-): Promise<Location> => {
+export const removeDeviceFromLocation = async (locationId: string): Promise<Location> => {
   try {
+    // Use $unset operation on the backend to remove the field completely
     const response = await api.put<LocationResponse>(
-      `/locations/${locationId}`,
-      { deviceId: null }
+      `/locations/${locationId}/remove-device`,
+      {}
     );
     return response.data.data.location;
   } catch (error) {
