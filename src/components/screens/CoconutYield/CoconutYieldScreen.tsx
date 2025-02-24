@@ -6,13 +6,14 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  RefreshControl  // Add this import
+  RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { getLocations } from '../../../api/locationApi';
 import { Location } from '../../../types';
 import { colors } from '../../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 const calculateAge = (plantationDate: Date): string => {
   const plantDate = new Date(plantationDate);
@@ -22,18 +23,19 @@ const calculateAge = (plantationDate: Date): string => {
   const months = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
 
   if (years === 0) {
-    return `${years + 1} months old`;
+    return `${months} months old`;
   }
-  return years === 1 ? `${years} year` : `${years} years`;
+  return years === 1 ? `${years} year old` : `${years} years old`;
 };
 
 const CoconutYieldScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);  // Add this state
+  const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const ITEMS_PER_PAGE = 3; // Change from 1 to 3
+  const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
     fetchLocations();
@@ -41,7 +43,7 @@ const CoconutYieldScreen = ({ navigation }) => {
 
   const fetchLocations = async () => {
     try {
-      const response = await getLocations(1); // Always start with page 1
+      const response = await getLocations(1);
       setLocations(response);
       setPage(1);
       setHasMore(response.length >= ITEMS_PER_PAGE);
@@ -52,7 +54,6 @@ const CoconutYieldScreen = ({ navigation }) => {
     }
   };
 
-  // Add onRefresh function
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     await fetchLocations();
@@ -61,16 +62,16 @@ const CoconutYieldScreen = ({ navigation }) => {
 
   const loadMoreLocations = async () => {
     if (!hasMore || loading) return;
-    
+
     try {
       const nextPage = page + 1;
       const response = await getLocations(nextPage);
-      
+
       if (response.length === 0) {
         setHasMore(false);
         return;
       }
-      
+
       setLocations(prevLocations => [...prevLocations, ...response]);
       setPage(nextPage);
       setHasMore(response.length >= ITEMS_PER_PAGE);
@@ -109,7 +110,7 @@ const CoconutYieldScreen = ({ navigation }) => {
         <View style={styles.detailRow}>
           <View style={styles.detailItem}>
             <Ionicons name="leaf-outline" size={20} color="#4CD964" />
-            <Text style={styles.detailText}>{item.totalTrees} trees</Text>
+            <Text style={styles.detailText}>{item.totalTrees} {t('lands.trees')}</Text>
           </View>
           <View style={styles.statItem}>
             <View
@@ -119,7 +120,7 @@ const CoconutYieldScreen = ({ navigation }) => {
               ]}
             />
             <Text style={styles.statValue}>{item.soilType}</Text>
-            {/* <Text style={styles.statLabel}>soil type</Text> */}
+            {/* <Text style={styles.statLabel}>{t('lands.soilType')}</Text> */}
           </View>
         </View>
         <View style={[styles.detailRow, styles.marginTop]}>
@@ -130,7 +131,7 @@ const CoconutYieldScreen = ({ navigation }) => {
                 {new Date(item.plantationDate).toLocaleDateString()}
               </Text>
               <View style={styles.ageContainer}>
-                <Text style={styles.ageText}>Age: </Text>
+                <Text style={styles.ageText}>{t('lands.age')}: </Text>
                 <Text style={styles.ageValue}>{calculateAge(item.plantationDate)}</Text>
               </View>
             </View>
@@ -156,13 +157,13 @@ const CoconutYieldScreen = ({ navigation }) => {
 
   const renderFooter = () => {
     if (!hasMore) return null;
-    
+
     return (
       <TouchableOpacity 
         style={styles.loadMoreButton}
         onPress={loadMoreLocations}
       >
-        <Text style={styles.loadMoreText}>Load More</Text>
+        <Text style={styles.loadMoreText}>{t('lands.loadMore')}</Text>
       </TouchableOpacity>
     );
   };
@@ -170,7 +171,7 @@ const CoconutYieldScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Lands</Text>
+        <Text style={styles.headerTitle}>{t('lands.title')}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('AddLocation')}>
           <Ionicons name="add-circle-outline" size={24} color="#4CD964" />
         </TouchableOpacity>
@@ -180,28 +181,28 @@ const CoconutYieldScreen = ({ navigation }) => {
         <ActivityIndicator size="large" color="#4CD964" style={styles.loader} />
       ) : locations.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No lands added yet</Text>
+          <Text style={styles.emptyText}>{t('lands.emptyState')}</Text>
           <TouchableOpacity
             style={styles.addFirstButton}
             onPress={() => navigation.navigate('AddLocation')}
           >
-            <Text style={styles.addFirstButtonText}>Add Your First Land</Text>
+            <Text style={styles.addFirstButtonText}>{t('lands.addFirst')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <FlatList
-          data={locations} // Remove the slice operation
+          data={locations}
           renderItem={renderLocationItem}
           keyExtractor={item => item._id}
           contentContainerStyle={styles.locationsList}
           showsVerticalScrollIndicator={false}
-          ListFooterComponent={hasMore ? renderFooter : null} // Update the condition
+          ListFooterComponent={hasMore ? renderFooter : null}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#4CD964']}  // Android
-              tintColor="#4CD964"   // iOS
+              colors={['#4CD964']}
+              tintColor="#4CD964"
             />
           }
         />
@@ -215,7 +216,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 20,
-    paddingTop: -20,
   },
   header: {
     flexDirection: 'row',
@@ -239,17 +239,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row', // Change to row for better alignment
-    gap: 8,
-  },
-  statValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
   emptyText: {
     fontSize: 16,
     color: '#6B7280',
@@ -268,12 +257,6 @@ const styles = StyleSheet.create({
   },
   locationsList: {
     paddingBottom: 20,
-    gap: 12, // Add gap between list items
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 4,
   },
   locationItem: {
     backgroundColor: '#FFFFFF',
@@ -303,15 +286,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
   },
-  soilIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-  },
   locationDetails: {
     flexDirection: 'column',
     width: '100%',
-    gap: 12, // Add gap between sections
   },
   detailRow: {
     flexDirection: 'row',
@@ -324,6 +301,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     marginRight: 12,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+  },
+  soilIcon: {
+    width: 16,
+    height: 16,
+    borderRadius: 4,
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginLeft: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginLeft: 4,
   },
   dateContainer: {
     flex: 1,
@@ -350,7 +348,7 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     marginLeft: 8,
     flex: 1,
-    flexWrap: 'wrap', // Allow text to wrap
+    flexWrap: 'wrap',
   },
   marginTop: {
     marginTop: 8,

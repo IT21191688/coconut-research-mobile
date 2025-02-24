@@ -8,6 +8,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import Toast from 'react-native-toast-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
+import './src/i18n';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
