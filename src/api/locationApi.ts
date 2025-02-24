@@ -46,7 +46,7 @@ export const createLocation = async (locationData: {
 /**
  * Get all locations for the current user
  */
-export const getLocations = async (): Promise<Location[]> => {
+export const getLocations = async (page = 1, limit = 3): Promise<Location[]> => {
   try {
     const response = await api.get<LocationsResponse>('/locations');
     return response.data.data.locations;
