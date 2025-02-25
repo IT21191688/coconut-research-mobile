@@ -95,7 +95,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'oil',
-      title: 'Oil Yield',
+      title: 'Drying Time in Copra',
       icon: 'flask-outline',
       color: '#FF9500',
       bgColor: '#FFF6EB',
