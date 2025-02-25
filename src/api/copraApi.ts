@@ -24,6 +24,16 @@ export const copraApi = {
     const response = await api.post('/copra/readings', params);
     return response.data;
   },
+
+  getBatchHistory: async (batchId: string) => {
+    try {
+      const response = await api.get(`/copra/batch/${batchId}`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error in getBatchHistory:', error);
+      throw error;
+    }
+  },
   
   
 };
