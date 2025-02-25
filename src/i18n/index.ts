@@ -6,7 +6,7 @@ import ta from './ta';
 
 // Define resource structure for type safety
 interface Resources {
-  translation: Record<string, any>;
+  [key: string]: any;
 }
 
 const resources: Record<string, Resources> = {

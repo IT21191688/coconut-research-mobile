@@ -228,7 +228,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
                 activeOpacity={0.7}
               >
                 <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
-                  <Ionicons name={item.icon} size={30} color={item.color} />
+                  <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={30} color={item.color} />
                 </View>
                 <Text style={styles.menuTitle}>{item.title}</Text>
               </TouchableOpacity>
