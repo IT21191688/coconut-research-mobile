@@ -10,6 +10,7 @@ import AuthNavigator from "./AuthNavigator";
 import WateringNavigator from "./WateringNavigator";
 import DeviceNavigator from "./DeviceNavigator";
 import LocationNavigator from "./LocationNavigator";
+import CopraNavigator from './copraNavigator';
 import HomeScreen from "../components/screens/home/HomeScreen";
 import Loading from "../components/common/Loading";
 import { colors } from "../constants/colors";
@@ -68,17 +69,7 @@ const MainTabNavigator = () => {
         })}
         options={{ title: 'Coconut Yield' }}
       />
-      <Tab.Screen 
-        name="OilYield" 
-        component={HomeScreen}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate('Home', { screen: 'OilYield' });
-          },
-        })}
-        options={{ title: 'Oil Yield' }}
-      />
+      <Tab.Screen name="OilYield" component={CopraNavigator} />
       <Tab.Screen 
         name="CopraIdentification" 
         component={HomeScreen}
