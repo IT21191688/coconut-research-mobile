@@ -34,6 +34,16 @@ export const copraApi = {
       throw error;
     }
   },
+
+  getAllBatches: async () => {
+    try {
+      const response = await api.get('/copra/batches');
+      return response.data;
+    } catch (error) {
+      console.error('API Error in getAllBatches:', error);
+      throw error;
+    }
+  },
   
   
 };
