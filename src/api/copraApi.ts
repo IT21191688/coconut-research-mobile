@@ -44,6 +44,16 @@ export const copraApi = {
       throw error;
     }
   },
+
+  deleteSingleReading: async (batchId: string, readingId: string) => {
+    try {
+      const response = await api.delete(`/copra/batch/${batchId}/${readingId}`);
+      return response.data;
+    } catch (error) {
+      console.error('API Error in deleteSingleReading:', error);
+      throw error;
+    }
+  },
   
   
 };
