@@ -54,6 +54,17 @@ export const copraApi = {
       throw error;
     }
   },
+
+  updateSingleNote: async (batchId: string, readingId: string, note: string) => {
+    try {
+      const response = await api.put(`/copra/batch/${batchId}/${readingId}`, { note });
+      return response.data;
+    } catch (error) {
+      console.error('API Error in updateSingleNote:', error);
+      throw error;
+    }
+  },
+
   
   
 };
