@@ -3,8 +3,6 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CreateReadingScreen } from '../components/screens/copra/CreateReadingScreen';
 import { BatchHistoryScreen } from '../components/screens/copra/BatchHistoryScreen';
-import { AllBatchesScreen } from '../components/screens/copra/AllBatchesScreen';
-import { UpdateReadingScreen } from '../components/screens/copra/UpdateReadingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,20 +35,7 @@ export const CopraNavigator = () => {
           title: 'Batch History',
         }}
       />
-      <Stack.Screen
-        name="AllBatches"
-        component={AllBatchesScreen}
-        options={{
-          title: 'All Batches',
-        }}
-      />
-      <Stack.Screen
-        name="UpdateReading"
-        component={UpdateReadingScreen}
-        options={{
-          title: 'Update Reading',
-        }}
-      />
+      
       
     </Stack.Navigator>
   );
