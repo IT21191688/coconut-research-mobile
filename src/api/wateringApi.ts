@@ -230,7 +230,7 @@ export const getUpcomingSchedules = async (): Promise<WateringSchedule[]> => {
     // Calculate dates for the next 7 days
     const today = new Date();
     const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 7);
+    nextWeek.setDate(today.getDate() + 8);
     
     const startDate = today.toISOString().split('T')[0];
     const endDate = nextWeek.toISOString().split('T')[0];
