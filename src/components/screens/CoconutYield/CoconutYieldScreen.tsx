@@ -170,13 +170,6 @@ const CoconutYieldScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('lands.title')}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('AddLocation')}>
-          <Ionicons name="add-circle-outline" size={24} color="#4CD964" />
-        </TouchableOpacity>
-      </View>
-
       {loading ? (
         <ActivityIndicator size="large" color="#4CD964" style={styles.loader} />
       ) : locations.length === 0 ? (
