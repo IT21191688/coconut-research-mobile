@@ -163,46 +163,46 @@ const WateringScheduleScreen: React.FC = () => {
     );
   };
 
-  const renderResourceButtons = () => (
-    <View style={styles.resourceButtonsContainer}>
-      <Text style={styles.resourceTitle}>Manage Resources</Text>
-      <View style={styles.resourceButtons}>
-        <TouchableOpacity
-          style={styles.resourceButton}
-          onPress={handleViewLocations}
-        >
-          <View
-            style={[
-              styles.resourceIcon,
-              { backgroundColor: colors.primary + "20" },
-            ]}
-          >
-            <Ionicons name="location" size={24} color={colors.primary} />
-          </View>
-          <Text style={styles.resourceText}>Locations</Text>
-        </TouchableOpacity>
+  // const renderResourceButtons = () => (
+  //   <View style={styles.resourceButtonsContainer}>
+  //     <Text style={styles.resourceTitle}>Manage Resources</Text>
+  //     <View style={styles.resourceButtons}>
+  //       <TouchableOpacity
+  //         style={styles.resourceButton}
+  //         onPress={handleViewLocations}
+  //       >
+  //         <View
+  //           style={[
+  //             styles.resourceIcon,
+  //             { backgroundColor: colors.primary + "20" },
+  //           ]}
+  //         >
+  //           <Ionicons name="location" size={24} color={colors.primary} />
+  //         </View>
+  //         <Text style={styles.resourceText}>Locations</Text>
+  //       </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.resourceButton}
-          onPress={handleViewDevices}
-        >
-          <View
-            style={[
-              styles.resourceIcon,
-              { backgroundColor: colors.secondary + "20" },
-            ]}
-          >
-            <Ionicons
-              name="hardware-chip-outline"
-              size={24}
-              color={colors.secondary}
-            />
-          </View>
-          <Text style={styles.resourceText}>Devices</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  //       <TouchableOpacity
+  //         style={styles.resourceButton}
+  //         onPress={handleViewDevices}
+  //       >
+  //         <View
+  //           style={[
+  //             styles.resourceIcon,
+  //             { backgroundColor: colors.secondary + "20" },
+  //           ]}
+  //         >
+  //           <Ionicons
+  //             name="hardware-chip-outline"
+  //             size={24}
+  //             color={colors.secondary}
+  //           />
+  //         </View>
+  //         <Text style={styles.resourceText}>Devices</Text>
+  //       </TouchableOpacity>
+  //     </View>
+  //   </View>
+  // );
 
   if (isLoading) {
     return (
@@ -235,7 +235,7 @@ const WateringScheduleScreen: React.FC = () => {
           {renderUpcomingSection()}
         </View>
 
-        {renderResourceButtons()}
+        {/* {renderResourceButtons()} */}
       </ScrollView>
 
       <TouchableOpacity

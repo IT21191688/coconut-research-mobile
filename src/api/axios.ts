@@ -12,7 +12,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor for adding auth token
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
