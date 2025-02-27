@@ -85,6 +85,17 @@ const MainTabNavigator = () => {
   );
 };
 
+// Create a separate navigator that includes the tab navigator and other screens
+const MainStackNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs" component={MainTabNavigator} />
+      <Stack.Screen name="LocationList" component={LocationNavigator} />
+      <Stack.Screen name="Devices" component={DeviceNavigator} />
+    </Stack.Navigator>
+  );
+};
+
 const AppNavigator = () => {
   const { user, isLoading } = useAuth();
 
@@ -101,11 +112,7 @@ const AppNavigator = () => {
             <WateringProvider>
               <DeviceProvider>
                 <LocationProvider>
-                  <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="Tabs" component={MainTabNavigator} />
-                    <Stack.Screen name="LocationNavigator" component={LocationNavigator} />
-                    <Stack.Screen name="DeviceNavigator" component={DeviceNavigator} />
-                  </Stack.Navigator>
+                  <MainStackNavigator />
                 </LocationProvider>
               </DeviceProvider>
             </WateringProvider>

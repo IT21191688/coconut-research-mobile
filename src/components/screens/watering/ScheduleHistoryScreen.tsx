@@ -92,7 +92,7 @@ const ScheduleHistoryScreen = () => {
     );
   };
 
-  const renderFilterPill = (periodKey, label) => (
+  const renderFilterPill = (periodKey:any, label:any) => (
     <TouchableOpacity
       style={[
         styles.filterPill,
