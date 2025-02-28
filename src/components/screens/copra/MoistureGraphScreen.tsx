@@ -96,41 +96,37 @@ export const MoistureGraphScreen = () => {
 
   const chartData = prepareChartData();
 
-  // Calculate time to reach target moisture
-  const calculateTimeToTarget = () => {
-    if (sortedReadings.length < 2) {
-      return 'Need more data points to estimate';
-    }
-
+  
+  // Get current moisture status directly from the reading's status field
+  const getCurrentMoistureStatus = () => {
+    if (sortedReadings.length === 0) return '';
+    
     const latestReading = sortedReadings[sortedReadings.length - 1];
-    const secondLatestReading = sortedReadings[sortedReadings.length - 2];
+    // Use the status field from the reading instead of calculating it
+    return latestReading.status;
+  };
+
+  // Navigate to recommendations screen
+  const navigateToRecommendations = () => {
+    const currentStatus = getCurrentMoistureStatus();
     
-    // Calculate drying rate per hour
-    const moistureDiff = secondLatestReading.moistureLevel - latestReading.moistureLevel;
-    const timeDiffMs = new Date(latestReading.startTime).getTime() - 
-                        new Date(secondLatestReading.startTime).getTime();
-    const timeDiffHours = timeDiffMs / (1000 * 60 * 60);
-    
-    if (timeDiffHours <= 0 || moistureDiff <= 0) {
-      return 'No consistent drying pattern detected';
-    }
-    
-    const dryingRatePerHour = moistureDiff / timeDiffHours;
-    
-    // Calculate remaining time
-    const moistureToLose = latestReading.moistureLevel - targetMoisture;
-    if (moistureToLose <= 0) {
-      return 'Target moisture already reached';
-    }
-    
-    const hoursToTarget = moistureToLose / dryingRatePerHour;
-    
-    if (hoursToTarget < 1) {
-      return `Approximately ${Math.round(hoursToTarget * 60)} minutes`;
+    // Only navigate if not already dried
+    if (currentStatus !== 'dryed' && currentStatus !== 'over_dryed' && sortedReadings.length > 0) {
+      const latestReading = sortedReadings[sortedReadings.length - 1];
+      navigation.navigate('DryingRecommendations', {
+        batchId,
+        currentMoisture: latestReading.moistureLevel,
+        targetMoisture,
+        status: currentStatus,
+        weatherConditions: latestReading.weatherConditions
+      });
     } else {
-      const hours = Math.floor(hoursToTarget);
-      const minutes = Math.round((hoursToTarget - hours) * 60);
-      return `Approximately ${hours} hours ${minutes > 0 ? `and ${minutes} minutes` : ''}`;
+      // Show alert if already dried
+      Alert.alert(
+        "No Recommendations Needed",
+        "This batch is already sufficiently dried and doesn't require further drying recommendations.",
+        [{ text: "OK", onPress: () => console.log("OK Pressed") }]
+      );
     }
   };
 
@@ -182,6 +178,12 @@ export const MoistureGraphScreen = () => {
     }
   };
 
+  // Check if recommendations should be available
+  const showRecommendations = () => {
+    const status = getCurrentMoistureStatus();
+    return status !== 'dryed' && status !== 'over_dryed';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -218,13 +220,7 @@ export const MoistureGraphScreen = () => {
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Drying Projections</Text>
-          <View style={styles.statRow}>
-            <MaterialCommunityIcons name="timer-sand" size={24} color="#FF9800" />
-            <View style={styles.statTextContainer}>
-              <Text style={styles.statLabel}>Estimated Time to Target:</Text>
-              <Text style={styles.statValue}>{calculateTimeToTarget()}</Text>
-            </View>
-          </View>
+          
           <View style={styles.statRow}>
             <MaterialCommunityIcons name="trending-down" size={24} color="#4CAF50" />
             <View style={styles.statTextContainer}>
@@ -251,6 +247,19 @@ export const MoistureGraphScreen = () => {
           </View>
         </View>
       </ScrollView>
+      
+      {/* Drying Recommendations Button */}
+      <TouchableOpacity 
+        style={[
+          styles.recommendationsButton,
+          !showRecommendations() && styles.recommendationsButtonDisabled
+        ]}
+        onPress={navigateToRecommendations}
+        disabled={!showRecommendations()}
+      >
+        <MaterialCommunityIcons name="lightbulb-on" size={24} color="#fff" />
+        <Text style={styles.recommendationsButtonText}>Drying Recommendations</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -344,5 +353,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+  },
+  recommendationsButton: {
+    position: 'absolute',
+    bottom: 24,
+    alignSelf: 'center',
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  recommendationsButtonDisabled: {
+    backgroundColor: '#B0B0B0',
+  },
+  recommendationsButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
   },
 });
