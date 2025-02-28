@@ -10,9 +10,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 
 import { copraApi } from '../../../api/copraApi';
+import { calculateOilYield } from '../../../utils/moistureHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -165,98 +166,113 @@ export const BatchHistoryScreen = () => {
     );
   };
 
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerRight: () => (
-  //       <TouchableOpacity 
-  //         onPress={handleDeleteBatch}
-  //         style={styles.headerButton}
-  //       >
-  //         <MaterialIcons name="delete-sweep" size={24} color="#fff" />
-  //       </TouchableOpacity>
-  //     ),
-  //   });
-  // }, [navigation, batchId, handleDeleteBatch]);
+  const handleGenerateGraph = () => {
+    if (readings.length < 2) {
+      Alert.alert(
+        'Not Enough Data',
+        'You need at least 2 readings to generate a meaningful graph. Please add more readings.'
+      );
+      return;
+    }
+    
+    // Navigate to graph screen with the readings data
+    navigation.navigate('MoistureGraph' as never, { 
+      batchId, 
+      readings 
+    } as never);
+  };
 
-  const renderItem = ({ item }: { item: Reading }) => (
-    <View style={styles.card}>
-      {/* Status Header with Action Icons */}
-      <View style={[styles.statusHeader, { backgroundColor: getStatusColor(item.status) }]}>
-        <View style={styles.statusHeaderLeft}>
-          <MaterialCommunityIcons name={getStatusIcon(item.status)} size={24} color="white" />
-          <Text style={styles.statusText}>{item.status.replace(/_/g, ' ')}</Text>
+  const renderItem = ({ item }: { item: Reading }) => {
+    // Calculate oil yield for 10kg of copra
+    const oilYield = calculateOilYield(item.moistureLevel);
+    
+    return (
+      <View style={styles.card}>
+        {/* Status Header with Action Icons */}
+        <View style={[styles.statusHeader, { backgroundColor: getStatusColor(item.status) }]}>
+          <View style={styles.statusHeaderLeft}>
+            <MaterialCommunityIcons name={getStatusIcon(item.status)} size={24} color="white" />
+            <Text style={styles.statusText}>{item.status.replace(/_/g, ' ')}</Text>
+          </View>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              onPress={() => handleEditReading(item)}
+              style={styles.actionButton}
+            >
+              <MaterialIcons name="edit" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleDeleteReading(item._id)}
+              style={styles.actionButton}
+            >
+              <MaterialIcons name="delete" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            onPress={() => handleEditReading(item)}
-            style={styles.actionButton}
-          >
-            <MaterialIcons name="edit" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleDeleteReading(item._id)}
-            style={styles.actionButton}
-          >
-            <MaterialIcons name="delete" size={24} color="white" />
-          </TouchableOpacity>
+
+        {/* Moisture and Drying Time */}
+        <View style={styles.mainInfo}>
+          <View style={styles.moistureContainer}>
+            <MaterialCommunityIcons name="water-percent" size={32} color="#007AFF" />
+            <Text style={styles.moistureValue}>{item.moistureLevel}%</Text>
+            <Text style={styles.moistureLabel}>Moisture</Text>
+          </View>
+
+          <View style={styles.timeContainer}>
+            <MaterialIcons name="timer" size={32} color="#4CAF50" />
+            <Text style={styles.timeValue}>{item.dryingTime.toFixed(1)}h</Text>
+            <Text style={styles.timeLabel}>Drying Time</Text>
+          </View>
+          
+          {/* New Oil Yield Information */}
+          <View style={styles.oilYieldContainer}>
+            <FontAwesome5 name="oil-can" size={32} color="#FFD700" />
+            <Text style={styles.oilYieldValue}>{oilYield.toFixed(1)}kg</Text>
+            <Text style={styles.oilYieldLabel}>Oil Yield (10kg)</Text>
+          </View>
         </View>
+
+        {/* Weather Conditions */}
+        <View style={styles.weatherContainer}>
+          <View style={styles.weatherCard}>
+            <MaterialCommunityIcons name="thermometer" size={24} color="#FF9800" />
+            <Text style={styles.weatherValue}>{item.weatherConditions.temperature}°C</Text>
+            <Text style={styles.weatherLabel}>Temperature</Text>
+          </View>
+
+          <View style={styles.weatherCard}>
+            <MaterialCommunityIcons name="water-outline" size={24} color="#03A9F4" />
+            <Text style={styles.weatherValue}>{item.weatherConditions.humidity}%</Text>
+            <Text style={styles.weatherLabel}>Humidity</Text>
+          </View>
+        </View>
+
+        {/* Time Information */}
+        <View style={styles.timeInfo}>
+          <View style={styles.timeRow}>
+            <MaterialIcons name="schedule" size={18} color="#666" />
+            <Text style={styles.timeInfoText}>
+              Start: {new Date(item.startTime).toLocaleString()}
+            </Text>
+          </View>
+          <View style={styles.timeRow}>
+            <MaterialIcons name="update" size={18} color="#666" />
+            <Text style={styles.timeInfoText}>
+              Expected End: {calculateEndTime(item.startTime, item.dryingTime)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Notes Section */}
+        {item.notes && (
+          <View style={styles.notesContainer}>
+            <MaterialIcons name="note" size={18} color="#666" />
+            <Text style={styles.notes}>{item.notes}</Text>
+          </View>
+        )}
       </View>
-
-      {/* Moisture and Drying Time */}
-      <View style={styles.mainInfo}>
-        <View style={styles.moistureContainer}>
-          <MaterialCommunityIcons name="water-percent" size={32} color="#007AFF" />
-          <Text style={styles.moistureValue}>{item.moistureLevel}%</Text>
-          <Text style={styles.moistureLabel}>Moisture</Text>
-        </View>
-
-        <View style={styles.timeContainer}>
-          <MaterialIcons name="timer" size={32} color="#4CAF50" />
-          <Text style={styles.timeValue}>{item.dryingTime.toFixed(1)}h</Text>
-          <Text style={styles.timeLabel}>Drying Time</Text>
-        </View>
-      </View>
-
-      {/* Weather Conditions */}
-      <View style={styles.weatherContainer}>
-        <View style={styles.weatherCard}>
-          <MaterialCommunityIcons name="thermometer" size={24} color="#FF9800" />
-          <Text style={styles.weatherValue}>{item.weatherConditions.temperature}°C</Text>
-          <Text style={styles.weatherLabel}>Temperature</Text>
-        </View>
-
-        <View style={styles.weatherCard}>
-          <MaterialCommunityIcons name="water-outline" size={24} color="#03A9F4" />
-          <Text style={styles.weatherValue}>{item.weatherConditions.humidity}%</Text>
-          <Text style={styles.weatherLabel}>Humidity</Text>
-        </View>
-      </View>
-
-      {/* Time Information */}
-      <View style={styles.timeInfo}>
-        <View style={styles.timeRow}>
-          <MaterialIcons name="schedule" size={18} color="#666" />
-          <Text style={styles.timeInfoText}>
-            Start: {new Date(item.startTime).toLocaleString()}
-          </Text>
-        </View>
-        <View style={styles.timeRow}>
-          <MaterialIcons name="update" size={18} color="#666" />
-          <Text style={styles.timeInfoText}>
-            Expected End: {calculateEndTime(item.startTime, item.dryingTime)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Notes Section */}
-      {item.notes && (
-        <View style={styles.notesContainer}>
-          <MaterialIcons name="note" size={18} color="#666" />
-          <Text style={styles.notes}>{item.notes}</Text>
-        </View>
-      )}
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -275,12 +291,22 @@ export const BatchHistoryScreen = () => {
         contentContainerStyle={styles.listContainer}
       />
 
+      <View style={styles.actionButtonsContainer}>
+        <TouchableOpacity 
+          onPress={handleGenerateGraph}
+          style={styles.generateGraphButton}
+        >
+          <MaterialCommunityIcons name="chart-line" size={24} color="#fff" />
+          <Text style={styles.generateGraphText}>Generate Graph</Text>
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity 
-            onPress={handleDeleteBatch}
-            style={styles.deleteBatchButton}
-          >
-          <MaterialIcons name="delete-sweep" size={24} color="#fff" />
-          <Text style={styles.deleteBatchText}>Delete Batch</Text>
+        onPress={handleDeleteBatch}
+        style={styles.deleteBatchButton}
+      >
+        <MaterialIcons name="delete-sweep" size={24} color="#fff" />
+        <Text style={styles.deleteBatchText}>Delete Batch</Text>
       </TouchableOpacity>
     </View>
   );
@@ -302,6 +328,23 @@ const styles = StyleSheet.create({
   headerButton: {
     marginRight: 8,
     padding: 4,
+  },
+  actionButtonsContainer: {
+    padding: 16,
+    paddingBottom: 0,
+  },
+  generateGraphButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4a86e8',
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    gap: 8,
+  },
+  generateGraphText: {
+    color: '#fff',
+    fontWeight: '600',
   },
   card: {
     backgroundColor: '#fff',
@@ -374,6 +417,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   timeLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  oilYieldContainer: {
+    alignItems: 'center',
+  },
+  oilYieldValue: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFD700',
+    marginTop: 4,
+  },
+  oilYieldLabel: {
     fontSize: 14,
     color: '#666',
     marginTop: 2,

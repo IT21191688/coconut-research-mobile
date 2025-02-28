@@ -5,6 +5,7 @@ import { CreateReadingScreen } from '../components/screens/copra/CreateReadingSc
 import { BatchHistoryScreen } from '../components/screens/copra/BatchHistoryScreen';
 import { AllBatchesScreen } from '../components/screens/copra/AllBatchesScreen';
 import { UpdateReadingScreen } from '../components/screens/copra/UpdateReadingScreen';
+import { MoistureGraphScreen } from '../components/screens/copra/MoistureGraphScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +50,13 @@ export const CopraNavigator = () => {
         component={UpdateReadingScreen}
         options={{
           title: 'Update Reading',
+        }}
+      />
+      <Stack.Screen
+        name="MoistureGraph"
+        component={MoistureGraphScreen}
+        options={{
+          title: 'Moisture Graph',
         }}
       />
       
