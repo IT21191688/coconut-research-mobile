@@ -123,7 +123,11 @@ const LocationDetailScreen: React.FC = () => {
     try {
       setIsAssigningDevice(true);
       const devices = await getUnassignedDevices();
-      setAvailableDevices(devices);
+
+      const moistureSensors = devices.filter(
+        (device: any) => device.type === 'soil_sensor'
+      );
+      setAvailableDevices(moistureSensors);
       setShowDeviceModal(true);
     } catch (error) {
       console.error("Failed to get unassigned devices:", error);
