@@ -14,7 +14,7 @@ import {
 } from "../utils/deviceHelpers";
 
 export const useDevice = (deviceId?: string) => {
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   const {
     devices,
     isLoading: isContextLoading,
@@ -109,7 +109,6 @@ export const useDevice = (deviceId?: string) => {
                 await deleteDevice(id);
                 navigation.goBack();
               } catch (err) {
-                // Error is handled by the context
               } finally {
                 setIsLoading(false);
               }
