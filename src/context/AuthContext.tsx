@@ -81,12 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await authApi.logout();
       
-      // Clear stored auth data
       await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
-      // Even if the logout API call fails, clear local storage and state
       await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
       setUser(null);
       throw error;

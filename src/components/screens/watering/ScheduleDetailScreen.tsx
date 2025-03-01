@@ -41,7 +41,7 @@ const ScheduleDetailScreen: React.FC = () => {
   const [device, setDevice] = useState<Device | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   const route = useRoute<ScheduleDetailScreenRouteProp>();
   const { scheduleId } = route.params;
 
@@ -49,43 +49,12 @@ const ScheduleDetailScreen: React.FC = () => {
     loadScheduleDetails();
   }, [scheduleId]);
 
-  //   const loadScheduleDetails = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       const fetchedSchedule = await getScheduleById(scheduleId);
-  //       setSchedule(fetchedSchedule);
-
-  //       console.log(fetchedSchedule);
-
-  //       // Load related location
-  //       if (fetchedSchedule.locationId) {
-  //         const fetchedLocation = await getLocationById(fetchedSchedule.locationId._id);
-  //         setLocation(fetchedLocation);
-
-  //         // Load device if available
-  //         if (fetchedLocation.deviceId) {
-  //           const fetchedDevice = await getDeviceById(fetchedLocation.deviceId);
-  //           setDevice(fetchedDevice);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error(`Failed to load schedule ${scheduleId}:`, error);
-  //       Alert.alert(
-  //         'Error',
-  //         'Failed to load schedule details. Please try again later.'
-  //       );
-  //       navigation.goBack();
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
   const loadScheduleDetails = async () => {
     try {
       setIsLoading(true);
 
       // Fetch schedule details
-      const fetchedSchedule = await getScheduleById(scheduleId);
+      const fetchedSchedule:any = await getScheduleById(scheduleId);
       setSchedule(fetchedSchedule);
 
       if (fetchedSchedule?.locationId?._id) {

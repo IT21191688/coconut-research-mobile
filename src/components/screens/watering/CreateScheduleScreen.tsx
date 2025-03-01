@@ -59,7 +59,7 @@ const CreateScheduleScreen: React.FC = () => {
   // New state for date picker mode
   const [mode, setMode] = useState<'date' | 'time'>('date');
 
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   const route = useRoute<CreateScheduleScreenRouteProp>();
 
   useEffect(() => {
@@ -208,7 +208,7 @@ const CreateScheduleScreen: React.FC = () => {
   };
 
   // New function to handle date/time change
-  const handleDateChange = (event, selectedDate) => {
+  const handleDateChange = (event:any, selectedDate:any) => {
     if (event.type === 'dismissed') {
       setShowDatePicker(false);
       return;
