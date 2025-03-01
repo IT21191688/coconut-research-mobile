@@ -70,7 +70,7 @@ const LocationFormScreen: React.FC = () => {
     loadAvailableDevices();
   }, [mode, locationData]);
 
-  const setFormDataFromLocation = (location: LocationType) => {
+  const setFormDataFromLocation = (location: any) => {
     setName(location.name);
     setArea(location.area.toString());
     setTotalTrees(location.totalTrees.toString());
@@ -555,7 +555,7 @@ const LocationFormScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.pickerModalContent}>
-              {soilTypes.map((type) => (
+              {soilTypes.map((type:any) => (
                 <TouchableOpacity
                   key={type}
                   style={[
