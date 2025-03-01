@@ -77,7 +77,7 @@ export const AllBatchesScreen = () => {
   };
 
   const navigateToCreateReading = () => {
-    navigation.navigate('CreateBatch' as never);
+    navigation.navigate('CreateReading' as never);
   };
 
   const renderEmptyList = () => (
