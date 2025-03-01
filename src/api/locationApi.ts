@@ -1,5 +1,5 @@
-import api from './axios';
-import { Location } from '../types';
+import api from "./axios";
+import { Location, WateringSchedule } from "../types";
 
 interface LocationResponse {
   status: string;
@@ -33,12 +33,12 @@ export const createLocation = async (locationData: {
 }): Promise<Location> => {
   try {
     const response = await api.post<LocationResponse>(
-      '/locations',
+      "/locations",
       locationData
     );
     return response.data.data.location;
   } catch (error) {
-    console.error('Error creating location:', error);
+    console.error("Error creating location:", error);
     throw error;
   }
 };
@@ -48,10 +48,10 @@ export const createLocation = async (locationData: {
  */
 export const getLocations = async (): Promise<Location[]> => {
   try {
-    const response = await api.get<LocationsResponse>('/locations');
+    const response = await api.get<LocationsResponse>("/locations");
     return response.data.data.locations;
   } catch (error) {
-    console.error('Error fetching locations:', error);
+    console.error("Error fetching locations:", error);
     throw error;
   }
 };
@@ -59,9 +59,13 @@ export const getLocations = async (): Promise<Location[]> => {
 /**
  * Get a specific location by ID
  */
-export const getLocationById = async (locationId: string): Promise<Location> => {
+export const getLocationById = async (
+  locationId: string
+): Promise<Location> => {
   try {
-    const response = await api.get<LocationResponse>(`/locations/${locationId}`);
+    const response = await api.get<LocationResponse>(
+      `/locations/${locationId}`
+    );
     return response.data.data.location;
   } catch (error) {
     console.error(`Error fetching location ${locationId}:`, error);
@@ -86,7 +90,7 @@ export const updateLocation = async (
     plantationDate: string;
     deviceId?: string;
     description?: string;
-    status?: 'active' | 'inactive';
+    status?: "active" | "inactive";
   }>
 ): Promise<Location> => {
   try {
@@ -134,7 +138,9 @@ export const assignDeviceToLocation = async (
 /**
  * Remove a device from a location
  */
-export const removeDeviceFromLocation = async (locationId: string): Promise<Location> => {
+export const removeDeviceFromLocation = async (
+  locationId: string
+): Promise<Location> => {
   try {
     // Use $unset operation on the backend to remove the field completely
     const response = await api.put<LocationResponse>(
@@ -155,5 +161,27 @@ export const getLocationByDeviceId = async (deviceId: string): Promise<any> => {
   } catch (error) {
     console.error(`Error fetching location for device ${deviceId}:`, error);
     return null;
+  }
+};
+
+export const getLocationWateringHistory = async (
+  locationId: string,
+  params?: {
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }
+): Promise<any[]> => {
+  try {
+    const response = await api.get(`/watering/location/${locationId}/history`, {
+      params,
+    });
+    return response.data.data.schedules;
+  } catch (error) {
+    console.error(
+      `Error fetching watering history for location ${locationId}:`,
+      error
+    );
+    throw error;
   }
 };

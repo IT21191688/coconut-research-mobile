@@ -21,7 +21,7 @@ import { colors } from "../../../constants/colors";
 import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const WateringScheduleScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   const {
     todaySchedules,
     upcomingSchedules,
