@@ -61,28 +61,6 @@ const MainTabNavigator = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Watering" component={WateringNavigator} />
       <Tab.Screen name="CoconutYield" component={CoconutYieldNavigator} />
-      <Tab.Screen 
-        name="OilYield" 
-        component={HomeScreen}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate('Home', { screen: 'OilYield' });
-          },
-        })}
-        options={{ title: 'Oil Yield' }}
-      />
-      <Tab.Screen 
-        name="CoconutYield" 
-        component={HomeScreen} 
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate('Home', { screen: 'CoconutYield' });
-          },
-        })}
-        options={{ title: 'Coconut Yield' }}
-      />
       <Tab.Screen name="OilYield" component={CopraNavigator} />
       <Tab.Screen 
         name="CopraIdentification" 
