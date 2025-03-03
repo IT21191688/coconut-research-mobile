@@ -8,4 +8,16 @@ export default {
     age: 'Age',
     soilType: 'soil type',
   },
+  prediction: {
+    title: 'Yield Prediction',
+    loading: 'Analyzing land data...',
+    retry: 'Try Again',
+    yieldPrediction: 'Yield Prediction',
+    currentYield: 'Current',
+    predictedYield: 'Predicted',
+    nutsPerTree: 'nuts/tree',
+    confidenceLevel: 'Prediction Confidence',
+    impactFactors: 'Impact Factors',
+    recommendations: 'Recommendations'
+  }
 };

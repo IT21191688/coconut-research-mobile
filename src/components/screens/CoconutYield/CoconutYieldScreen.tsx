@@ -14,6 +14,8 @@ import { getLocations } from '../../../api/locationApi';
 import { Location } from '../../../types';
 import { colors } from '../../../constants/colors';
 import { useTranslation } from 'react-i18next';
+import { NavigationProp } from '@react-navigation/native';
+
 
 const calculateAge = (plantationDate: Date): string => {
   const plantDate = new Date(plantationDate);
@@ -28,7 +30,8 @@ const calculateAge = (plantationDate: Date): string => {
   return years === 1 ? `${years} year old` : `${years} years old`;
 };
 
-const CoconutYieldScreen = ({ navigation }) => {
+
+const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
   const { t } = useTranslation();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +103,10 @@ const CoconutYieldScreen = ({ navigation }) => {
   const renderLocationItem = ({ item }: { item: Location }) => (
     <TouchableOpacity
       style={styles.locationItem}
-      onPress={() => navigation.navigate('LocationDetails', { locationId: item._id })}
+      onPress={() => navigation.navigate('Prediction', { 
+        locationId: item._id,
+        locationName: item.name
+      })}
     >
       <View style={styles.locationHeader}>
         <Text style={styles.locationName}>{item.name}</Text>

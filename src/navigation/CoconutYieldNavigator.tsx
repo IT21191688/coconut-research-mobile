@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../constants/colors';
 import CoconutYieldScreen from '../components/screens/CoconutYield/CoconutYieldScreen';
+import PredictionScreen from '../components/screens/CoconutYield/PredictionScreen';
+
 
 // Define supported languages type for better type safety
 type SupportedLanguage = 'en' | 'si' | 'ta';
@@ -11,6 +13,7 @@ type SupportedLanguage = 'en' | 'si' | 'ta';
 // Add proper typing to the navigator
 type CoconutYieldStackParamList = {
   CoconutYieldMain: undefined;
+  Prediction: { locationId: string; locationName?: string };
 };
 
 const Stack = createNativeStackNavigator<CoconutYieldStackParamList>();
@@ -95,6 +98,11 @@ const CoconutYieldNavigator = () => {
         options={{ 
           title: t('lands.title'),
         }}
+      />
+      <Stack.Screen
+        name="Prediction"
+        component={PredictionScreen}
+        options={{ title: t('prediction.title') }}
       />
     </Stack.Navigator>
   );
