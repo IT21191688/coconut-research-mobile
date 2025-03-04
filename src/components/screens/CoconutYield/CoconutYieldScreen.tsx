@@ -15,7 +15,7 @@ import { Location } from '../../../types';
 import { colors } from '../../../constants/colors';
 import { useTranslation } from 'react-i18next';
 import { NavigationProp } from '@react-navigation/native';
-import { YieldPredictionHistory, yieldApi } from '../../../api/yieldApi';
+import { YieldPredictionHistory, yieldApi, LocationDetails } from '../../../api/yieldApi';
 
 const calculateAge = (plantationDate: Date): string => {
   const plantDate = new Date(plantationDate);
@@ -40,6 +40,7 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
   const [hasMore, setHasMore] = useState(true);
   const [predictionHistory, setPredictionHistory] = useState<YieldPredictionHistory[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [locationNames, setLocationNames] = useState<{[key: string]: string}>({});
   const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
@@ -60,11 +61,44 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
     }
   };
 
+  const fetchLocationNames = async (predictions: YieldPredictionHistory[]) => {
+    // Extract unique location IDs
+    const uniqueLocationIds = [...new Set(predictions.map(p => p.location))];
+    
+    // Create a map of existing location names to avoid redundant calls
+    const newLocationNames = {...locationNames};
+    
+    // Fetch each location's details
+    await Promise.all(
+      uniqueLocationIds.map(async (locationId) => {
+        // Skip if we already have this location's name
+        if (newLocationNames[locationId]) return;
+        
+        try {
+          const locationDetails = await yieldApi.getLocationDetails(locationId);
+          newLocationNames[locationId] = locationDetails.location.name;
+          console.log(`Fetched location name for ${locationId}:`, locationDetails.location.name);
+          
+        } catch (error) {
+          console.error(`Failed to fetch details for location ${locationId}:`, error);
+          // Use a default value if fetch fails
+          newLocationNames[locationId] = 'Unknown Location';
+        }
+      })
+    );
+    
+    // Update state with all the fetched names
+    setLocationNames(newLocationNames);
+  };
+
   const fetchPredictionHistory = async () => {
     try {
       setHistoryLoading(true);
       const history = await yieldApi.getPredictionHistory();
       setPredictionHistory(history);
+      
+      // Fetch location names for all predictions
+      await fetchLocationNames(history);
     } catch (error) {
       console.error('Error fetching prediction history:', error);
     } finally {
@@ -257,7 +291,9 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
                 {predictionHistory.slice(0, 3).map((item) => (
                   <View key={item._id} style={styles.historyCard}>
                     <View style={styles.historyCardHeader}>
-                      <Text style={styles.historyLocationName}>{item.location}</Text>
+                      <Text style={styles.historyLocationName}>
+                        {locationNames[item.location] || t('common.loadingLocation')}
+                      </Text>
                       <View style={styles.historyYearBadge}>
                         <Text style={styles.historyYearText}>{item.year}</Text>
                       </View>

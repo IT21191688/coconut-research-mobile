@@ -23,5 +23,8 @@ export default {
     recentHistory: "Recent Prediction History",
     noHistory: "No prediction history available",
     viewAllHistory: "View all prediction history"
+  },
+  common: {
+    loadingLocation: "Loading location..."
   }
 };

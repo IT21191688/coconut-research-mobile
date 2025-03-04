@@ -60,12 +60,30 @@ export interface YieldPredictionResponse {
 
 // Add this interface to define prediction history item structure
 export interface YieldPredictionHistory {
+  name: string;
   _id: string;
   year: number;
   average_prediction: number;
   createdAt: string;
   location: string;
   status: string;
+}
+
+// First, add this interface to define the location response
+export interface LocationDetails {
+  location : {
+    _id: string;
+    name: string;
+    area: number;
+    soilType: string;
+    totalTrees: number;
+    plantationDate: string;
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+    description: string;
+  }
 }
 
 export const yieldApi = {
@@ -85,6 +103,24 @@ export const yieldApi = {
       }
     } catch (error) {
       console.error('API Error in predictYield:', error);
+      throw error;
+    }
+  },
+
+  // Add this new function to get location details
+  getLocationDetails: async (locationId: string): Promise<LocationDetails> => {
+    try {
+      const response = await api.get(`${BASE_URL}/locations/${locationId}`);
+      
+      if (response.data && (response.data.data || response.data)) {
+        const locationData = response.data.data || response.data;
+        return locationData;
+      } else {
+        console.error('Unexpected API response format for location details:', response.data);
+        throw new Error('Unexpected API response format');
+      }
+    } catch (error) {
+      console.error(`API Error in getLocationDetails for ID ${locationId}:`, error);
       throw error;
     }
   },
