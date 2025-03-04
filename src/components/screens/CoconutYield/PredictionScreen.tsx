@@ -74,7 +74,7 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-const YEARS = [2024, 2025, 2026]; // Add more years as needed
+const YEARS = [2024, 2025, 2026];
 
 const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }) => {
   const { t } = useTranslation();
@@ -84,7 +84,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
-  
+
   // Yield prediction states
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedMonth, setSelectedMonth] = useState(2); // February (1-indexed)
@@ -98,7 +98,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
     if (locationName) {
       navigation.setOptions({ title: locationName });
     }
-    
+
     fetchLocationData();
   }, [locationId]);
 
@@ -110,7 +110,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
       const locationData = await getLocationById(locationId);
       setLocation(locationData);
       setLoading(false);
-      
+
       // Once location data is loaded, fetch weather data
       if (locationData.coordinates) {
         fetchWeatherData(locationData.coordinates.latitude, locationData.coordinates.longitude);
@@ -126,12 +126,12 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
   const fetchWeatherData = async (lat: number, lon: number) => {
     try {
       setWeatherLoading(true);
-      
+
       // Fetch current weather data
       const response = await axios.get(
         `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
       );
-      
+
       // Extract relevant weather information
       const weatherData: WeatherData = {
         temperature: response.data.main.temp,
@@ -140,7 +140,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
         description: response.data.weather[0].description,
         icon: response.data.weather[0].icon
       };
-      
+
       setWeather(weatherData);
       setWeatherLoading(false);
     } catch (err) {
@@ -151,75 +151,75 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
   };
 
   // Update the predictYield function to use the actual API
-const predictYield = async () => {
-  try {
-    setIsPredicting(true);
-    
-    // Calculate age in years from plantation date
-    const plantDate = new Date(location?.plantationDate || new Date());
-    const today = new Date();
-    const ageInYears = Math.floor(
-      (today.getTime() - plantDate.getTime()) / (1000 * 60 * 60 * 24 * 365)
-    );
-    
-    // Map soil type string to number
-    const soilTypeMap: {[key: string]: number} = {
-      'Lateritic': 1,
-      'Sandy Loam': 2,
-      'Cinnamon Sand': 3,
-      'Red Yellow Podzolic': 4,
-      'Alluvial': 5,
-    };
-    
-    const soilTypeCode = soilTypeMap[location?.soilType || ''] || 2;
-    
-    // Prepare request data
-    const requestData: YieldPredictionRequest = {
-      year: selectedYear,
-      locationId: locationId,
-      monthly_data: [
-        {
-          month: selectedMonth,
-          sm_10: 19.89,
-          sm_20: 41.67,
-          sm_30: 34.82,
-          age: ageInYears,
-          soil_type: soilTypeCode,
-          "Temperature (°C)": weather?.temperature || 0,
-          "Humidity (%)": weather?.humidity || 0,
-          "Rainfall (mm)": weather?.rainfall || 0,
-          "Weather Description": weather?.description || "NaN"
-        }
-      ]
-    };
-
-    // Make the actual API call
-    console.log('Predicting yield with data:', JSON.stringify(requestData, null, 2));
-    
+  const predictYield = async () => {
     try {
-      const response = await yieldApi.predictYield(requestData);
-      console.log('API Response:', JSON.stringify(response, null, 2));
-      
-      // Process the actual API response
-      if (response) {
-        setYieldPrediction(response);
-        console.log('Prediction data set to state');
-      } else {
-        console.error('API response is invalid:', response);
-        alert('Invalid API response. Please try again.');
+      setIsPredicting(true);
+
+      // Calculate age in years from plantation date
+      const plantDate = new Date(location?.plantationDate || new Date());
+      const today = new Date();
+      const ageInYears = Math.floor(
+        (today.getTime() - plantDate.getTime()) / (1000 * 60 * 60 * 24 * 365)
+      );
+
+      // Map soil type string to number
+      const soilTypeMap: { [key: string]: number } = {
+        'Lateritic': 1,
+        'Sandy Loam': 2,
+        'Cinnamon Sand': 3,
+        'Red Yellow Podzolic': 4,
+        'Alluvial': 5,
+      };
+
+      const soilTypeCode = soilTypeMap[location?.soilType || ''] || 2;
+
+      // Prepare request data
+      const requestData: YieldPredictionRequest = {
+        year: selectedYear,
+        locationId: locationId,
+        monthly_data: [
+          {
+            month: selectedMonth,
+            sm_10: 19.89,
+            sm_20: 41.67,
+            sm_30: 34.82,
+            age: ageInYears,
+            soil_type: soilTypeCode,
+            "Temperature (°C)": weather?.temperature || 0,
+            "Humidity (%)": weather?.humidity || 0,
+            "Rainfall (mm)": weather?.rainfall || 0,
+            "Weather Description": weather?.description || "NaN"
+          }
+        ]
+      };
+
+      // Make the actual API call
+      console.log('Predicting yield with data:', JSON.stringify(requestData, null, 2));
+
+      try {
+        const response = await yieldApi.predictYield(requestData);
+        console.log('API Response:', JSON.stringify(response, null, 2));
+
+        // Process the actual API response
+        if (response) {
+          setYieldPrediction(response);
+          console.log('Prediction data set to state');
+        } else {
+          console.error('API response is invalid:', response);
+          alert('Invalid API response. Please try again.');
+        }
+      } catch (apiError) {
+        console.error('API call failed:', apiError);
+        alert('API call failed. Please check your connection and try again.');
+      } finally {
+        setIsPredicting(false);
       }
-    } catch (apiError) {
-      console.error('API call failed:', apiError);
-      alert('API call failed. Please check your connection and try again.');
-    } finally {
+    } catch (err) {
+      console.error('Error in prediction function:', err);
       setIsPredicting(false);
+      alert('Failed to predict yield. Please check your connection and try again.');
     }
-  } catch (err) {
-    console.error('Error in prediction function:', err);
-    setIsPredicting(false);
-    alert('Failed to predict yield. Please check your connection and try again.');
-  }
-};
+  };
 
   const calculateAge = (plantationDate: Date): string => {
     const plantDate = new Date(plantationDate);
@@ -227,7 +227,7 @@ const predictYield = async () => {
     const diffTime = Math.abs(today.getTime() - plantDate.getTime());
     const years = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
     const months = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
-  
+
     if (years === 0) {
       return `${months} months old`;
     }
@@ -263,120 +263,77 @@ const predictYield = async () => {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Location Info Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{location.name}</Text>
+        <View style={styles.compactCard}>
+          <Text style={styles.compactCardTitle}>{location.name}</Text>
           
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="leaf-outline" size={18} color={colors.primary} />
-              <Text style={styles.detailText}>{location.totalTrees} trees</Text>
+          <View style={styles.compactDetailsGrid}>
+            <View style={styles.compactDetailItem}>
+              <Ionicons name="leaf-outline" size={16} color={colors.primary} />
+              <Text style={styles.compactDetailText}>{location.totalTrees} trees</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Ionicons name="resize-outline" size={18} color={colors.primary} />
-              <Text style={styles.detailText}>{location.area} acres</Text>
+            
+            <View style={styles.compactDetailItem}>
+              <Ionicons name="resize-outline" size={16} color={colors.primary} />
+              <Text style={styles.compactDetailText}>{location.area} acres</Text>
             </View>
-          </View>
-          
-          <View style={styles.divider} />
-          
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-              <View>
-                <Text style={styles.detailText}>
-                  {new Date(location.plantationDate).toLocaleDateString()}
-                </Text>
-                <Text style={styles.detailSubtext}>
-                  {calculateAge(location.plantationDate)}
-                </Text>
-              </View>
+            
+            <View style={styles.compactDetailItem}>
+              <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+              <Text style={styles.compactDetailText}>{calculateAge(location.plantationDate)}</Text>
+            </View>
+            
+            <View style={styles.compactDetailItem}>
+              <Ionicons name="earth-outline" size={16} color={colors.textSecondary} />
+              <Text style={styles.compactDetailText}>{location.soilType}</Text>
             </View>
           </View>
           
-          <View style={styles.divider} />
+          <View style={styles.thinDivider} />
           
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="earth-outline" size={18} color={colors.textSecondary} />
-              <View>
-                <Text style={styles.detailText}>
-                  {location.soilType}
-                </Text>
-                <Text style={styles.detailSubtext}>
-                  Soil Type
-                </Text>
-              </View>
-            </View>
+          <View style={styles.compactDetailRow}>
+            <Ionicons name="location-outline" size={16} color={colors.error} />
+            <Text style={styles.smallDetailText}>
+              {`${location.coordinates.latitude.toFixed(4)}, ${location.coordinates.longitude.toFixed(4)}`}
+            </Text>
           </View>
-          
-          <View style={styles.divider} />
-          
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Ionicons name="location-outline" size={18} color={colors.error} />
-              <Text style={styles.detailText}>
-                {`${location.coordinates.latitude.toFixed(4)}, ${location.coordinates.longitude.toFixed(4)}`}
-              </Text>
-            </View>
-          </View>
-
-          {location.description && (
-            <>
-              <View style={styles.divider} />
-              <View style={styles.detailRow}>
-                <View style={styles.detailItem}>
-                  <Ionicons name="information-circle-outline" size={18} color={colors.textSecondary} />
-                  <Text style={styles.detailText}>{location.description}</Text>
-                </View>
-              </View>
-            </>
-          )}
         </View>
 
-        {/* Weather Information Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Current Weather</Text>
-          
+        {/* Weather Information - Compact Version */}
+        <View style={styles.compactCard}>
           {weatherLoading ? (
             <View style={styles.weatherLoadingContainer}>
               <ActivityIndicator size="small" color={colors.primary} />
               <Text style={styles.weatherLoadingText}>Loading weather data...</Text>
             </View>
           ) : weather ? (
-            <>
-              <View style={styles.weatherHeader}>
+            <View style={styles.compactWeatherContainer}>
+              <View style={styles.weatherMain}>
                 {weather.icon && (
-                  <Image 
-                    source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }} 
-                    style={styles.weatherIcon} 
+                  <Image
+                    source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
+                    style={styles.compactWeatherIcon}
                   />
                 )}
-                <View style={styles.weatherHeaderText}>
-                  <Text style={styles.temperature}>{Math.round(weather.temperature)}°C</Text>
-                  <Text style={styles.weatherDescription}>{weather.description}</Text>
+                <View>
+                  <Text style={styles.compactTemperature}>{Math.round(weather.temperature)}°C</Text>
+                  <Text style={styles.compactWeatherDescription}>{weather.description}</Text>
                 </View>
               </View>
               
-              <View style={styles.divider} />
-              
-              <View style={styles.weatherDetails}>
-                <View style={styles.weatherDetail}>
-                  <Ionicons name="water-outline" size={24} color={colors.textSecondary} />
-                  <View>
-                    <Text style={styles.weatherValue}>{weather.humidity}%</Text>
-                    <Text style={styles.weatherLabel}>Humidity</Text>
-                  </View>
+              <View style={styles.compactWeatherDetails}>
+                <View style={styles.compactWeatherDetail}>
+                  <Ionicons name="water-outline" size={18} color={colors.textSecondary} />
+                  <Text style={styles.compactWeatherValue}>{weather.humidity}%</Text>
+                  <Text style={styles.compactWeatherLabel}>Humidity</Text>
                 </View>
-                
-                <View style={styles.weatherDetail}>
-                  <Ionicons name="rainy-outline" size={24} color={colors.textSecondary} />
-                  <View>
-                    <Text style={styles.weatherValue}>{weather.rainfall} mm</Text>
-                    <Text style={styles.weatherLabel}>Rainfall</Text>
-                  </View>
+
+                <View style={styles.compactWeatherDetail}>
+                  <Ionicons name="rainy-outline" size={18} color={colors.textSecondary} />
+                  <Text style={styles.compactWeatherValue}>{weather.rainfall} mm</Text>
+                  <Text style={styles.compactWeatherLabel}>Rainfall</Text>
                 </View>
               </View>
-            </>
+            </View>
           ) : (
             <View style={styles.weatherLoadingContainer}>
               <Ionicons name="cloud-offline-outline" size={24} color={colors.textSecondary} />
@@ -388,10 +345,10 @@ const predictYield = async () => {
         {/* Yield Prediction Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Yield Prediction</Text>
-          
+
           <View style={styles.pickerRow}>
-            <TouchableOpacity 
-              style={styles.pickerButton} 
+            <TouchableOpacity
+              style={styles.pickerButton}
               onPress={() => setShowYearPicker(true)}
             >
               <Text style={styles.pickerLabel}>Year</Text>
@@ -400,9 +357,9 @@ const predictYield = async () => {
                 <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
               </View>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.pickerButton} 
+
+            <TouchableOpacity
+              style={styles.pickerButton}
               onPress={() => setShowMonthPicker(true)}
             >
               <Text style={styles.pickerLabel}>Starting Month</Text>
@@ -412,8 +369,8 @@ const predictYield = async () => {
               </View>
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.predictButton}
             onPress={predictYield}
             disabled={isPredicting}
@@ -424,88 +381,6 @@ const predictYield = async () => {
               <Text style={styles.predictButtonText}>Predict Yield</Text>
             )}
           </TouchableOpacity>
-
-          {/* Debug info */}
-          {yieldPrediction === null ? (
-            <Text style={{marginTop: 12, color: colors.textSecondary}}>
-              No prediction data available yet.
-            </Text>
-          ) : (
-            <Text style={{marginTop: 12, color: colors.success}}>
-              Prediction data received: {yieldPrediction.monthly_predictions.length} predictions
-            </Text>
-          )}
-          
-          {yieldPrediction && (
-            <View style={styles.predictionResults}>
-              <View style={styles.predictionHeader}>
-                <View style={styles.predictionSummary}>
-                  <Text style={styles.predictedYieldText}>
-                    {yieldPrediction.average_prediction.toFixed(1)}
-                  </Text>
-                  <Text style={styles.predictedYieldLabel}>nuts/tree</Text>
-                </View>
-                {yieldPrediction.monthly_predictions.length > 0 && (
-                  <View style={styles.confidenceContainer}>
-                    <Text style={styles.confidenceValue}>
-                      {Math.round(yieldPrediction.monthly_predictions[0].confidence_score)}%
-                    </Text>
-                    <Text style={styles.confidenceLabel}>Confidence</Text>
-                  </View>
-                )}
-              </View>
-              
-              <View style={styles.divider} />
-              
-              <Text style={styles.monthlyTitle}>Monthly Predictions</Text>
-              {yieldPrediction.monthly_predictions.map((prediction, index) => (
-                <View key={index} style={styles.monthlyItem}>
-                  <Text style={styles.monthName}>{prediction.month_name}</Text>
-                  <Text style={styles.monthValue}>{prediction.ensemble_prediction.toFixed(1)} nuts/tree</Text>
-                </View>
-              ))}
-              
-              {/* Additional prediction details */}
-              {yieldPrediction.monthly_predictions.length > 0 && (
-                <>
-                  <View style={styles.divider} />
-                  <Text style={styles.detailSectionTitle}>Prediction Factors</Text>
-                  <View style={styles.predictionFactorsContainer}>
-                    <View style={styles.predictionFactorRow}>
-                      <Text style={styles.factorLabel}>Temperature:</Text>
-                      <Text style={styles.factorValue}>
-                        {yieldPrediction.monthly_predictions[0].input_data.temperature}°C
-                      </Text>
-                    </View>
-                    <View style={styles.predictionFactorRow}>
-                      <Text style={styles.factorLabel}>Humidity:</Text>
-                      <Text style={styles.factorValue}>
-                        {yieldPrediction.monthly_predictions[0].input_data.humidity}%
-                      </Text>
-                    </View>
-                    <View style={styles.predictionFactorRow}>
-                      <Text style={styles.factorLabel}>Rainfall:</Text>
-                      <Text style={styles.factorValue}>
-                        {yieldPrediction.monthly_predictions[0].input_data.rainfall} mm
-                      </Text>
-                    </View>
-                    <View style={styles.predictionFactorRow}>
-                      <Text style={styles.factorLabel}>Plant Age:</Text>
-                      <Text style={styles.factorValue}>
-                        {yieldPrediction.monthly_predictions[0].input_data.plant_age} years
-                      </Text>
-                    </View>
-                    <View style={styles.predictionFactorRow}>
-                      <Text style={styles.factorLabel}>Seasonal Factor:</Text>
-                      <Text style={styles.factorValue}>
-                        {yieldPrediction.monthly_predictions[0].seasonal_factor.toFixed(2)}
-                      </Text>
-                    </View>
-                  </View>
-                </>
-              )}
-            </View>
-          )}
         </View>
 
         {/* Yield Prediction Results Section */}
@@ -517,14 +392,14 @@ const predictYield = async () => {
                 <Text style={styles.yearBadgeText}>{yieldPrediction.year}</Text>
               </View>
             </View>
-            
+
             <View style={styles.averagePredictionContainer}>
               <Text style={styles.averagePredictionValue}>
                 {yieldPrediction.average_prediction.toFixed(1)}
               </Text>
-              <Text style={styles.averagePredictionLabel}>nuts/tree</Text>
+              <Text style={styles.averagePredictionLabel}>nuts/hec.</Text>
             </View>
-            
+
             <View style={styles.predictionStatusContainer}>
               <View style={[
                 styles.statusIndicator,
@@ -534,9 +409,9 @@ const predictYield = async () => {
                 {yieldPrediction.status === 'success' ? 'Prediction Successful' : 'Status: ' + yieldPrediction.status}
               </Text>
             </View>
-            
+
             <View style={styles.divider} />
-            
+
             {/* Monthly Predictions */}
             <Text style={styles.sectionTitle}>Monthly Breakdown</Text>
             {yieldPrediction.monthly_predictions.map((prediction, index) => (
@@ -549,7 +424,7 @@ const predictYield = async () => {
                     </Text>
                   </View>
                 </View>
-                
+
                 <View style={styles.predictionValuesContainer}>
                   <View style={styles.predictionValueBox}>
                     <Text style={styles.predictionValueAmount}>{prediction.ensemble_prediction.toFixed(1)}</Text>
@@ -561,19 +436,9 @@ const predictYield = async () => {
                     <Text style={styles.predictionValueLabel}>Seasonal</Text>
                   </View>
                 </View>
-                
+
                 {/* Prediction Factors */}
-                <TouchableOpacity 
-                  style={styles.factorsButton}
-                  onPress={() => {
-                    // You could implement a modal or expand this section on press
-                    console.log('Prediction factors button pressed');
-                  }}
-                >
-                  <Text style={styles.factorsButtonText}>View Factors</Text>
-                  <Ionicons name="chevron-down" size={16} color={colors.primary} />
-                </TouchableOpacity>
-                
+
                 <View style={styles.factorsContainer}>
                   <View style={styles.factorRow}>
                     <Text style={styles.factorLabel}>Temperature</Text>
@@ -630,7 +495,7 @@ const predictYield = async () => {
             </View>
           </View>
         </Modal>
-        
+
         {/* Month Picker Modal */}
         <Modal
           visible={showMonthPicker}
@@ -661,10 +526,13 @@ const predictYield = async () => {
   );
 };
 
+// Updated styles for a more professional and attractive look
+
 const styles = StyleSheet.create({
+  // Base containers
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#f7f9fc', // Lighter, more professional background
     padding: 16,
   },
   loadingContainer: {
@@ -677,6 +545,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: colors.textSecondary,
+    fontWeight: '500',
   },
   errorContainer: {
     flex: 1,
@@ -693,38 +562,48 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 24,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     backgroundColor: colors.primary,
     borderRadius: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   retryButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
+
+  // Card styles
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: 16, // More rounded corners
+    padding: 20, // More generous padding
+    marginBottom: 20,
+    shadowColor: '#1a44b880', // Slightly blue shadow for depth
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
+    borderColor: '#f0f2f5', // Subtle border
+    borderWidth: 1,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 20, // Larger title
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 16,
+    marginBottom: 20,
+    letterSpacing: 0.2, // Slight letter spacing for elegance
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   detailItem: {
     flexDirection: 'row',
@@ -735,88 +614,102 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     marginLeft: 12,
+    fontWeight: '500',
   },
   detailSubtext: {
     fontSize: 14,
     color: colors.textSecondary,
     marginLeft: 12,
+    fontWeight: '400',
   },
   divider: {
     height: 1,
-    backgroundColor: colors.gray200,
-    marginVertical: 8,
+    backgroundColor: '#eef0f5', // Lighter divider for sophistication
+    marginVertical: 10,
   },
-  // Weather styles
+
+  // Weather styles - enhanced
   weatherLoadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: 20,
   },
   weatherLoadingText: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginLeft: 8,
+    marginLeft: 10,
+    fontWeight: '500',
   },
   weatherHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   weatherHeaderText: {
     flex: 1,
   },
   temperature: {
-    fontSize: 28,
+    fontSize: 36, // Larger temperature display
     fontWeight: 'bold',
     color: colors.textPrimary,
+    letterSpacing: -1, // Tighter spacing for numbers
   },
   weatherDescription: {
     fontSize: 16,
     color: colors.textSecondary,
     textTransform: 'capitalize',
+    marginTop: 4,
   },
   weatherIcon: {
-    width: 80,
-    height: 80,
+    width: 90, // Larger icon
+    height: 90,
   },
   weatherDetails: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 8,
+    padding: 12,
+    backgroundColor: '#f9f9fc', // Very subtle background
+    borderRadius: 12,
+    marginTop: 8,
   },
   weatherDetail: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 8,
   },
   weatherValue: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginLeft: 8,
+    marginLeft: 10,
   },
   weatherLabel: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginLeft: 8,
+    marginLeft: 6,
   },
-  // Picker styles
+
+  // Picker styles - more professional
   pickerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   pickerButton: {
     flex: 1,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#f7f9fc', // Lighter background
+    borderRadius: 10,
+    padding: 14, // More padding
     marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#eaeef2', // Subtle border
   },
   pickerLabel: {
     fontSize: 12,
     color: colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: '500',
   },
   pickerValue: {
     flexDirection: 'row',
@@ -824,8 +717,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickerValueText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18, // Larger text
+    fontWeight: '600',
     color: colors.textPrimary,
   },
   modalContainer: {
@@ -835,20 +728,20 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingBottom: 20,
+    borderTopLeftRadius: 20, // More rounded corners
+    borderTopRightRadius: 20,
+    paddingBottom: 30, // More padding
   },
   pickerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    borderBottomColor: '#eef0f5', // Lighter border
   },
   pickerTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: colors.textPrimary,
   },
@@ -857,278 +750,425 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.primary,
   },
-  // Prediction button styles
+
+  // Prediction button styles - more prominent
   predictButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 12, // More rounded
+    paddingVertical: 16, // More height
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 16,
+    elevation: 4, // More elevation
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
   },
   predictButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
+    letterSpacing: 0.5, // Slight letter spacing
   },
-  // Prediction results styles
+
+  // Prediction results styles - more sophisticated
   predictionResults: {
-    marginTop: 24,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 12,
-    padding: 16,
+    marginTop: 30, // More space
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 20,
   },
   predictionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
   predictionSummary: {
     alignItems: 'center',
   },
   predictedYieldText: {
-    fontSize: 32,
+    fontSize: 40, // Larger numbers
     fontWeight: 'bold',
     color: colors.primary,
+    letterSpacing: -1, // Tighter spacing for numbers
   },
   predictedYieldLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
     marginTop: 4,
   },
   confidenceContainer: {
     alignItems: 'center',
     backgroundColor: colors.white,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
   },
   confidenceValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
   confidenceLabel: {
     fontSize: 12,
     color: colors.textSecondary,
+    marginTop: 2,
   },
   monthlyTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginVertical: 12,
+    marginVertical: 16,
   },
   monthlyItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    borderBottomColor: '#eef0f5',
   },
   monthValue: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.primary,
   },
   detailSectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginVertical: 12,
+    marginVertical: 16,
   },
   predictionFactorsContainer: {
     backgroundColor: colors.white,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   predictionFactorRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
+    borderBottomColor: '#f5f7fa',
   },
   factorLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   factorValue: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.textPrimary,
   },
+
+  // Enhanced card styles for the detailed prediction results
   predictionResultsCard: {
     backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 20, // More rounded corners
+    padding: 24, // More generous padding
+    marginTop: 5,
+    marginBottom: 24,
+    shadowColor: '#1a44b880', // Slightly blue shadow
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#f0f2f5', // Subtle border
   },
   predictionHeaderSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   predictionResultTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.textPrimary,
+    letterSpacing: 0.3,
   },
   yearBadge: {
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
   },
   yearBadgeText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14,
   },
   averagePredictionContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   averagePredictionValue: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    fontSize: 54, // Much larger for impact
+    fontWeight: '800',
     color: colors.primary,
+    letterSpacing: -1.5,
   },
   averagePredictionLabel: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
   },
   predictionStatusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    backgroundColor: '#f8fafc',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    alignSelf: 'center',
   },
   statusIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
   },
   predictionStatusText: {
     fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '500',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.textPrimary,
-    marginTop: 12,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 20,
   },
   monthlyPredictionContainer: {
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: '#f9fafd',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#edf0f7',
   },
   monthHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   monthName: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.textPrimary,
   },
   confidenceBadge: {
-    backgroundColor: colors.success + '20', // 20% opacity version of success color
+    backgroundColor: '#e6f7ef', // Lighter green background
     borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#d1ebdc', // Subtle border
   },
   confidenceBadgeText: {
-    color: colors.success,
-    fontSize: 12,
-    fontWeight: '500',
+    color: '#2c9f6e', // Darker green text
+    fontSize: 13,
+    fontWeight: '700',
   },
   predictionValuesContainer: {
     flexDirection: 'row',
     backgroundColor: colors.white,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   predictionValueBox: {
     flex: 1,
     alignItems: 'center',
   },
   predictionValueAmount: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: colors.textPrimary,
+    letterSpacing: -0.5,
   },
   predictionValueLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 6,
+    fontWeight: '500',
   },
   predictionValueDivider: {
     width: 1,
-    backgroundColor: colors.gray200,
+    backgroundColor: '#eaeef2',
     marginHorizontal: 16,
   },
   factorsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f0f4fa',
+    borderRadius: 24,
+    paddingHorizontal: 16,
   },
   factorsButtonText: {
     fontSize: 14,
     color: colors.primary,
-    marginRight: 4,
+    marginRight: 6,
+    fontWeight: '600',
   },
   factorsContainer: {
     backgroundColor: colors.white,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#eef2f6',
   },
   factorRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
-  },
-  factorLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  factorValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textPrimary,
+    borderBottomColor: '#f5f7fa',
   },
   saveButton: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: '#2c9f6e', // Different color for variation
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 24,
+    shadowColor: '#2c9f6e',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   saveButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
+    marginLeft: 10,
+  },
+
+  // Compact card styles
+  compactCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    shadowColor: '#1a44b880',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    borderColor: '#f0f2f5',
+    borderWidth: 1,
+  },
+  compactCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  compactDetailsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  compactDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '50%', // Two items per row
+    paddingVertical: 6,
+  },
+  compactDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  compactDetailText: {
+    fontSize: 14,
+    color: colors.textPrimary,
     marginLeft: 8,
+    fontWeight: '500',
+  },
+  smallDetailText: {
+    fontSize: 13,
+    color: colors.textPrimary,
+    marginLeft: 8,
+  },
+  thinDivider: {
+    height: 1,
+    backgroundColor: '#eef0f5',
+    marginVertical: 6,
+  },
+  compactWeatherContainer: {
+    paddingVertical: 2,
+  },
+  weatherMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  compactWeatherIcon: {
+    width: 60,
+    height: 60,
+  },
+  compactTemperature: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    letterSpacing: -0.5,
+  },
+  compactWeatherDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textTransform: 'capitalize',
+  },
+  compactWeatherDetails: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    backgroundColor: '#f9f9fc',
+    borderRadius: 10,
+    padding: 8,
+    marginTop: 6,
+  },
+  compactWeatherDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  compactWeatherValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginLeft: 4,
+    marginRight: 4,
+  },
+  compactWeatherLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
 });
 

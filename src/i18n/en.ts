@@ -7,6 +7,7 @@ export default {
     trees: 'trees',
     age: 'Age',
     soilType: 'soil type',
+    selectToPredict: 'Please select a location to predict yield',
   },
   prediction: {
     title: 'Yield Prediction',
@@ -18,6 +19,9 @@ export default {
     nutsPerTree: 'nuts/tree',
     confidenceLevel: 'Prediction Confidence',
     impactFactors: 'Impact Factors',
-    recommendations: 'Recommendations'
+    recommendations: 'Recommendations',
+    recentHistory: "Recent Prediction History",
+    noHistory: "No prediction history available",
+    viewAllHistory: "View all prediction history"
   }
 };

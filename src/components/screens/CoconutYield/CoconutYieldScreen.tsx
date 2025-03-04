@@ -15,7 +15,7 @@ import { Location } from '../../../types';
 import { colors } from '../../../constants/colors';
 import { useTranslation } from 'react-i18next';
 import { NavigationProp } from '@react-navigation/native';
-
+import { YieldPredictionHistory, yieldApi } from '../../../api/yieldApi';
 
 const calculateAge = (plantationDate: Date): string => {
   const plantDate = new Date(plantationDate);
@@ -38,10 +38,13 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [predictionHistory, setPredictionHistory] = useState<YieldPredictionHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
     fetchLocations();
+    fetchPredictionHistory();
   }, []);
 
   const fetchLocations = async () => {
@@ -57,10 +60,30 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
     }
   };
 
+  const fetchPredictionHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const history = await yieldApi.getPredictionHistory();
+      setPredictionHistory(history);
+    } catch (error) {
+      console.error('Error fetching prediction history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await fetchLocations();
-    setRefreshing(false);
+    try {
+      await fetchLocations();
+      await fetchPredictionHistory();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      // Consider showing an error toast or feedback to user here
+    } finally {
+      // Always reset refreshing state, even if there was an error
+      setRefreshing(false);
+    }
   }, []);
 
   const loadMoreLocations = async () => {
@@ -189,22 +212,90 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
           </TouchableOpacity>
         </View>
       ) : (
-        <FlatList
-          data={locations}
-          renderItem={renderLocationItem}
-          keyExtractor={item => item._id}
-          contentContainerStyle={styles.locationsList}
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={hasMore ? renderFooter : null}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={['#4CD964']}
-              tintColor="#4CD964"
-            />
-          }
-        />
+        <>
+          {/* Instruction text for users */}
+          <View style={styles.instructionContainer}>
+            <Ionicons name="information-circle-outline" size={20} color="#4CD964" />
+            <Text style={styles.instructionText}>
+              {t('lands.selectToPredict', 'Please select a location to predict yield')}
+            </Text>
+          </View>
+          
+          <FlatList
+            data={locations}
+            renderItem={renderLocationItem}
+            keyExtractor={item => item._id}
+            contentContainerStyle={styles.locationsList}
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={hasMore ? renderFooter : null}
+            onEndReached={hasMore ? loadMoreLocations : null}
+            onEndReachedThreshold={0.2}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#4CD964']}
+                tintColor="#4CD964"
+                title={t('common.refreshing')}
+                titleColor={'#4CD964'}
+              />
+            }
+          />
+          
+          {/* Prediction History Section */}
+          <View style={styles.historySection}>
+            <Text style={styles.historySectionTitle}>{t('prediction.recentHistory')}</Text>
+            
+            {historyLoading ? (
+              <ActivityIndicator size="small" color="#4CD964" style={styles.historyLoader} />
+            ) : predictionHistory.length === 0 ? (
+              <View style={styles.emptyHistory}>
+                <Text style={styles.emptyHistoryText}>{t('prediction.noHistory')}</Text>
+              </View>
+            ) : (
+              <>
+                {predictionHistory.slice(0, 3).map((item) => (
+                  <View key={item._id} style={styles.historyCard}>
+                    <View style={styles.historyCardHeader}>
+                      <Text style={styles.historyLocationName}>{item.location}</Text>
+                      <View style={styles.historyYearBadge}>
+                        <Text style={styles.historyYearText}>{item.year}</Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.historyDetails}>
+                      <View style={styles.historyYieldContainer}>
+                        <Text style={styles.historyYieldValue}>
+                          {item.average_prediction.toFixed(1)}
+                        </Text>
+                        <Text style={styles.historyYieldLabel}>{t('prediction.nutsPerTree')}</Text>
+                      </View>
+                      
+                      <View style={styles.historyDateContainer}>
+                        <Ionicons name="calendar-outline" size={16} color="#6B7280" />
+                        <Text style={styles.historyDate}>
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+                
+                {predictionHistory.length > 3 && (
+                  <TouchableOpacity 
+                    style={styles.viewAllHistoryButton}
+                    onPress={() => navigation.navigate('PredictionHistory')}
+                  >
+                    <Text style={styles.viewAllHistoryText}>
+                      {t('prediction.viewAllHistory')}
+                    </Text>
+                    <Ionicons name="arrow-forward" size={16} color="#4CD964" />
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+          </View>
+        </>
       )}
     </SafeAreaView>
   );
@@ -364,6 +455,125 @@ const styles = StyleSheet.create({
     color: '#4CD964',
     fontSize: 14,
     fontWeight: '600',
+  },
+  instructionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FFF4', // Light green background
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#DCFCE7', // Lighter green border
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#166534', // Dark green text
+    marginLeft: 8,
+    flex: 1,
+  },
+  historySection: {
+    marginTop: 24,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  historySectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  historyLoader: {
+    padding: 20,
+  },
+  emptyHistory: {
+    padding: 24,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  emptyHistoryText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  historyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  historyCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  historyLocationName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  historyYearBadge: {
+    backgroundColor: '#EBF5FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  historyYearText: {
+    fontSize: 13,
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  historyDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyYieldContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  historyYieldValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#4CD964',
+  },
+  historyYieldLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginLeft: 5,
+  },
+  historyDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  historyDate: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginLeft: 4,
+  },
+  viewAllHistoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    backgroundColor: '#F0FFF4',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  viewAllHistoryText: {
+    fontSize: 14,
+    color: '#4CD964',
+    fontWeight: '600',
+    marginRight: 4,
   },
 });
 

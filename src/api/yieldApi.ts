@@ -58,6 +58,16 @@ export interface YieldPredictionResponse {
   predictedMonths: PredictedMonth[];
 }
 
+// Add this interface to define prediction history item structure
+export interface YieldPredictionHistory {
+  _id: string;
+  year: number;
+  average_prediction: number;
+  createdAt: string;
+  location: string;
+  status: string;
+}
+
 export const yieldApi = {
   predictYield: async (data: YieldPredictionRequest) => {
     try {
@@ -75,6 +85,28 @@ export const yieldApi = {
       }
     } catch (error) {
       console.error('API Error in predictYield:', error);
+      throw error;
+    }
+  },
+
+  // Add this new function to get prediction history
+  getPredictionHistory: async (locationId?: string) => {
+    try {
+      // If locationId is provided, get predictions for specific location
+      const endpoint = `${BASE_URL}/yield/user/yield-predictions`;
+      
+      const response = await api.get(endpoint);
+      console.log('Prediction history response:', response.data);
+      
+      if (response.data && (response.data.data || response.data)) {
+        const resultData = response.data.data || response.data;
+        return resultData;
+      } else {
+        console.error('Unexpected API response format for prediction history:', response.data);
+        throw new Error('Unexpected API response format');
+      }
+    } catch (error) {
+      console.error('API Error in getPredictionHistory:', error);
       throw error;
     }
   },
