@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { colors } from '../constants/colors';
 import CoconutYieldScreen from '../components/screens/CoconutYield/CoconutYieldScreen';
 import PredictionScreen from '../components/screens/CoconutYield/PredictionScreen';
-
+import PredictionHistoryScreen from '../components/screens/CoconutYield/PredictionHistoryScreen';
 
 // Define supported languages type for better type safety
 type SupportedLanguage = 'en' | 'si' | 'ta';
@@ -14,6 +14,7 @@ type SupportedLanguage = 'en' | 'si' | 'ta';
 type CoconutYieldStackParamList = {
   CoconutYieldMain: undefined;
   Prediction: { locationId: string; locationName?: string };
+  PredictionHistory: { locationId?: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<CoconutYieldStackParamList>();
@@ -103,6 +104,11 @@ const CoconutYieldNavigator = () => {
         name="Prediction"
         component={PredictionScreen}
         options={{ title: t('prediction.title') }}
+      />
+      <Stack.Screen
+        name="PredictionHistory"
+        component={PredictionHistoryScreen}
+        options={{ title: t('prediction.historyTitle') }}
       />
     </Stack.Navigator>
   );

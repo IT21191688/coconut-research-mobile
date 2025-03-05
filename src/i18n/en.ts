@@ -36,17 +36,52 @@ export default {
       humidity: "Humidity",
       rainfall: "Rainfall",
       plantAge: "Plant Age",
-    }
+    },
+    historyTitle: "Prediction History",
+    loadingHistory: "Loading prediction history...",
+    noHistoryTitle: "No prediction history",
+    noHistoryText: "You haven't made any yield predictions yet. Start by selecting a location and making a prediction.",
+    makeNewPrediction: "Make a Prediction",
+    viewDetails: "View Details",
+    clearFilter: "Clear filter",
+    errorLoadingHistory: "Failed to load prediction history. Please try again.",
+    compareWithLastYear: "Compare with last year",
+    noComparisonTitle: "No Data Available",
+    noComparisonMessage: "No prediction data available for {{year}} at {{location}}.",
+    comparisonTitle: "Yield Comparison",
+    comparisonMessage: "For {{location}}:\n\n{{currentYear}}: {{currentYield}} nuts/tree\n{{lastYear}}: {{lastYearYield}} nuts/tree\n\nYield has {{direction}} by {{change}}% compared to last year.",
+    increased: "increased",
+    decreased: "decreased",
+    yieldTrend: "Yield Trend Over Years",
+    notEnoughData: "Not enough data to determine a trend",
+    stableTrend: "Yield has remained relatively stable over the years",
+    increasingTrend: "Yield has increased by approximately {{percent}}% over this period",
+    decreasingTrend: "Yield has decreased by approximately {{percent}}% over this period",
+    notEnoughDataMessage: "You need at least 2 predictions for {{location}} to compare trends.",
+    yieldTrendTitle: "Coconut Yield Trend",
+    comparisonResult: "Yield has {{direction}} by {{change}}% from {{lastYear}} to {{currentYear}}",
+    noLastYearData: "No prediction data available for {{year}}. Chart shows all available predictions.",
+    insufficientDataTitle: "Insufficient Data",
+    insufficientDataMessage: "You need at least 2 predictions for this location to view trends."
   },
   common: {
     loadingLocation: "Loading location...",
     cancel: "Cancel",
     delete: "Delete",
     unknownLocation: "Unknown Location",
-    years: "years"
+    years: "years",
+    retry: "Retry",
+    loadingMore: "Loading more...",
+    refreshing: "Refreshing...",
+    close: "Close",
+    viewAllData: "View Available Data",
+    ok: "OK"
   },
   months: [
     "January", "February", "March", "April", "May", "June", 
     "July", "August", "September", "October", "November", "December"
-  ]
+  ],
+  navigation: {
+    viewPredictionHistory: "View Prediction History"
+  }
 };
