@@ -22,9 +22,31 @@ export default {
     recommendations: 'Recommendations',
     recentHistory: "Recent Prediction History",
     noHistory: "No prediction history available",
-    viewAllHistory: "View all prediction history"
+    viewAllHistory: "View all prediction history",
+    deleteConfirmTitle: "Delete Prediction?",
+    deleteConfirmMessage: "Are you sure you want to delete the prediction for {{year}} at {{location}}?",
+    deleteSuccessTitle: "Deleted Successfully",
+    deleteSuccessMessage: "The prediction has been deleted.",
+    deleteErrorTitle: "Deletion Failed",
+    deleteErrorMessage: "Failed to delete the prediction. Please try again.",
+    monthRange: "{{start}} - {{end}}",
+    confidence: "confidence",
+    factors: {
+      temperature: "Temperature",
+      humidity: "Humidity",
+      rainfall: "Rainfall",
+      plantAge: "Plant Age",
+    }
   },
   common: {
-    loadingLocation: "Loading location..."
-  }
+    loadingLocation: "Loading location...",
+    cancel: "Cancel",
+    delete: "Delete",
+    unknownLocation: "Unknown Location",
+    years: "years"
+  },
+  months: [
+    "January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"
+  ]
 };

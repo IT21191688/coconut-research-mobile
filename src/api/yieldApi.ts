@@ -58,15 +58,41 @@ export interface YieldPredictionResponse {
   predictedMonths: PredictedMonth[];
 }
 
-// Add this interface to define prediction history item structure
+// Update the interface to match the actual API response structure
 export interface YieldPredictionHistory {
-  name: string;
   _id: string;
   year: number;
   average_prediction: number;
-  createdAt: string;
-  location: string;
+  monthly_predictions: {
+    confidence_score: number;
+    ensemble_prediction: number;
+    input_data: {
+      humidity: number;
+      plant_age: number;
+      rainfall: number;
+      soil_moisture_10cm: number;
+      soil_moisture_20cm: number;
+      soil_moisture_30cm: number;
+      soil_type: number;
+      temperature: number;
+      weather_description: string;
+      _id: string;
+    };
+    long_term_prediction: number;
+    month: number;
+    month_name: string;
+    seasonal_factor: number;
+    seasonal_prediction: number;
+    weights: number[];
+    year: number;
+    _id: string;
+  }[];
   status: string;
+  user: string;
+  location: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 // First, add this interface to define the location response
@@ -143,6 +169,22 @@ export const yieldApi = {
       }
     } catch (error) {
       console.error('API Error in getPredictionHistory:', error);
+      throw error;
+    }
+  },
+
+  // Add this new function to delete a prediction
+  deletePrediction: async (predictionId: string) => {
+    try {
+      const response = await api.delete(`${BASE_URL}/yield/yield-prediction/${predictionId}`);
+      
+      if (response.data && response.status === 200) {
+        return response.data;
+      } else {
+        throw new Error('Failed to delete prediction');
+      }
+    } catch (error) {
+      console.error(`API Error in deletePrediction for ID ${predictionId}:`, error);
       throw error;
     }
   },
