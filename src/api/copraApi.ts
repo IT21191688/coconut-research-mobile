@@ -78,7 +78,7 @@ export const copraApi = {
   getMoistureLevel: async (deviceId:string) => {
     try {
       const response = await api.post(`/copra/getMoisturelevel/${deviceId}`);
-      return response.data;
+      return response;
     } catch (error) {
       console.error('API Error in getAllBatches:', error);
       throw error;
