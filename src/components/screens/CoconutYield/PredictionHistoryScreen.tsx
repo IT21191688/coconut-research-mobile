@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
-  Modal
+  Modal,
+  TextInput
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -44,12 +45,20 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     datasets: { data: number[], color: () => string }[];
     location: string;
     hasLastYear?: boolean;
+    hasActualYield?: boolean;
     currentYear?: number;
+    predictionYear?: number;
     lastYearValue?: number;
+    actualYield?: number;
+    predictedYield?: number;
     percentChange?: number;
+    percentDifference?: number;
   } | null>(null);
+  const [actualYieldModalVisible, setActualYieldModalVisible] = useState(false);
+  const [selectedPrediction, setSelectedPrediction] = useState<YieldPredictionHistory | null>(null);
+  const [actualYieldValue, setActualYieldValue] = useState('');
+  const [submittingActualYield, setSubmittingActualYield] = useState(false);
 
-  // Fetch prediction history
   const fetchPredictionHistory = async (pageNum = 1) => {
     try {
       setError(null);
@@ -308,6 +317,134 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     }
   };
 
+  // Add this function to handle opening the modal
+  const handleEnterActualYield = (item: YieldPredictionHistory) => {
+    setSelectedPrediction(item);
+    setActualYieldValue('');
+    setActualYieldModalVisible(true);
+  };
+
+  // Add this function to submit the actual yield data
+  const submitActualYield = async () => {
+    if (!selectedPrediction || !actualYieldValue.trim()) {
+      Alert.alert(t('common.error'), t('prediction.enterValidYield'));
+      return;
+    }
+  
+    try {
+      setSubmittingActualYield(true);
+      
+      const actualYield = parseFloat(actualYieldValue);
+      if (isNaN(actualYield)) {
+        Alert.alert(t('common.error'), t('prediction.enterValidNumber'));
+        setSubmittingActualYield(false);
+        return;
+      }
+      
+      // Get the first month from the prediction (typically January)
+      const firstMonth = selectedPrediction.monthly_predictions?.[0];
+      if (!firstMonth) {
+        Alert.alert(t('common.error'), t('prediction.noMonthData'));
+        setSubmittingActualYield(false);
+        return;
+      }
+  
+      // Prepare data for API
+      const actualYieldData = {
+        year: selectedPrediction.year,
+        month: selectedPrediction.monthly_predictions[0].month,
+        actual_yield: actualYield,
+        locationId: selectedPrediction.location,
+        yieldPredictionId: selectedPrediction._id
+      };
+      
+      // Call API
+      await yieldApi.submitActualYield(actualYieldData);
+      
+      // Close modal and show success message
+      setActualYieldModalVisible(false);
+      Alert.alert(
+        t('prediction.success'), 
+        t('prediction.actualYieldAdded')
+      );
+      
+      // Refresh prediction history to show updated data
+      onRefresh();
+      
+    } catch (error) {
+      console.error('Error submitting actual yield:', error);
+      Alert.alert(
+        t('common.error'),
+        t('prediction.failedToAddActualYield')
+      );
+    } finally {
+      setSubmittingActualYield(false);
+    }
+  };
+
+  // First, add this new function to handle comparing with actual yield
+  const handleCompareWithActualYield = async (item: YieldPredictionHistory) => {
+    try {
+      // Fetch actual yield data for this prediction
+      console.log('Fetching actual yield data for prediction:', item._id);
+      
+      const actualYieldData = await yieldApi.getActualYieldByPrediction(item._id);
+      console.log('Actual yield data:', actualYieldData.length);
+      
+      if (actualYieldData.length === 0 || !actualYieldData[0].actual_yield) {
+        console.log('No actual yield data found');
+        
+        // No actual yield data found
+        Alert.alert(
+          t('prediction.noActualYieldTitle'),
+          t('prediction.noActualYieldMessage'),
+          [
+            {
+              text: t('prediction.enterActualYield'),
+              onPress: () => handleEnterActualYield(item)
+            },
+            {
+              text: t('common.cancel'),
+              style: 'cancel'
+            }
+          ]
+        );
+        return;
+      }
+      
+      // Calculate percentage difference
+      const predictedYield = item.average_prediction;
+      const actualYield = actualYieldData[0].actual_yield;
+      const percentDifference = ((predictedYield - actualYield) / actualYield) * 100;
+      
+      // Set comparison data for the modal
+      setComparisonData({
+        labels: [t('prediction.predicted'), t('prediction.actual')],
+        datasets: [
+          {
+            data: [predictedYield, actualYield],
+            color: () => colors.primary,
+          },
+        ],
+        location: locationNames[item.location] || t('common.unknownLocation'),
+        hasActualYield: true,
+        predictionYear: item.year,
+        actualYield: actualYield,
+        predictedYield: predictedYield,
+        percentDifference: percentDifference
+      });
+      
+      // Show modal
+      setComparisonModalVisible(true);
+    } catch (error) {
+      console.error('Error fetching actual yield data:', error);
+      Alert.alert(
+        t('prediction.errorTitle'),
+        t('prediction.errorFetchingActualYield')
+      );
+    }
+  };
+
   // Render individual prediction item
   const renderPredictionItem = ({ item }: { item: YieldPredictionHistory }) => {
     // Get the first month from monthly predictions (if it exists)
@@ -405,6 +542,25 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             >
               <Ionicons name="analytics-outline" size={16} color={colors.primary} />
               <Text style={styles.compareButtonText}>{t('prediction.compareWithLastYear')}</Text>
+            </TouchableOpacity>
+
+            {/* Add the new button for entering actual yield */}
+            <TouchableOpacity 
+              style={styles.actualYieldButton}
+              onPress={() => handleEnterActualYield(item)}
+            >
+              <Ionicons name="clipboard-outline" size={16} color="#3B82F6" />
+              <Text style={styles.actualYieldButtonText}>
+                  {t('prediction.enterActualYield')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.compareButton}
+              onPress={() => handleCompareWithActualYield(item)}
+            >
+              <Ionicons name="analytics-outline" size={16} color={colors.primary} />
+              <Text style={styles.compareButtonText}>{t('prediction.compareWithActualYield')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -508,45 +664,110 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
-                {comparisonData.hasLastYear 
-                  ? t('prediction.comparisonTitle') 
-                  : t('prediction.yieldTrendTitle')}
+                {comparisonData.hasActualYield 
+                  ? t('prediction.actualComparisonTitle') 
+                  : comparisonData.hasLastYear 
+                    ? t('prediction.comparisonTitle') 
+                    : t('prediction.yieldTrendTitle')}
               </Text>
               <Text style={styles.modalSubtitle}>{comparisonData.location}</Text>
               
               {/* Chart visualization */}
-              <LineChart
-                data={{
-                  labels: comparisonData.labels,
-                  datasets: comparisonData.datasets,
-                }}
-                width={Dimensions.get('window').width - 60}
-                height={220}
-                chartConfig={{
-                  backgroundColor: '#FFFFFF',
-                  backgroundGradientFrom: '#FFFFFF',
-                  backgroundGradientTo: '#FFFFFF',
-                  decimalPlaces: 1,
-                  color: (opacity = 1) => `rgba(76, 217, 100, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-                  style: {
+              {comparisonData.hasActualYield ? (
+                // Bar chart for actual vs predicted
+                <View style={styles.barChartContainer}>
+                  <View style={styles.barContainer}>
+                    <View style={styles.barLabelContainer}>
+                      <Text style={styles.barLabel}>{t('prediction.predicted')}</Text>
+                    </View>
+                    <View style={styles.barOuterContainer}>
+                      <View 
+                        style={[
+                          styles.bar, 
+                          styles.predictedBar, 
+                          { 
+                            width: `${Math.min(90, (comparisonData.predictedYield! / Math.max(comparisonData.predictedYield!, comparisonData.actualYield!) * 90))}%` 
+                          }
+                        ]}
+                      >
+                        <Text style={styles.barValue}>{comparisonData.predictedYield!.toFixed(1)}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.barContainer}>
+                    <View style={styles.barLabelContainer}>
+                      <Text style={styles.barLabel}>{t('prediction.actual')}</Text>
+                    </View>
+                    <View style={styles.barOuterContainer}>
+                      <View 
+                        style={[
+                          styles.bar, 
+                          styles.actualBar, 
+                          { 
+                            width: `${Math.min(90, (comparisonData.actualYield! / Math.max(comparisonData.predictedYield!, comparisonData.actualYield!) * 90))}%` 
+                          }
+                        ]}
+                      >
+                        <Text style={styles.barValue}>{comparisonData.actualYield!.toFixed(1)}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                // Line chart for year-over-year comparison
+                <LineChart
+                  data={{
+                    labels: comparisonData.labels,
+                    datasets: comparisonData.datasets,
+                  }}
+                  width={Dimensions.get('window').width - 60}
+                  height={220}
+                  chartConfig={{
+                    backgroundColor: '#FFFFFF',
+                    backgroundGradientFrom: '#FFFFFF',
+                    backgroundGradientTo: '#FFFFFF',
+                    decimalPlaces: 1,
+                    color: (opacity = 1) => `rgba(76, 217, 100, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
+                    style: {
+                      borderRadius: 16,
+                    },
+                    propsForDots: {
+                      r: '6',
+                      strokeWidth: '2',
+                      stroke: '#4CD964',
+                    },
+                  }}
+                  style={{
+                    marginVertical: 8,
                     borderRadius: 16,
-                  },
-                  propsForDots: {
-                    r: '6',
-                    strokeWidth: '2',
-                    stroke: '#4CD964',
-                  },
-                }}
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16,
-                }}
-                bezier
-              />
+                  }}
+                  bezier
+                />
+              )}
               
               {/* Show different message based on data availability */}
-              {comparisonData.hasLastYear ? (
+              {comparisonData.hasActualYield ? (
+                <View style={styles.comparisonResult}>
+                  <View style={styles.comparisonResultInner}>
+                    <Text style={styles.comparisonText}>
+                      {t('prediction.accuracyResult', {
+                        accuracy: Math.max(0, 100 - Math.abs(comparisonData.percentDifference || 0)).toFixed(1),
+                        direction: (comparisonData.percentDifference || 0) > 0 
+                          ? t('prediction.overestimated') 
+                          : t('prediction.underestimated'),
+                        percent: Math.abs(comparisonData.percentDifference || 0).toFixed(1)
+                      })}
+                    </Text>
+                    <Ionicons 
+                      name={Math.abs(comparisonData.percentDifference || 0) < 10 ? "checkmark-circle" : "alert-circle"} 
+                      size={24} 
+                      color={Math.abs(comparisonData.percentDifference || 0) < 10 ? "#4CD964" : "#FF6B6B"} 
+                    />
+                  </View>
+                </View>
+              ) : comparisonData.hasLastYear ? (
                 <View style={styles.comparisonResult}>
                   <View style={styles.comparisonResultInner}>
                     <Text style={styles.comparisonText}>
@@ -589,6 +810,103 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
           </View>
         </Modal>
       )}
+      <Modal
+        visible={actualYieldModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setActualYieldModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t('prediction.enterActualYield')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('prediction.actualYieldPlaceholder')}
+              keyboardType="numeric"
+              value={actualYieldValue}
+              onChangeText={setActualYieldValue}
+            />
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={submitActualYield}
+              disabled={submittingActualYield}
+            >
+              {submittingActualYield ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>{t('common.submit')}</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setActualYieldModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>{t('common.close')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* Actual Yield Modal */}
+      <Modal
+        visible={actualYieldModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setActualYieldModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalContent, { padding: 20 }]}>
+            <Text style={styles.modalTitle}>{t('prediction.addActualYield')}</Text>
+            
+            {selectedPrediction && (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  {locationNames[selectedPrediction.location] || t('common.unknownLocation')} - {selectedPrediction.year}
+                </Text>
+                
+                <View style={styles.predictedYieldContainer}>
+                  <Text style={styles.predictedYieldLabel}>{t('prediction.predictedYield')}:</Text>
+                  <Text style={styles.predictedYieldValue}>
+                    {selectedPrediction.average_prediction.toFixed(1)} {t('prediction.nutsPerTree')}
+                  </Text>
+                </View>
+                
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>{t('prediction.actualYieldLabel')}:</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={actualYieldValue}
+                    onChangeText={setActualYieldValue}
+                    keyboardType="numeric"
+                    placeholder={t('prediction.enterActualYieldHint')}
+                    autoFocus
+                  />
+                </View>
+                
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setActualYieldModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={submitActualYield}
+                    disabled={submittingActualYield}
+                  >
+                    {submittingActualYield ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.submitButtonText}>{t('common.submit')}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -772,6 +1090,21 @@ const styles = StyleSheet.create({
   compareButtonText: {
     fontSize: 14,
     color: colors.primary,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  actualYieldButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 8,
+    backgroundColor: '#E0F2FE',
+    borderRadius: 8,
+  },
+  actualYieldButtonText: {
+    fontSize: 14,
+    color: '#3B82F6',
     fontWeight: '600',
     marginLeft: 6,
   },
@@ -976,6 +1309,114 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginRight: 8,
     flex: 1,
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%',
+  },
+  inputContainer: {
+    width: '100%',
+    marginVertical: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: colors.textPrimary,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    width: '100%',
+    marginTop: 16,
+  },
+  cancelButton: {
+    padding: 12,
+    marginRight: 12,
+  },
+  cancelButtonText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  predictedYieldContainer: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
+    width: '100%',
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  predictedYieldLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  predictedYieldValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  barChartContainer: {
+    width: '100%',
+    padding: 20,
+    marginVertical: 10,
+  },
+  barContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    width: '100%',
+  },
+  barLabelContainer: {
+    width: 80,
+  },
+  barLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginRight: 10,
+  },
+  bar: {
+    height: 34,
+    minWidth: 40,
+    borderRadius: 4,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  predictedBar: {
+    backgroundColor: colors.primary,
+  },
+  actualBar: {
+    backgroundColor: '#3B82F6',
+  },
+  barValue: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  barOuterContainer: {
+    flex: 1,
+    overflow: 'hidden',
   },
 });
 

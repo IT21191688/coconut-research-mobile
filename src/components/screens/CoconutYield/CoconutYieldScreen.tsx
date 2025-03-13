@@ -225,9 +225,20 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
             }
           />
           
+          {/* Coconut Price Prediction Button */}
+          <TouchableOpacity 
+            style={styles.pricePredictionButton}
+            onPress={() => navigation.navigate('CoconutPricePredict')}
+          >
+            <Ionicons name="trending-up-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.pricePredictionButtonText}>
+              {t('navigation.coconutPricePredict')}
+            </Text>
+          </TouchableOpacity>
+          
           {/* Button to navigate to Prediction History page */}
           <TouchableOpacity 
-            style={styles.historyButton}
+            style={[styles.historyButton, { marginTop: 12 }]} // Adjusted margin top
             onPress={() => navigation.navigate('PredictionHistory')}
           >
             <Ionicons name="analytics-outline" size={20} color="#FFFFFF" />
@@ -428,6 +439,26 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   historyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  pricePredictionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3B82F6', // Different color from yield button (blue)
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  pricePredictionButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',

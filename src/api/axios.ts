@@ -2,7 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Update this with your actual backend URL
-const BASE_URL = 'http://192.168.1.6:7000/api/v1'; // Replace with your computer's IP
+const BASE_URL = 'https://node-backend-zjnf.onrender.com/api/v1';
+// const BASE_URL = 'http://192.168.1.7:7000/api/v1';
+
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,

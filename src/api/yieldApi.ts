@@ -1,6 +1,8 @@
 import api from './axios';
-const BASE_URL = 'http://192.168.1.6:7000/api/v1';
+// const BASE_URL = 'http://192.168.1.7:7000/api/v1';
+const BASE_URL = 'https://node-backend-zjnf.onrender.com/api/v1';
 
+// 
 export interface MonthlyData {
   month: number;
   sm_10: number;
@@ -188,4 +190,22 @@ export const yieldApi = {
       throw error;
     }
   },
+
+  // Add this new function to submit actual yield
+  submitActualYield: async (actualYieldData: {
+    year: number;
+    month: number;
+    actual_yield: number;
+    locationId: string;
+    yieldPredictionId: string;
+  }) => {
+    const response = await api.post(`${BASE_URL}/actual-yield/actual-yield`, actualYieldData);
+    return response.data;
+  },
+
+  // Add this new function to get actual yield by prediction
+  getActualYieldByPrediction: async (predictionId: string) => {
+    const response = await api.get(`${BASE_URL}/actual-yield/actual-yield-byPrediction/${predictionId}`);
+    return response.data;
+  }
 };
