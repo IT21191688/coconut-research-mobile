@@ -359,10 +359,21 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
                 {location.plantationDate ? calculateAge(new Date(location.plantationDate)) : 'Age unknown'}
               </Text>
             </View>
-            
+
+            {/* Soil Type */}
             <View style={styles.compactDetailItem}>
-              <Ionicons name="git-branch-outline" size={18} color={colors.warning} />
-              <Text style={styles.compactDetailText}>{'Unknown variety'}</Text>
+              <Ionicons name="earth-outline" size={18} color="#8B4513" />
+              <Text style={styles.compactDetailText}>
+                {location.soilType || 'Unknown soil type'}
+              </Text>
+            </View>
+            
+            {/* Area Size */}
+            <View style={styles.compactDetailItem}>
+              <Ionicons name="resize-outline" size={18} color="#3366CC" />
+              <Text style={styles.compactDetailText}>
+                {location.area ? `${location.area.toFixed(2)} ha` : 'Area unknown'}
+              </Text>
             </View>
           </View>
           
