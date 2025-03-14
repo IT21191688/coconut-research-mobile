@@ -19,10 +19,10 @@ import ScheduleCalendarView from '../../../components/watering/ScheduleCalendarV
 import Button from '../../../components/common/Button';
 import { colors } from '../../../constants/colors';
 
-const ScheduleHistoryScreen: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+const ScheduleHistoryScreen = () => {
+  const [viewMode, setViewMode] = useState('list');
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   
   const {
     schedules,
@@ -34,11 +34,65 @@ const ScheduleHistoryScreen: React.FC = () => {
     setCustomDateRange,
   } = useWateringSchedule();
 
-  const handleSchedulePress = (schedule: any) => {
+  const handleSchedulePress = (schedule:any) => {
     navigation.navigate('ScheduleDetail', { scheduleId: schedule._id });
   };
 
-  const renderFilterPill = (periodKey: keyof typeof HISTORY_PERIOD, label: string) => (
+  const handleSetDateRange = () => {
+    Alert.alert(
+      "Set Date Range",
+      "Choose date range",
+      [
+        {
+          text: "Last 2 Weeks",
+          onPress: () => {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 14);
+            
+            setCustomDateRange(
+              startDate.toISOString().split('T')[0],
+              endDate.toISOString().split('T')[0]
+            );
+          }
+        },
+        {
+          text: "Last Month",
+          onPress: () => {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setMonth(endDate.getMonth() - 1);
+            
+            setCustomDateRange(
+              startDate.toISOString().split('T')[0],
+              endDate.toISOString().split('T')[0]
+            );
+          }
+        },
+        {
+          text: "Custom",
+          onPress: () => {
+            // Ideally you would use a date picker library here
+            // For demonstration purposes, we'll just set a 3-month window
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setMonth(endDate.getMonth() - 3);
+            
+            setCustomDateRange(
+              startDate.toISOString().split('T')[0],
+              endDate.toISOString().split('T')[0]
+            );
+          }
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ]
+    );
+  };
+
+  const renderFilterPill = (periodKey:any, label:any) => (
     <TouchableOpacity
       style={[
         styles.filterPill,
@@ -77,11 +131,11 @@ const ScheduleHistoryScreen: React.FC = () => {
         />
         <Text style={styles.emptyTitle}>No Schedules Found</Text>
         <Text style={styles.emptyText}>
-          {period === HISTORY_PERIOD.TODAY
+          {period === 'TODAY'
             ? "You don't have any watering schedules for today."
-            : period === HISTORY_PERIOD.WEEK
+            : period === 'WEEK'
             ? "You don't have any watering schedules for this week."
-            : period === HISTORY_PERIOD.MONTH
+            : period === 'MONTH'
             ? "You don't have any watering schedules for this month."
             : "No watering schedules found for the selected period."}
         </Text>
@@ -101,9 +155,9 @@ const ScheduleHistoryScreen: React.FC = () => {
   const getScheduleStatusSummary = () => {
     if (schedules.length === 0) return null;
 
-    const completed = schedules.filter((s: { status: string; }) => s.status === 'completed').length;
-    const pending = schedules.filter((s: { status: string; }) => s.status === 'pending').length;
-    const skipped = schedules.filter((s: { status: string; }) => s.status === 'skipped').length;
+    const completed = schedules.filter((s) => s.status === 'completed').length;
+    const pending = schedules.filter((s) => s.status === 'pending').length;
+    const skipped = schedules.filter((s) => s.status === 'skipped').length;
 
     return (
       <View style={styles.statusSummary}>
@@ -126,10 +180,24 @@ const ScheduleHistoryScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <View style={styles.periodFilterContainer}>
-        {renderFilterPill(HISTORY_PERIOD.TODAY, 'Today')}
-        {renderFilterPill(HISTORY_PERIOD.WEEK, 'This Week')}
-        {renderFilterPill(HISTORY_PERIOD.MONTH, 'This Month')}
-        {renderFilterPill(HISTORY_PERIOD.CUSTOM, 'Custom Range')}
+        {renderFilterPill('TODAY', 'Today')}
+        {renderFilterPill('WEEK', 'This Week')}
+        {renderFilterPill('MONTH', 'This Month')}
+        {renderFilterPill('CUSTOM', 'Custom Range')}
+      </View>
+
+      {/* Schedule count display */}
+      <View style={styles.countContainer}>
+        <Text style={styles.countText}>
+          {isLoading 
+            ? 'Loading schedules...' 
+            : `${schedules.length} schedules found`}
+        </Text>
+        {period === 'CUSTOM' && (
+          <Text style={styles.dateRangeText}>
+            Custom date filter applied
+          </Text>
+        )}
       </View>
 
       {getScheduleStatusSummary()}
@@ -198,13 +266,10 @@ const ScheduleHistoryScreen: React.FC = () => {
         />
       )}
 
-      {period === HISTORY_PERIOD.CUSTOM && (
+      {period === 'CUSTOM' && (
         <TouchableOpacity
           style={styles.dateRangeButton}
-          onPress={() => {
-            // This would normally open a date range picker
-            Alert.alert('Custom Date Range', 'Date range picker would open here');
-          }}
+          onPress={handleSetDateRange}
         >
           <Ionicons name="calendar-outline" size={20} color={colors.white} />
           <Text style={styles.dateRangeButtonText}>Set Date Range</Text>
@@ -247,6 +312,25 @@ const styles = StyleSheet.create({
   activeFilterPillText: {
     fontWeight: '600',
     color: colors.primary,
+  },
+  // New count container styles
+  countContainer: {
+    marginBottom: 12,
+    padding: 8,
+    backgroundColor: colors.gray50,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  countText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.gray800,
+  },
+  dateRangeText: {
+    fontSize: 12,
+    color: colors.gray600,
+    marginTop: 2,
   },
   statusSummary: {
     flexDirection: 'row',

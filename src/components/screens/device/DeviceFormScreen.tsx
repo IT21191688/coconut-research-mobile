@@ -37,8 +37,7 @@ type DeviceFormScreenRouteProp = RouteProp<
 
 const deviceTypes = [
   { value: "soil_sensor", label: "Soil Sensor" },
-  { value: "weather_station", label: "Weather Station" },
-  { value: "irrigation_controller", label: "Irrigation Controller" },
+  { value: "moisture_sensor", label: "Moisture Sensor" },
 ];
 
 const DeviceFormScreen: React.FC = () => {
@@ -365,115 +364,7 @@ const DeviceFormScreen: React.FC = () => {
                 />
               </View>
             </View>
-
-            {/* Battery Level Slider or Input */}
-            {/* {mode === "edit" && (
-              <Input
-                label="Battery Level (%)"
-                value={batteryLevel}
-                onChangeText={setBatteryLevel}
-                placeholder="e.g., 100"
-                keyboardType="numeric"
-                error={errors.batteryLevel}
-                leftIcon="battery-full-outline"
-                containerStyle={styles.inputContainer}
-              />
-            )} */}
           </View>
-
-          {/* Device Settings Section */}
-          {/* <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Reading Settings</Text>
-
-            <View style={styles.rowInputs}>
-              <Input
-                label="Reading Interval (min)"
-                value={readingInterval}
-                onChangeText={setReadingInterval}
-                placeholder="e.g., 30"
-                keyboardType="numeric"
-                error={errors.readingInterval}
-                leftIcon="time-outline"
-                containerStyle={[styles.inputContainer, styles.halfInput]}
-              />
-
-              <Input
-                label="Reporting Interval (min)"
-                value={reportingInterval}
-                onChangeText={setReportingInterval}
-                placeholder="e.g., 60"
-                keyboardType="numeric"
-                error={errors.reportingInterval}
-                leftIcon="sync-outline"
-                containerStyle={[styles.inputContainer, styles.halfInput]}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={styles.advancedSettingsToggle}
-              onPress={() => setShowAdvancedSettings(!showAdvancedSettings)}
-            >
-              <Text style={styles.advancedSettingsText}>
-                {showAdvancedSettings
-                  ? "Hide Advanced Settings"
-                  : "Show Advanced Settings"}
-              </Text>
-              <Ionicons
-                name={showAdvancedSettings ? "chevron-up" : "chevron-down"}
-                size={20}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-            {showAdvancedSettings && (
-              <View style={styles.advancedSettings}>
-                <Text style={styles.advancedTitle}>Alert Thresholds</Text>
-
-                {(deviceType === "soil_sensor" ||
-                  deviceType === "weather_station") && (
-                  <Input
-                    label="Moisture Threshold (%)"
-                    value={moistureThreshold}
-                    onChangeText={setMoistureThreshold}
-                    placeholder="e.g., 30"
-                    keyboardType="numeric"
-                    error={errors.moistureThreshold}
-                    containerStyle={styles.inputContainer}
-                  />
-                )}
-
-                {deviceType === "weather_station" && (
-                  <>
-                    <Input
-                      label="Temperature Threshold (°C)"
-                      value={temperatureThreshold}
-                      onChangeText={setTemperatureThreshold}
-                      placeholder="e.g., 35"
-                      keyboardType="numeric"
-                      error={errors.temperatureThreshold}
-                      containerStyle={styles.inputContainer}
-                    />
-
-                    <Input
-                      label="Humidity Threshold (%)"
-                      value={humidityThreshold}
-                      onChangeText={setHumidityThreshold}
-                      placeholder="e.g., 70"
-                      keyboardType="numeric"
-                      error={errors.humidityThreshold}
-                      containerStyle={styles.inputContainer}
-                    />
-                  </>
-                )}
-
-                <Text style={styles.thresholdsInfo}>
-                  The system will send alerts when readings exceed these
-                  threshold values. Leave blank to use default system
-                  thresholds.
-                </Text>
-              </View>
-            )}
-          </View> */}
-
           {/* Submit Buttons */}
           <View style={styles.buttonsContainer}>
             <Button
@@ -523,7 +414,6 @@ const DeviceFormScreen: React.FC = () => {
                   }}
                 >
                   <Ionicons
-                    //name={getDeviceTypeIcon(type.value)}
                     size={24}
                     color={
                       deviceType === type.value
@@ -561,27 +451,12 @@ const isNumeric = (value: string): boolean => {
   return !isNaN(Number(value));
 };
 
-const getDeviceTypeIcon = (type: string): string => {
-  switch (type) {
-    case "soil_sensor":
-      return "water-outline";
-    case "weather_station":
-      return "thermometer-outline";
-    case "irrigation_controller":
-      return "construct-outline";
-    default:
-      return "hardware-chip-outline";
-  }
-};
-
 const getDeviceTypeLabel = (type: string): string => {
   switch (type) {
     case "soil_sensor":
       return "Soil Sensor";
-    case "weather_station":
-      return "Weather Station";
-    case "irrigation_controller":
-      return "Irrigation Controller";
+    case "moisture_sensor":
+      return "Moisture Sensor";
     default:
       return type;
   }
@@ -591,6 +466,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
+    marginTop:30
   },
   loadingContainer: {
     flex: 1,

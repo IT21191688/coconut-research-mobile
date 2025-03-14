@@ -8,12 +8,14 @@ import {
   Dimensions, 
   FlatList,
   Animated,
-  ScrollView
+  ScrollView,
+  Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +55,10 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
   const [imagesLoaded, setImagesLoaded] = useState(
     slideImages.map(() => false)
   );
+  // Add new state for profile menu and language settings
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showLanguageOptions, setShowLanguageOptions] = useState(false);
+  const { t, i18n } = useTranslation();
 
   // Auto scroll for image slider
   useEffect(() => {
@@ -95,11 +101,27 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'oil',
-      title: 'Oil Yield',
+      title: 'Drying Time in Copra',
       icon: 'flask-outline',
       color: '#FF9500',
       bgColor: '#FFF6EB',
       onPress: () => navigation.navigate('OilYield')
+    },
+    {
+      id: 'locations',
+      title: 'Locations',
+      icon: 'location-outline',
+      color: '#FF4D4D',
+      bgColor: '#FFEBEB',
+      onPress: () => navigation.navigate('LocationList')
+    },
+    {
+      id: 'devices',
+      title: 'Devices',
+      icon: 'hardware-chip-outline',
+      color: '#7F58FF',
+      bgColor: '#F0EBFF',
+      onPress: () => navigation.navigate('Devices')
     },
   ];
 
@@ -175,6 +197,12 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     }
   };
 
+  const changeLanguage = (language: string) => {
+    i18n.changeLanguage(language);
+    setShowLanguageOptions(false);
+    setShowProfileMenu(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -186,7 +214,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
           </View>
           <TouchableOpacity 
             style={styles.profileButton}
-            onPress={() => navigation.navigate('Profile')}
+            onPress={() => setShowProfileMenu(true)}
           >
             {user?.photoURL ? (
               <Image source={{ uri: user.photoURL }} style={styles.profileImage} />
@@ -199,6 +227,88 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Profile Menu Modal */}
+        <Modal
+          visible={showProfileMenu}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowProfileMenu(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => {
+              setShowProfileMenu(false);
+              setShowLanguageOptions(false);
+            }}
+          >
+            <View style={styles.profileMenuContainer}>
+              <TouchableOpacity 
+                style={styles.menuOption}
+                onPress={() => {
+                  setShowProfileMenu(false);
+                  navigation.navigate('Profile');
+                }}
+              >
+                <Ionicons name="person-outline" size={20} color="#374151" />
+                <Text style={styles.menuOptionText}>Account</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.menuOption}
+                onPress={() => setShowLanguageOptions(true)}
+              >
+                <Ionicons name="settings-outline" size={20} color="#374151" />
+                <Text style={styles.menuOptionText}>Settings</Text>
+                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              </TouchableOpacity>
+
+              {/* Language Options */}
+              {showLanguageOptions && (
+                <View style={styles.languageOptionsContainer}>
+                  <Text style={styles.languageTitle}>Select Language</Text>
+                  <TouchableOpacity 
+                    style={styles.languageOption}
+                    onPress={() => changeLanguage('en')}
+                  >
+                    <Text style={[
+                      styles.languageText, 
+                      i18n.language === 'en' && styles.activeLanguage
+                    ]}>English</Text>
+                    {i18n.language === 'en' && (
+                      <Ionicons name="checkmark" size={16} color="#4CD964" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.languageOption}
+                    onPress={() => changeLanguage('si')}
+                  >
+                    <Text style={[
+                      styles.languageText, 
+                      i18n.language === 'si' && styles.activeLanguage
+                    ]}>සිංහල</Text>
+                    {i18n.language === 'si' && (
+                      <Ionicons name="checkmark" size={16} color="#4CD964" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.languageOption}
+                    onPress={() => changeLanguage('ta')}
+                  >
+                    <Text style={[
+                      styles.languageText, 
+                      i18n.language === 'ta' && styles.activeLanguage
+                    ]}>தமிழ்</Text>
+                    {i18n.language === 'ta' && (
+                      <Ionicons name="checkmark" size={16} color="#4CD964" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
         {/* Image slider */}
         <View style={styles.sliderContainer}>
@@ -228,7 +338,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
                 activeOpacity={0.7}
               >
                 <View style={[styles.iconContainer, { backgroundColor: item.color + '20' }]}>
-                  <Ionicons name={item.icon} size={30} color={item.color} />
+                  <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={30} color={item.color} />
                 </View>
                 <Text style={styles.menuTitle}>{item.title}</Text>
               </TouchableOpacity>
@@ -426,6 +536,69 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginLeft: 8,
     fontFamily: 'System',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-start',
+  },
+  profileMenuContainer: {
+    position: 'absolute',
+    top: 90,
+    right: 20,
+    width: 220,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  menuOptionText: {
+    fontSize: 16,
+    color: '#374151',
+    marginLeft: 12,
+    flex: 1,
+  },
+  languageOptionsContainer: {
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 8,
+    paddingHorizontal: 8,
+  },
+  languageTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  languageText: {
+    fontSize: 15,
+    color: '#374151',
+  },
+  activeLanguage: {
+    fontWeight: '600',
+    color: '#4CD964',
   },
 });
 

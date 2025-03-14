@@ -4,10 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 import { colors } from "../constants/colors";
 
-// Import screens
 import LocationListScreen from "../components/screens/location/LocationListScreen";
 import LocationDetailScreen from "../components/screens/location/LocationDetailScreen";
 import LocationFormScreen from "../components/screens/location/LocationFormScreen";
+import LocationWateringHistoryScreen from "../components/screens/location/LocationWateringHistoryScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -69,6 +69,11 @@ const LocationNavigator = () => {
           title:
             route.params?.mode === "create" ? "Add Location" : "Edit Location",
         })}
+      />
+      <Stack.Screen
+        name="LocationWateringHistory"
+        component={LocationWateringHistoryScreen}
+        options={{ title: "Watering History", headerShown: false }}
       />
     </Stack.Navigator>
   );
