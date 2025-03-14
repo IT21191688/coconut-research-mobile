@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,14 +8,20 @@ import { DeviceProvider } from "../context/DeviceContext";
 import { LocationProvider } from "../context/LocationContext";
 import AuthNavigator from "./AuthNavigator";
 import WateringNavigator from "./WateringNavigator";
+import CoconutYieldNavigator from "./CoconutYieldNavigator";
 import DeviceNavigator from "./DeviceNavigator";
 import LocationNavigator from "./LocationNavigator";
+import CopraNavigator from "./copraNavigator";
 import HomeScreen from "../components/screens/home/HomeScreen";
 import Loading from "../components/common/Loading";
 import { colors } from "../constants/colors";
+import { setLogoutFunction } from "../api/axios";
+import { logout } from "../api/authApi";
+import { EventRegister } from "react-native-event-listeners";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const MainStack = createNativeStackNavigator(); // Add this for nested navigation
 
 // Main tab navigator when logged in
 const MainTabNavigator = () => {
@@ -57,45 +63,52 @@ const MainTabNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Watering" component={WateringNavigator} />
-      <Tab.Screen 
-        name="CoconutYield" 
-        component={HomeScreen} 
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate('Home', { screen: 'CoconutYield' });
-          },
-        })}
-        options={{ title: 'Coconut Yield' }}
-      />
-      <Tab.Screen 
-        name="OilYield" 
+      <Tab.Screen name="CoconutYield" component={CoconutYieldNavigator} />
+      <Tab.Screen name="OilYield" component={CopraNavigator} />
+      <Tab.Screen
+        name="CopraIdentification"
         component={HomeScreen}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate('Home', { screen: 'OilYield' });
+            navigation.navigate("Home", { screen: "CopraIdentification" });
           },
         })}
-        options={{ title: 'Oil Yield' }}
-      />
-      <Tab.Screen 
-        name="CopraIdentification" 
-        component={HomeScreen}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate('Home', { screen: 'CopraIdentification' });
-          },
-        })}
-        options={{ title: 'Copra ID' }}
+        options={{ title: "Copra ID" }}
       />
     </Tab.Navigator>
   );
 };
 
+// This component wraps MainTabNavigator with the providers
+const MainNavigator = () => {
+  return (
+    <WateringProvider>
+      <DeviceProvider>
+        <LocationProvider>
+          <MainStack.Navigator screenOptions={{ headerShown: false }}>
+            <MainStack.Screen name="Tabs" component={MainTabNavigator} />
+            <MainStack.Screen name="LocationList" component={LocationNavigator} />
+            <MainStack.Screen name="Devices" component={DeviceNavigator} />
+          </MainStack.Navigator>
+        </LocationProvider>
+      </DeviceProvider>
+    </WateringProvider>
+  );
+};
+
 const AppNavigator = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+
+  useEffect(() => {
+    const logoutListener = EventRegister.addEventListener("userLogout", () => {
+      logout();
+    });
+
+    return () => {
+      EventRegister.removeEventListener(logoutListener as string);
+    };
+  }, []);
 
   if (isLoading) {
     return <Loading fullScreen message="Loading..." />;
@@ -104,24 +117,8 @@ const AppNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        // Wrap the main navigator with the necessary providers
-        <Stack.Screen name="Main">
-          {() => (
-            <WateringProvider>
-              <DeviceProvider>
-                <LocationProvider>
-                  <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="Tabs" component={MainTabNavigator} />
-                    <Stack.Screen name="LocationNavigator" component={LocationNavigator} />
-                    <Stack.Screen name="DeviceNavigator" component={DeviceNavigator} />
-                  </Stack.Navigator>
-                </LocationProvider>
-              </DeviceProvider>
-            </WateringProvider>
-          )}
-        </Stack.Screen>
+        <Stack.Screen name="Main" component={MainNavigator} />
       ) : (
-        // Auth Stack
         <Stack.Screen name="Auth" component={AuthNavigator} />
       )}
     </Stack.Navigator>

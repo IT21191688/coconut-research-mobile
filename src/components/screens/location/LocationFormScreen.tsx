@@ -59,7 +59,7 @@ const LocationFormScreen: React.FC = () => {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   const route = useRoute<LocationFormScreenRouteProp>();
   const { mode, locationId, locationData } = route.params;
 
@@ -70,7 +70,7 @@ const LocationFormScreen: React.FC = () => {
     loadAvailableDevices();
   }, [mode, locationData]);
 
-  const setFormDataFromLocation = (location: LocationType) => {
+  const setFormDataFromLocation = (location: any) => {
     setName(location.name);
     setArea(location.area.toString());
     setTotalTrees(location.totalTrees.toString());
@@ -88,14 +88,12 @@ const LocationFormScreen: React.FC = () => {
       setIsLoading(true);
       const devices = await getUnassignedDevices();
 
-      // If editing, add the currently assigned device to the list
       if (mode === "edit" && locationData?.deviceId) {
         const currentDeviceNotInList = !devices.some(
           (device) => device.deviceId === locationData.deviceId
         );
 
         if (currentDeviceNotInList) {
-          // Add a placeholder for the current device
           devices.unshift({
               _id: "current",
               deviceId: locationData.deviceId,
@@ -187,7 +185,7 @@ const LocationFormScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      const locationData = {
+      const locationData:any = {
         name,
         coordinates: {
           latitude: parseFloat(latitude),
@@ -557,7 +555,7 @@ const LocationFormScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.pickerModalContent}>
-              {soilTypes.map((type) => (
+              {soilTypes.map((type:any) => (
                 <TouchableOpacity
                   key={type}
                   style={[
@@ -747,6 +745,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
+    marginTop:30
   },
   keyboardAvoidView: {
     flex: 1,
