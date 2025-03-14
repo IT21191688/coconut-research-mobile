@@ -80,7 +80,7 @@ const DeviceFormScreen: React.FC = () => {
       const device = await getDeviceById(id);
       setFormDataFromDevice(device);
     } catch (error) {
-      console.error("Failed to load device data:", error);
+      // console.error("Failed to load device data:", error);
       Alert.alert(
         "Error",
         "Failed to load device data. Please try again later."
@@ -245,7 +245,7 @@ const DeviceFormScreen: React.FC = () => {
 
       navigation.goBack();
     } catch (error) {
-      console.error("Failed to save device:", error);
+      // console.error("Failed to save device:", error);
       Alert.alert(
         "Error",
         `Failed to ${

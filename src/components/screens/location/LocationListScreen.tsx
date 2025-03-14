@@ -42,7 +42,7 @@ const LocationListScreen: React.FC = () => {
       const fetchedLocations = await getLocations();
       setLocations(fetchedLocations);
     } catch (error) {
-      console.error("Failed to load locations:", error);
+      // console.error("Failed to load locations:", error);
       Alert.alert("Error", "Failed to load locations. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -56,11 +56,11 @@ const LocationListScreen: React.FC = () => {
   };
 
   const handleAddLocation = () => {
-    navigation.navigate("LocationForm", { mode: "create" });
+    (navigation.navigate as any)("LocationForm", { mode: "create" });
   };
 
   const handleLocationPress = (locationId: string) => {
-    navigation.navigate("LocationDetails", { locationId });
+    (navigation.navigate as any)("LocationDetails", { locationId });
   };
 
   const renderSoilTypeIcon = (soilType: string) => {
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
-    marginTop:30
+    marginTop: 30,
   },
   header: {
     flexDirection: "row",

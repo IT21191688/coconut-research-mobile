@@ -50,7 +50,7 @@ const DeviceDetailScreen: React.FC = () => {
       const fetchedDevice = await getDeviceById(deviceId);
       setDevice(fetchedDevice);
     } catch (error) {
-      console.error(`Failed to load device ${deviceId}:`, error);
+      // console.error(`Failed to load device ${deviceId}:`, error);
       Alert.alert(
         "Error",
         "Failed to load device details. Please try again later."
@@ -67,7 +67,7 @@ const DeviceDetailScreen: React.FC = () => {
       const locationData = await getLocationByDeviceId(deviceId);
       setLocation(locationData);
     } catch (error) {
-      console.error('Failed to load location for device:', error);
+      console.error("Failed to load location for device:", error);
       setLocation(null);
     } finally {
       setIsLocationLoading(false);
@@ -76,14 +76,11 @@ const DeviceDetailScreen: React.FC = () => {
 
   const handleEditDevice = () => {
     if (device) {
-      navigation.navigate(
-        "RegisterDevice" as never,
-        {
-          mode: "edit",
-          deviceId: device.deviceId,
-          deviceData: device,
-        } as never
-      );
+      (navigation.navigate as any)("RegisterDevice", {
+        mode: "edit",
+        deviceId: device.deviceId,
+        deviceData: device,
+      });
     }
   };
 
@@ -94,10 +91,7 @@ const DeviceDetailScreen: React.FC = () => {
       navigation.goBack();
     } catch (error) {
       console.error(`Failed to delete device ${deviceId}:`, error);
-      Alert.alert(
-        "Error",
-        "Failed to delete device. Please try again later."
-      );
+      Alert.alert("Error", "Failed to delete device. Please try again later.");
     }
   };
 
@@ -187,7 +181,7 @@ const DeviceDetailScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading device details...</Text>
       </SafeAreaView>
@@ -224,7 +218,7 @@ const DeviceDetailScreen: React.FC = () => {
                   <Text style={styles.deviceId}>{device.deviceId}</Text>
                   <View style={styles.deviceTypeContainer}>
                     <Ionicons
-                      name={getDeviceTypeIcon(device.type)}
+                      name={getDeviceTypeIcon(device.type) as any}
                       size={18}
                       color={colors.primary}
                     />
@@ -258,7 +252,7 @@ const DeviceDetailScreen: React.FC = () => {
               )}
 
               <View style={styles.deviceDetails}>
-                {device.firmware && (
+                {(device as any).firmware && (
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabelContainer}>
                       <Ionicons
@@ -268,11 +262,13 @@ const DeviceDetailScreen: React.FC = () => {
                       />
                       <Text style={styles.detailLabel}>Firmware:</Text>
                     </View>
-                    <Text style={styles.detailValue}>{device.firmware}</Text>
+                    <Text style={styles.detailValue}>
+                      {(device as any).firmware}
+                    </Text>
                   </View>
                 )}
 
-                {device.lastMaintenance && (
+                {(device as any).lastMaintenance && (
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabelContainer}>
                       <Ionicons
@@ -283,7 +279,9 @@ const DeviceDetailScreen: React.FC = () => {
                       <Text style={styles.detailLabel}>Last Maintenance:</Text>
                     </View>
                     <Text style={styles.detailValue}>
-                      {new Date(device.lastMaintenance).toLocaleDateString()}
+                      {new Date(
+                        (device as any).lastMaintenance
+                      ).toLocaleDateString()}
                     </Text>
                   </View>
                 )}
@@ -323,9 +321,11 @@ const DeviceDetailScreen: React.FC = () => {
               <Text style={styles.sectionTitle}>Location Assignment</Text>
 
               {isLocationLoading ? (
-                <View style={styles.loadingContainer}>
+                <View style={styles.loadingIndicatorContainer}>
                   <ActivityIndicator size="small" color={colors.primary} />
-                  <Text style={styles.loadingText}>Loading location details...</Text>
+                  <Text style={styles.loadingText}>
+                    Loading location details...
+                  </Text>
                 </View>
               ) : location ? (
                 <View>
@@ -597,15 +597,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
-    marginTop:30
+    marginTop: 30,
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContainer: {
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
   },
+  loadingIndicatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
   loadingText: {
-    marginTop: 8,
+    marginLeft: 8,
     fontSize: 14,
     color: colors.gray600,
   },
