@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EventRegister } from 'react-native-event-listeners';
 
-const BASE_URL = 'https://node-backend-1-ymka.onrender.com/api/v1';
+const BASE_URL = 'https://node-backend-zjnf.onrender.com/api/v1';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,

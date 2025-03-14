@@ -68,7 +68,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
 
       setSchedules(historyData);
     } catch (error) {
-      console.error("Failed to load watering history:", error);
+      // console.error("Failed to load watering history:", error);
       Alert.alert(
         "Error",
         "Failed to load watering history. Please try again later."
@@ -493,6 +493,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
                   style={styles.chart}
                   yAxisSuffix="L"
                   fromZero
+                  yAxisLabel="T"
                 />
               )}
             </>
