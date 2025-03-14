@@ -24,6 +24,7 @@ import Button from "../../common/Button";
 import { colors } from "../../../constants/colors";
 import { validateLocationForm } from "../../../utils/validation";
 import { soilTypes } from "../../../constants/config";
+import { ViewStyle } from "react-native";
 
 type LocationFormScreenRouteProp = RouteProp<
   {
@@ -59,7 +60,7 @@ const LocationFormScreen: React.FC = () => {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const navigation:any = useNavigation();
+  const navigation: any = useNavigation();
   const route = useRoute<LocationFormScreenRouteProp>();
   const { mode, locationId, locationData } = route.params;
 
@@ -95,18 +96,18 @@ const LocationFormScreen: React.FC = () => {
 
         if (currentDeviceNotInList) {
           devices.unshift({
-              _id: "current",
-              deviceId: locationData.deviceId,
-              type: "unknown",
-              status: "active",
-              userId: "",
+            _id: "current",
+            deviceId: locationData.deviceId,
+            type: "unknown",
+            status: "active",
+            userId: "",
           } as unknown as Device);
         }
       }
 
       setAvailableDevices(devices);
     } catch (error) {
-      console.error("Failed to load available devices:", error);
+      // console.error("Failed to load available devices:", error);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +133,7 @@ const LocationFormScreen: React.FC = () => {
       setLatitude(location.coords.latitude.toString());
       setLongitude(location.coords.longitude.toString());
     } catch (error) {
-      console.error("Error getting current location:", error);
+      // console.error("Error getting current location:", error);
       Alert.alert(
         "Location Error",
         "Failed to get current location. Please enter coordinates manually."
@@ -185,7 +186,7 @@ const LocationFormScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      const locationData:any = {
+      const locationData: any = {
         name,
         coordinates: {
           latitude: parseFloat(latitude),
@@ -210,7 +211,7 @@ const LocationFormScreen: React.FC = () => {
 
       navigation.goBack();
     } catch (error) {
-      console.error("Failed to save location:", error);
+      // console.error("Failed to save location:", error);
       Alert.alert(
         "Error",
         `Failed to ${
@@ -276,7 +277,12 @@ const LocationFormScreen: React.FC = () => {
                 keyboardType="decimal-pad"
                 error={errors.area}
                 leftIcon="resize"
-                containerStyle={[styles.inputContainer, styles.halfInput]}
+                containerStyle={
+                  [
+                    styles.inputContainer,
+                    styles.halfInput,
+                  ] as unknown as ViewStyle
+                }
               />
 
               <Input
@@ -287,7 +293,12 @@ const LocationFormScreen: React.FC = () => {
                 keyboardType="number-pad"
                 error={errors.totalTrees}
                 leftIcon="leaf"
-                containerStyle={[styles.inputContainer, styles.halfInput]}
+                containerStyle={
+                  [
+                    styles.inputContainer,
+                    styles.halfInput,
+                  ] as unknown as ViewStyle
+                }
               />
             </View>
 
@@ -382,7 +393,12 @@ const LocationFormScreen: React.FC = () => {
                   placeholder="e.g., 6.8649"
                   keyboardType="decimal-pad"
                   error={errors.latitude}
-                  containerStyle={[styles.inputContainer, styles.halfInput]}
+                  containerStyle={
+                    [
+                      styles.inputContainer,
+                      styles.halfInput,
+                    ] as unknown as ViewStyle
+                  }
                 />
 
                 <Input
@@ -392,7 +408,12 @@ const LocationFormScreen: React.FC = () => {
                   placeholder="e.g., 79.8997"
                   keyboardType="decimal-pad"
                   error={errors.longitude}
-                  containerStyle={[styles.inputContainer, styles.halfInput]}
+                  containerStyle={
+                    [
+                      styles.inputContainer,
+                      styles.halfInput,
+                    ] as unknown as ViewStyle
+                  }
                 />
               </View>
 
@@ -555,7 +576,7 @@ const LocationFormScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.pickerModalContent}>
-              {soilTypes.map((type:any) => (
+              {soilTypes.map((type: any) => (
                 <TouchableOpacity
                   key={type}
                   style={[
@@ -651,7 +672,7 @@ const LocationFormScreen: React.FC = () => {
                 >
                   <View style={styles.deviceItemContent}>
                     <Ionicons
-                      name={getDeviceIcon(device.type)}
+                      name={getDeviceIcon(device.type) as any}
                       size={22}
                       color={colors.primary}
                     />
@@ -745,7 +766,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
-    marginTop:30
+    marginTop: 30,
   },
   keyboardAvoidView: {
     flex: 1,
