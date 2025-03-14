@@ -2,13 +2,17 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EventRegister } from 'react-native-event-listeners';
 
-const BASE_URL = 'http://192.168.43.37:7000/api/v1';
+// Update this with your actual backend URL
+const BASE_URL = 'https://node-backend-zjnf.onrender.com/api/v1';
+// const BASE_URL = 'http://192.168.1.7:7000/api/v1';
+
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+
   },
 });
 
