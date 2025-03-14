@@ -50,14 +50,14 @@ const DeviceListScreen: React.FC = () => {
               locationsData[device.deviceId] = location;
             }
           } catch (error) {
-            console.error(`Failed to load location for device ${device.deviceId}:`, error);
+            // console.error(`Failed to load location for device ${device.deviceId}:`, error);
           }
         }
       }
       setLocationMap(locationsData);
       
     } catch (error) {
-      console.error("Failed to load devices:", error);
+      // console.error("Failed to load devices:", error);
       Alert.alert("Error", "Failed to load devices. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -65,15 +65,15 @@ const DeviceListScreen: React.FC = () => {
   };
 
   const handleAddDevice = () => {
-    navigation.navigate('RegisterDevice' as never, {
+    (navigation.navigate as any)('RegisterDevice', {
       mode: "create"
-    } as never);
+    });
   };
-
+  
   const handleDevicePress = (deviceId: string) => {
-    navigation.navigate(DEVICE_ROUTES.DEVICE_DETAILS as never, {
+    (navigation.navigate as any)(DEVICE_ROUTES.DEVICE_DETAILS, {
       deviceId
-    } as never);
+    });
   };
 
   const getBatteryIcon = (level?: number) => {
@@ -138,7 +138,7 @@ const DeviceListScreen: React.FC = () => {
           {item.batteryLevel !== undefined && (
             <View style={styles.batteryContainer}>
               <Ionicons
-                name={getBatteryIcon(item.batteryLevel)}
+                //name={getBatteryIcon(item.batteryLevel)}
                 size={16}
                 color={getBatteryColor(item.batteryLevel)}
               />
@@ -150,7 +150,7 @@ const DeviceListScreen: React.FC = () => {
         <View style={styles.deviceDetails}>
           <View style={styles.deviceTypeContainer}>
             <Ionicons
-              name={getDeviceTypeIcon(item.type)}
+              //name={getDeviceTypeIcon(item.type)}
               size={20}
               color={colors.primary}
             />
