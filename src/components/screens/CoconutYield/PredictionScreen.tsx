@@ -19,6 +19,8 @@ import { getLocationById } from '../../../api/locationApi';
 import { Location } from '../../../types';
 import { Picker } from '@react-native-picker/picker';
 import { yieldApi, YieldPredictionRequest, YieldPredictionResponse } from '../../../api/yieldApi';
+import { LinearGradient } from 'expo-linear-gradient';
+import { format } from 'date-fns';
 
 type PredictionRouteParams = {
   locationId: string;
@@ -84,14 +86,48 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
-  // Yield prediction states
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [selectedMonth, setSelectedMonth] = useState(2); // February (1-indexed)
+  // Get current date information
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+  const currentYear = currentDate.getFullYear();
+
+  // Yield prediction states - update with current date
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [isPredicting, setIsPredicting] = useState(false);
   const [yieldPrediction, setYieldPrediction] = useState<YieldPrediction | null>(null);
-  const [showYearPicker, setShowYearPicker] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [showYearPicker, setShowYearPicker] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  // Get available months (current month plus next 5 months)
+  const getAvailableMonths = () => {
+    const result = [];
+    
+    for (let i = 0; i < 6; i++) {
+      const monthIndex = (currentMonth - 1 + i) % 12; // Convert to 0-indexed
+      const monthNumber = monthIndex + 1; // Convert back to 1-indexed
+      result.push({
+        index: monthNumber,
+        name: MONTHS[monthIndex]
+      });
+    }
+    
+    return result;
+  };
+
+  const availableMonths = getAvailableMonths();
+
+  // Determine year based on selected month
+  const determineYear = (month: number) => {
+    // If selected month is earlier in the calendar than current month,
+    // it must be in the next year
+    if (month < currentMonth) {
+      return currentYear + 1;
+    }
+    return currentYear;
+  };
 
   useEffect(() => {
     // Set up the header title with the location name if available
@@ -101,6 +137,14 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
 
     fetchLocationData();
   }, [locationId]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 60000); // Update every minute
+    
+    return () => clearInterval(timer);
+  }, []);
 
   // Function to fetch location data
   const fetchLocationData = async () => {
@@ -150,7 +194,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
     }
   };
 
-  // Update the predictYield function to use the actual API
+  // Update the predictYield function to use the calculated year
   const predictYield = async () => {
     try {
       setIsPredicting(true);
@@ -172,6 +216,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
       };
 
       const soilTypeCode = soilTypeMap[location?.soilType || ''] || 2;
+      const selectedYear = determineYear(selectedMonth);
 
       // Prepare request data
       const requestData: YieldPredictionRequest = {
@@ -234,57 +279,90 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
     return years === 1 ? `${years} year old` : `${years} years old`;
   };
 
+  const getWeatherColors = (description: string) => {
+    const desc = description?.toLowerCase() || '';
+    
+    if (desc.includes('clear') || desc.includes('sunny')) {
+      return {
+        primary: '#FDB813',
+        secondary: '#F5F7FB',
+        icon: '#FF9500'
+      };
+    } else if (desc.includes('cloud')) {
+      return {
+        primary: '#73A5C6',
+        secondary: '#F0F4FA',
+        icon: '#607D8B'
+      };
+    } else if (desc.includes('rain') || desc.includes('drizzle')) {
+      return {
+        primary: '#57A0D3',
+        secondary: '#EDF4F9',
+        icon: '#4682B4'
+      };
+    } else if (desc.includes('thunder')) {
+      return {
+        primary: '#6A5ACD',
+        secondary: '#EEEDF5',
+        icon: '#483D8B'
+      };
+    } else if (desc.includes('snow') || desc.includes('ice')) {
+      return {
+        primary: '#CFECF4',
+        secondary: '#F0FCFF',
+        icon: '#A5D6E7'
+      };
+    }
+    // Default
+    return {
+      primary: '#78A1BB',
+      secondary: '#F0F4FA',
+      icon: '#5B8EA1'
+    };
+  };
+
+  // Loading state render
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>{t('prediction.loading')}</Text>
-      </SafeAreaView>
+        <Text style={styles.loadingText}>Loading location data...</Text>
+      </View>
     );
   }
 
-  if (error) {
+  // Error state render
+  if (error || !location) {
     return (
-      <SafeAreaView style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={48} color={colors.error} />
-        <Text style={styles.errorText}>{error}</Text>
+      <View style={styles.errorContainer}>
+        <Ionicons name="alert-circle-outline" size={60} color={colors.error} />
+        <Text style={styles.errorText}>{error || 'Failed to load location data'}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={fetchLocationData}>
-          <Text style={styles.retryButtonText}>{t('prediction.retry')}</Text>
+          <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   }
 
-  if (!location) {
-    return null;
-  }
-
+  // Main render for when data is loaded
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Location Info Card */}
-        <View style={styles.compactCard}>
-          <Text style={styles.compactCardTitle}>{location.name}</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        {/* Location Information */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{location.name}</Text>
           
           <View style={styles.compactDetailsGrid}>
             <View style={styles.compactDetailItem}>
-              <Ionicons name="leaf-outline" size={16} color={colors.primary} />
-              <Text style={styles.compactDetailText}>{location.totalTrees} trees</Text>
+              <Ionicons name="leaf-outline" size={18} color={colors.success} />
+              <Text style={styles.compactDetailText}>
+                {location.plantationDate ? calculateAge(new Date(location.plantationDate)) : 'Age unknown'}
+              </Text>
             </View>
             
             <View style={styles.compactDetailItem}>
-              <Ionicons name="resize-outline" size={16} color={colors.primary} />
-              <Text style={styles.compactDetailText}>{location.area} acres</Text>
-            </View>
-            
-            <View style={styles.compactDetailItem}>
-              <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-              <Text style={styles.compactDetailText}>{calculateAge(location.plantationDate)}</Text>
-            </View>
-            
-            <View style={styles.compactDetailItem}>
-              <Ionicons name="earth-outline" size={16} color={colors.textSecondary} />
-              <Text style={styles.compactDetailText}>{location.soilType}</Text>
+              <Ionicons name="git-branch-outline" size={18} color={colors.warning} />
+              <Text style={styles.compactDetailText}>{'Unknown variety'}</Text>
             </View>
           </View>
           
@@ -298,7 +376,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
           </View>
         </View>
 
-        {/* Weather Information - Compact Version */}
+        {/* Enhanced Weather Information */}
         <View style={styles.compactCard}>
           {weatherLoading ? (
             <View style={styles.weatherLoadingContainer}>
@@ -307,30 +385,88 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
             </View>
           ) : weather ? (
             <View style={styles.compactWeatherContainer}>
-              <View style={styles.weatherMain}>
+              {/* Date and Time Display */}
+              <View style={styles.dateTimeContainer}>
+                <View style={styles.dateContainer}>
+                  <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                  <Text style={styles.dateText}>{format(currentDateTime, 'EEEE, MMM dd, yyyy')}</Text>
+                </View>
+                <View style={styles.timeContainer}>
+                  <Ionicons name="time-outline" size={16} color={colors.primary} />
+                  <Text style={styles.timeText}>{format(currentDateTime, 'h:mm a')}</Text>
+                </View>
+              </View>
+
+              <View 
+                style={[
+                  styles.weatherMain,
+                  { backgroundColor: `${getWeatherColors(weather.description).secondary}` }
+                ]}
+              >
                 {weather.icon && (
-                  <Image
-                    source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
-                    style={styles.compactWeatherIcon}
-                  />
+                  <View style={styles.weatherIconContainer}>
+                    <Image
+                      source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
+                      style={styles.compactWeatherIcon}
+                    />
+                  </View>
                 )}
-                <View>
-                  <Text style={styles.compactTemperature}>{Math.round(weather.temperature)}°C</Text>
-                  <Text style={styles.compactWeatherDescription}>{weather.description}</Text>
+                <View style={styles.weatherTextContainer}>
+                  <Text style={styles.compactTemperature}>
+                    {Math.round(weather.temperature)}°C
+                  </Text>
+                  <Text style={[
+                    styles.compactWeatherDescription, 
+                    {color: getWeatherColors(weather.description).primary}
+                  ]}>
+                    {weather.description}
+                  </Text>
+                  <Text style={styles.locationName}>
+                    {location.name}
+                  </Text>
                 </View>
               </View>
               
               <View style={styles.compactWeatherDetails}>
-                <View style={styles.compactWeatherDetail}>
-                  <Ionicons name="water-outline" size={18} color={colors.textSecondary} />
+                <View style={[
+                  styles.compactWeatherDetail, 
+                  {backgroundColor: `${getWeatherColors(weather.description).secondary}30`}
+                ]}>
+                  <Ionicons 
+                    name="water-outline" 
+                    size={22} 
+                    color={getWeatherColors(weather.description).icon} 
+                  />
                   <Text style={styles.compactWeatherValue}>{weather.humidity}%</Text>
                   <Text style={styles.compactWeatherLabel}>Humidity</Text>
                 </View>
 
-                <View style={styles.compactWeatherDetail}>
-                  <Ionicons name="rainy-outline" size={18} color={colors.textSecondary} />
+                <View style={[
+                  styles.compactWeatherDetail, 
+                  {backgroundColor: `${getWeatherColors(weather.description).secondary}30`}
+                ]}>
+                  <Ionicons 
+                    name="rainy-outline" 
+                    size={22} 
+                    color={getWeatherColors(weather.description).icon} 
+                  />
                   <Text style={styles.compactWeatherValue}>{weather.rainfall} mm</Text>
                   <Text style={styles.compactWeatherLabel}>Rainfall</Text>
+                </View>
+                
+                <View style={[
+                  styles.compactWeatherDetail, 
+                  {backgroundColor: `${getWeatherColors(weather.description).secondary}30`}
+                ]}>
+                  <Ionicons 
+                    name="thermometer-outline" 
+                    size={22} 
+                    color={getWeatherColors(weather.description).icon} 
+                  />
+                  <Text style={styles.compactWeatherValue}>
+                    {Math.round(weather.temperature)}°
+                  </Text>
+                  <Text style={styles.compactWeatherLabel}>Temp</Text>
                 </View>
               </View>
             </View>
@@ -345,41 +481,49 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
         {/* Yield Prediction Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Yield Prediction</Text>
+          
+          <Text style={styles.predictionInfoText}>
+            The most accurate prediction is within the next 6 months.
+          </Text>
 
           <View style={styles.pickerRow}>
             <TouchableOpacity
               style={styles.pickerButton}
-              onPress={() => setShowYearPicker(true)}
-            >
-              <Text style={styles.pickerLabel}>Year</Text>
-              <View style={styles.pickerValue}>
-                <Text style={styles.pickerValueText}>{selectedYear}</Text>
-                <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.pickerButton}
               onPress={() => setShowMonthPicker(true)}
             >
-              <Text style={styles.pickerLabel}>Starting Month</Text>
+              <Text style={styles.pickerLabel}>Month</Text>
               <View style={styles.pickerValue}>
                 <Text style={styles.pickerValueText}>{MONTHS[selectedMonth - 1]}</Text>
                 <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
               </View>
             </TouchableOpacity>
+            
+            <View style={styles.yearDisplay}>
+              <Text style={styles.pickerLabel}>Year</Text>
+              <Text style={styles.yearDisplayText}>{determineYear(selectedMonth)}</Text>
+            </View>
           </View>
 
           <TouchableOpacity
-            style={styles.predictButton}
+            style={styles.predictButtonContainer}
             onPress={predictYield}
             disabled={isPredicting}
           >
-            {isPredicting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={styles.predictButtonText}>Predict Yield</Text>
-            )}
+            <LinearGradient
+              colors={['#1a73e8', '#0d47a1']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.predictButtonGradient}
+            >
+              {isPredicting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Text style={styles.predictButtonText}>Predict Yield</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                </>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -496,7 +640,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
           </View>
         </Modal>
 
-        {/* Month Picker Modal */}
+        {/* Month Picker Modal - Updated to show only available months */}
         <Modal
           visible={showMonthPicker}
           transparent
@@ -514,8 +658,8 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
                 selectedValue={selectedMonth}
                 onValueChange={(value) => setSelectedMonth(value)}
               >
-                {MONTHS.map((month, index) => (
-                  <Picker.Item key={index} label={month} value={index + 1} />
+                {availableMonths.map((month) => (
+                  <Picker.Item key={month.index} label={month.name} value={month.index} />
                 ))}
               </Picker>
             </View>
@@ -532,8 +676,9 @@ const styles = StyleSheet.create({
   // Base containers
   container: {
     flex: 1,
-    backgroundColor: '#f7f9fc', // Lighter, more professional background
+    backgroundColor: '#f0f5fa', // Cooler, softer background
     padding: 16,
+    marginTop: -50,
   },
   loadingContainer: {
     flex: 1,
@@ -581,24 +726,42 @@ const styles = StyleSheet.create({
   // Card styles
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16, // More rounded corners
-    padding: 20, // More generous padding
+    borderRadius: 18, // More rounded corners
+    padding: 22, // More generous padding
+    marginBottom: 22,
+    shadowColor: 'rgba(23, 49, 116, 0.1)', // Softer blue shadow
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 0, // Remove border
+  },
+  compactCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18, // Match other cards
+    padding: 16,
     marginBottom: 20,
-    shadowColor: '#1a44b880', // Slightly blue shadow for depth
+    shadowColor: 'rgba(23, 49, 116, 0.1)',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 4,
-    borderColor: '#f0f2f5', // Subtle border
-    borderWidth: 1,
+    borderWidth: 0,
   },
   cardTitle: {
-    fontSize: 20, // Larger title
-    fontWeight: 'bold',
-    color: colors.textPrimary,
+    fontSize: 22, // Larger title
+    fontWeight: '700',
+    color: '#1D2939', // Darker, richer text color
     marginBottom: 20,
-    letterSpacing: 0.2, // Slight letter spacing for elegance
+    letterSpacing: 0.3, // Slight letter spacing for elegance
   },
+  // compactCardTitle: {
+  //   fontSize: 18,
+  //   fontWeight: '700',
+  //   color: '#1D2939',
+  //   marginBottom: 14,
+  //   letterSpacing: 0.2,
+  // },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -694,16 +857,21 @@ const styles = StyleSheet.create({
   pickerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginVertical: 16,
   },
   pickerButton: {
     flex: 1,
-    backgroundColor: '#f7f9fc', // Lighter background
-    borderRadius: 10,
-    padding: 14, // More padding
-    marginHorizontal: 4,
+    backgroundColor: '#f5f9ff', // Subtle blue tint
+    borderRadius: 14,
+    padding: 16,
+    marginHorizontal: 5,
     borderWidth: 1,
-    borderColor: '#eaeef2', // Subtle border
+    borderColor: '#e5eeff', // Subtle blue border
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   pickerLabel: {
     fontSize: 12,
@@ -715,11 +883,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 4,
   },
   pickerValueText: {
-    fontSize: 18, // Larger text
-    fontWeight: '600',
-    color: colors.textPrimary,
+    fontSize: 20, // Larger text
+    fontWeight: '700',
+    color: '#1D2939',
   },
   modalContainer: {
     flex: 1,
@@ -752,24 +921,29 @@ const styles = StyleSheet.create({
   },
 
   // Prediction button styles - more prominent
-  predictButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12, // More rounded
-    paddingVertical: 16, // More height
+  predictButtonContainer: {
+    borderRadius: 14,
+    marginTop: 20,
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  predictButtonGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
-    elevation: 4, // More elevation
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
   },
   predictButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
-    letterSpacing: 0.5, // Slight letter spacing
+    marginRight: 8,
+    letterSpacing: 0.5,
   },
 
   // Prediction results styles - more sophisticated
@@ -863,30 +1037,28 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f5f7fa',
   },
-  factorLabel: {
-    fontSize: 15,
-    color: colors.textSecondary,
-  },
-  factorValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
+  // factorLabel: {
+  //   fontSize: 15,
+  //   color: colors.textSecondary,
+  // },
+  // factorValue: {
+  //   fontSize: 15,
+  //   fontWeight: '600',
+  //   color: colors.textPrimary,
+  // },
 
   // Enhanced card styles for the detailed prediction results
   predictionResultsCard: {
-    backgroundColor: colors.white,
-    borderRadius: 20, // More rounded corners
-    padding: 24, // More generous padding
-    marginTop: 5,
-    marginBottom: 24,
-    shadowColor: '#1a44b880', // Slightly blue shadow
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: '#f0f2f5', // Subtle border
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22, 
+    padding: 24,
+    marginTop: 10,
+    marginBottom: 26,
+    shadowColor: 'rgba(23, 49, 116, 0.15)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   predictionHeaderSection: {
     flexDirection: 'row',
@@ -913,12 +1085,16 @@ const styles = StyleSheet.create({
   },
   averagePredictionContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginVertical: 20,
+    backgroundColor: 'rgba(232, 245, 254, 0.6)', // Light blue background
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    borderRadius: 16,
   },
   averagePredictionValue: {
-    fontSize: 54, // Much larger for impact
+    fontSize: 60, // Larger for dramatic effect
     fontWeight: '800',
-    color: colors.primary,
+    color: '#0366d6', // Rich blue color
     letterSpacing: -1.5,
   },
   averagePredictionLabel: {
@@ -956,12 +1132,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   monthlyPredictionContainer: {
-    backgroundColor: '#f9fafd',
-    borderRadius: 16,
+    backgroundColor: '#f8faff', // Subtle light blue background
+    borderRadius: 18,
     padding: 20,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#edf0f7',
+    borderLeftWidth: 4, // Add accent border
+    borderLeftColor: colors.primary,
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   monthHeader: {
     flexDirection: 'row',
@@ -1037,18 +1218,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   factorsContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#eef2f6',
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginTop: 12,
   },
   factorRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f7fa',
+    borderBottomColor: '#f0f5fa',
+  },
+  factorLabel: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  factorValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1D2939',
   },
   saveButton: {
     flexDirection: 'row',
@@ -1073,24 +1268,12 @@ const styles = StyleSheet.create({
   },
 
   // Compact card styles
-  compactCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 16,
-    shadowColor: '#1a44b880',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-    borderColor: '#f0f2f5',
-    borderWidth: 1,
-  },
   compactCardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1D2939',
+    marginBottom: 14,
+    letterSpacing: 0.2,
   },
   compactDetailsGrid: {
     flexDirection: 'row',
@@ -1125,50 +1308,135 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   compactWeatherContainer: {
-    paddingVertical: 2,
+    paddingVertical: 10,
   },
   weatherMain: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(245, 250, 255, 0.6)', // Light blue background
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
   },
   compactWeatherIcon: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
+    marginRight: 10,
   },
   compactTemperature: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: '#1D2939',
     letterSpacing: -0.5,
   },
   compactWeatherDescription: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.textSecondary,
     textTransform: 'capitalize',
   },
   compactWeatherDetails: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    backgroundColor: '#f9f9fc',
-    borderRadius: 10,
-    padding: 8,
-    marginTop: 6,
+    justifyContent: 'space-around',
+    backgroundColor: '#f5faff',
+    borderRadius: 14,
+    padding: 14,
   },
   compactWeatherDetail: {
-    flexDirection: 'row',
+    flexDirection: 'column', // Change to column for better layout
     alignItems: 'center',
-    marginRight: 16,
+    padding: 8,
   },
   compactWeatherValue: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginLeft: 4,
-    marginRight: 4,
+    marginTop: 8,
+    marginBottom: 2,
   },
   compactWeatherLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textSecondary,
+  },
+  predictionInfoText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 16,
+    fontStyle: 'italic',
+  },
+  
+  yearDisplay: {
+    flex: 1,
+    backgroundColor: '#f0f5fd', // Slightly different blue tint
+    borderRadius: 14,
+    padding: 16,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#e0e9f7',
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  
+  yearDisplayText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1D2939',
+    marginTop: 4,
+  },
+  predictedYieldValue: {
+    fontSize: 46, // Make numbers bigger for impact
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -1, // Tighter spacing for numbers
+    textAlign: 'center',
+  },
+  // Enhanced weather styles
+  dateTimeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingHorizontal: 2,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textPrimary,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  timeText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  weatherIconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 50,
+    padding: 5,
+    marginRight: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  weatherTextContainer: {
+    flex: 1,
+  },
+  locationName: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
 });
 

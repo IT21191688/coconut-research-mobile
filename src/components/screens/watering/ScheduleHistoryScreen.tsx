@@ -22,7 +22,7 @@ import { colors } from '../../../constants/colors';
 const ScheduleHistoryScreen = () => {
   const [viewMode, setViewMode] = useState('list');
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const navigation = useNavigation();
+  const navigation:any = useNavigation();
   
   const {
     schedules,
@@ -34,7 +34,7 @@ const ScheduleHistoryScreen = () => {
     setCustomDateRange,
   } = useWateringSchedule();
 
-  const handleSchedulePress = (schedule) => {
+  const handleSchedulePress = (schedule:any) => {
     navigation.navigate('ScheduleDetail', { scheduleId: schedule._id });
   };
 
@@ -92,7 +92,7 @@ const ScheduleHistoryScreen = () => {
     );
   };
 
-  const renderFilterPill = (periodKey, label) => (
+  const renderFilterPill = (periodKey:any, label:any) => (
     <TouchableOpacity
       style={[
         styles.filterPill,

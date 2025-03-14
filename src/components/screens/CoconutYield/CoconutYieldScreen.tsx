@@ -255,8 +255,9 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
     padding: 20,
+    marginTop: -50,
   },
   header: {
     flexDirection: 'row',

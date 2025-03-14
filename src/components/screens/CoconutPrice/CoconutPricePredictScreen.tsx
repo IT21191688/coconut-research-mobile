@@ -9,7 +9,8 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    Alert
+    Alert,
+    Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -110,10 +111,10 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                 '6': previousPrice6 ? parseFloat(previousPrice6) : 0,
                 '12': previousPrice12 ? parseFloat(previousPrice12) : 0,
             };
-            
+
             // Check if at least one value in previousPrices is greater than 0
             const hasPreviousPrices = Object.values(previousPrices).some(price => price > 0);
-            
+
             const data: {
                 yield_nuts: number;
                 export_volume: number;
@@ -133,12 +134,12 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                 inflation_rate: parseFloat(inflationRate),
                 prediction_date: predictionDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
             };
-            
+
             // Conditionally add previous_prices if at least one value is greater than 0
             if (hasPreviousPrices) {
                 data.previous_prices = previousPrices;
             }
-            
+
 
             const response = await priceApi.predictPrice(data);
             setResult(response);
@@ -178,7 +179,8 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                     contentContainerStyle={styles.scrollContent}
                 >
                     {!result ? (
-                        <>
+                        // Input Form View - Restructured
+                        <>                            
                             <View style={styles.infoCard}>
                                 <Ionicons name="information-circle-outline" size={24} color="#3B82F6" />
                                 <Text style={styles.infoText}>
@@ -186,247 +188,273 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                 </Text>
                             </View>
 
-                            <View style={styles.formSection}>
-                                <Text style={styles.sectionTitle}>{t('price.marketConditions')}</Text>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>{t('price.yieldNuts')}</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={yieldNuts}
-                                        onChangeText={handleYieldChange}
-                                        keyboardType="numeric"
-                                        placeholder={t('price.enterValue')}
-                                    />
-                                    {yieldNuts && !isNaN(parseFloat(yieldNuts)) && (
-                                        <Text style={styles.helperText}>
-                                            {t('price.autoFillMessage')}
-                                        </Text>
-                                    )}
+                            {/* Market Conditions Card */}
+                            <View style={styles.card}>
+                                <View style={styles.cardHeader}>
+                                    <Ionicons name="stats-chart" size={22} color={colors.primary} />
+                                    <Text style={styles.cardTitle}>{t('price.marketConditions')}</Text>
                                 </View>
 
-                                <View style={styles.rowInputs}>
-                                    <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                        <Text style={styles.label}>{t('price.exportVolume')}</Text>
+                                <View style={styles.cardContent}>
+                                    {/* Yield Input with Auto-Fill Notice */}
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.inputLabel}>{t('price.yieldNuts')}</Text>
                                         <TextInput
                                             style={styles.input}
-                                            value={exportVolume}
-                                            onChangeText={setExportVolume}
+                                            value={yieldNuts}
+                                            onChangeText={handleYieldChange}
                                             keyboardType="numeric"
                                             placeholder={t('price.enterValue')}
                                         />
-                                    </View>
-
-                                    <View style={[styles.inputGroup, { flex: 1 }]}>
-                                        <Text style={styles.label}>{t('price.domesticConsumption')}</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            value={domesticConsumption}
-                                            onChangeText={setDomesticConsumption}
-                                            keyboardType="numeric"
-                                            placeholder={t('price.enterValue')}
-                                        />
-                                    </View>
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>{t('price.inflationRate')}</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={inflationRate}
-                                        onChangeText={setInflationRate}
-                                        keyboardType="numeric"
-                                        placeholder={t('price.enterPercentage')}
-                                    />
-                                </View>
-
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>{t('price.predictionDate')}</Text>
-                                    <TouchableOpacity
-                                        style={styles.datePickerButton}
-                                        onPress={() => setShowDatePicker(true)}
-                                    >
-                                        <Text style={styles.datePickerText}>
-                                            {predictionDate.toISOString().split('T')[0]}
-                                        </Text>
-                                        <Ionicons name="calendar" size={20} color="#6B7280" />
-                                    </TouchableOpacity>
-                                    {showDatePicker && (
-                                        <DateTimePicker
-                                            value={predictionDate}
-                                            mode="date"
-                                            display="default"
-                                            minimumDate={new Date()}
-                                            onChange={handleDateChange}
-                                        />
-                                    )}
-                                </View>
-                            </View>
-
-                            <View style={styles.formSection}>
-                                <Text style={styles.sectionTitle}>{t('price.previousPrices')} ({t('common.optional')})</Text>
-
-                                <View style={styles.rowInputs}>
-                                    <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                        <Text style={styles.label}>{t('price.lastMonth')} ({t('common.optional')})</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            value={previousPrice1}
-                                            onChangeText={setPreviousPrice1}
-                                            keyboardType="numeric"
-                                            placeholder={t('price.enterPrice')}
-                                        />
-                                    </View>
-
-                                    <View style={[styles.inputGroup, { flex: 1 }]}>
-                                        <Text style={styles.label}>{t('price.threeMonthsAgo')} ({t('common.optional')})</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            value={previousPrice3}
-                                            onChangeText={setPreviousPrice3}
-                                            keyboardType="numeric"
-                                            placeholder={t('price.enterPrice')}
-                                        />
-                                    </View>
-                                </View>
-
-                                <View style={styles.rowInputs}>
-                                    <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                        <Text style={styles.label}>{t('price.sixMonthsAgo')} ({t('common.optional')})</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            value={previousPrice6}
-                                            onChangeText={setPreviousPrice6}
-                                            keyboardType="numeric"
-                                            placeholder={t('price.enterPrice')}
-                                        />
-                                    </View>
-
-                                    <View style={[styles.inputGroup, { flex: 1 }]}>
-                                        <Text style={styles.label}>{t('price.twelveMonthsAgo')} ({t('common.optional')})</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            value={previousPrice12}
-                                            onChangeText={setPreviousPrice12}
-                                            keyboardType="numeric"
-                                            placeholder={t('price.enterPrice')}
-                                        />
-                                    </View>
-                                </View>
-                            </View>
-
-                            <TouchableOpacity
-                                style={styles.predictButton}
-                                onPress={handlePredict}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#FFFFFF" />
-                                ) : (
-                                    <>
-                                        <Ionicons name="analytics" size={20} color="#FFFFFF" />
-                                        <Text style={styles.predictButtonText}>{t('price.predict')}</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        </>
-                    ) : (
-                        // Results view
-                        <View style={styles.resultContainer}>
-                            <View style={styles.resultHeader}>
-                                <Text style={styles.resultTitle}>{t('price.predictionResult')}</Text>
-                                <Text style={styles.resultDate}>
-                                    {result.month} {result.year}
-                                </Text>
-                            </View>
-
-                            <View style={styles.priceContainer}>
-                                <Text style={styles.priceLabel}>{t('price.predictedPrice')}</Text>
-                                <Text style={styles.priceValue}>
-                                    Rs. {result.predicted_price.toFixed(2)}
-                                </Text>
-                                <Text style={styles.priceUnit}>{t('price.perNut')}</Text>
-                            </View>
-
-                            <View style={styles.resultInfoCard}>
-                                <Text style={styles.resultInfoTitle}>{t('price.marketFactors')}</Text>
-
-                                <View style={styles.factorRow}>
-                                    <View style={styles.factorColumn}>
-                                        <Text style={styles.factorLabel}>{t('price.yieldNuts')}</Text>
-                                        <Text style={styles.factorValue}>{result.yield_nuts}</Text>
-                                    </View>
-
-                                    <View style={styles.factorColumn}>
-                                        <Text style={styles.factorLabel}>{t('price.inflationRate')}</Text>
-                                        <Text style={styles.factorValue}>{result.inflation_rate}%</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.factorRow}>
-                                    <View style={styles.factorColumn}>
-                                        <Text style={styles.factorLabel}>{t('price.exportVolume')}</Text>
-                                        <Text style={styles.factorValue}>{result.export_volume}</Text>
-                                    </View>
-
-                                    <View style={styles.factorColumn}>
-                                        <Text style={styles.factorLabel}>{t('price.domesticConsumption')}</Text>
-                                        <Text style={styles.factorValue}>{result.domestic_consumption}</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.priceHistorySection}>
-                                    <Text style={styles.priceHistoryTitle}>{t('price.priceHistory')}</Text>
-                                    
-                                    {result.previous_prices ? (
-                                        <View style={styles.priceHistoryRow}>
-                                            <View style={styles.priceHistoryItem}>
-                                                <Text style={styles.priceHistoryMonth}>1 {t('price.month')}</Text>
-                                                <Text style={styles.priceHistoryValue}>
-                                                    {result.previous_prices['1'] ? `Rs. ${result.previous_prices['1']}` : '-'}
+                                        {yieldNuts && !isNaN(parseFloat(yieldNuts)) && (
+                                            <View style={styles.helperTextContainer}>
+                                                <Ionicons name="flash" size={12} color={colors.info} />
+                                                <Text style={styles.helperText}>
+                                                    {t('price.autoFillMessage')}
                                                 </Text>
                                             </View>
-                                            
-                                            <View style={styles.priceHistoryItem}>
-                                                <Text style={styles.priceHistoryMonth}>3 {t('price.months')}</Text>
-                                                <Text style={styles.priceHistoryValue}>
-                                                    {result.previous_prices['3'] ? `Rs. ${result.previous_prices['3']}` : '-'}
-                                                </Text>
-                                            </View>
-                                            
-                                            <View style={styles.priceHistoryItem}>
-                                                <Text style={styles.priceHistoryMonth}>6 {t('price.months')}</Text>
-                                                <Text style={styles.priceHistoryValue}>
-                                                    {result.previous_prices['6'] ? `Rs. ${result.previous_prices['6']}` : '-'}
-                                                </Text>
-                                            </View>
-                                            
-                                            <View style={styles.priceHistoryItem}>
-                                                <Text style={styles.priceHistoryMonth}>12 {t('price.months')}</Text>
-                                                <Text style={styles.priceHistoryValue}>
-                                                    {result.previous_prices['12'] ? `Rs. ${result.previous_prices['12']}` : '-'}
-                                                </Text>
+                                        )}
+                                    </View>
+
+                                    {/* Export and Domestic Consumption Row */}
+                                    <View style={styles.row}>
+                                        <View style={styles.halfInput}>
+                                            <Text style={styles.inputLabel}>{t('price.exportVolume')}</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                value={exportVolume}
+                                                onChangeText={setExportVolume}
+                                                keyboardType="numeric"
+                                                placeholder={t('price.enterValue')}
+                                            />
+                                        </View>
+
+                                        <View style={styles.halfInput}>
+                                            <Text style={styles.inputLabel}>{t('price.domesticConsumption')}</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                value={domesticConsumption}
+                                                onChangeText={setDomesticConsumption}
+                                                keyboardType="numeric"
+                                                placeholder={t('price.enterValue')}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Inflation Rate */}
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.inputLabel}>{t('price.inflationRate')}</Text>
+                                        <View style={styles.inputWithUnit}>
+                                            <TextInput
+                                                style={[styles.input, {flex: 1}]}
+                                                value={inflationRate}
+                                                onChangeText={setInflationRate}
+                                                keyboardType="numeric"
+                                                placeholder={t('price.enterPercentage')}
+                                            />
+                                            <View style={styles.inputUnit}>
+                                                <Text style={styles.unitText}>%</Text>
                                             </View>
                                         </View>
-                                    ) : (
-                                        <View style={styles.noPriceHistoryContainer}>
-                                            <Text style={styles.noPriceHistoryText}>
-                                                {t('price.noPriceHistory')}
+                                    </View>
+
+                                    {/* Prediction Date */}
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.inputLabel}>{t('price.predictionDate')}</Text>
+                                        <TouchableOpacity
+                                            style={styles.datePickerButton}
+                                            onPress={() => setShowDatePicker(true)}
+                                        >
+                                            <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+                                            <Text style={styles.datePickerText}>
+                                                {predictionDate.toISOString().split('T')[0]}
                                             </Text>
-                                        </View>
-                                    )}
+                                        </TouchableOpacity>
+                                        {showDatePicker && (
+                                            <DateTimePicker
+                                                value={predictionDate}
+                                                mode="date"
+                                                display="default"
+                                                minimumDate={new Date()}
+                                                onChange={handleDateChange}
+                                            />
+                                        )}
+                                    </View>
                                 </View>
                             </View>
 
-                            <View style={styles.resultActions}>
+                            {/* Previous Prices Card */}
+                            <View style={styles.card}>
+                                <View style={styles.cardHeader}>
+                                    <Ionicons name="time" size={22} color={colors.primary} />
+                                    <Text style={styles.cardTitle}>{t('price.previousPrices')} <Text style={styles.optionalText}>({t('common.optional')})</Text></Text>
+                                </View>
+
+                                <View style={styles.cardContent}>
+                                    {/* Previous Prices Grid */}
+                                    <View style={styles.priceHistoryGrid}>
+                                        <View style={styles.priceHistoryItem}>
+                                            <Text style={styles.priceHistoryMonth}>1 {t('price.month')}</Text>
+                                            <TextInput
+                                                style={styles.priceHistoryInput}
+                                                value={previousPrice1}
+                                                onChangeText={setPreviousPrice1}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                            />
+                                        </View>
+                                        
+                                        <View style={styles.priceHistoryItem}>
+                                            <Text style={styles.priceHistoryMonth}>3 {t('price.months')}</Text>
+                                            <TextInput
+                                                style={styles.priceHistoryInput}
+                                                value={previousPrice3}
+                                                onChangeText={setPreviousPrice3}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                            />
+                                        </View>
+                                        
+                                        <View style={styles.priceHistoryItem}>
+                                            <Text style={styles.priceHistoryMonth}>6 {t('price.months')}</Text>
+                                            <TextInput
+                                                style={styles.priceHistoryInput}
+                                                value={previousPrice6}
+                                                onChangeText={setPreviousPrice6}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                            />
+                                        </View>
+                                        
+                                        <View style={styles.priceHistoryItem}>
+                                            <Text style={styles.priceHistoryMonth}>12 {t('price.months')}</Text>
+                                            <TextInput
+                                                style={styles.priceHistoryInput}
+                                                value={previousPrice12}
+                                                onChangeText={setPreviousPrice12}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Predict Button - Enhanced for visibility */}
+                            <View style={styles.buttonContainer}>
                                 <TouchableOpacity
-                                    style={styles.newPredictionButton}
-                                    onPress={resetForm}
+                                    style={styles.predictButton}
+                                    onPress={handlePredict}
+                                    disabled={loading}
                                 >
-                                    <Ionicons name="refresh" size={20} color="#FFFFFF" />
-                                    <Text style={styles.newPredictionText}>{t('price.newPrediction')}</Text>
+                                    {loading ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" />
+                                    ) : (
+                                        <>
+                                            <Ionicons name="analytics" size={22} color="#FFFFFF" />
+                                            <Text style={styles.predictButtonText}>{t('price.predict')}</Text>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
                             </View>
+                        </>
+                    ) : (
+                        // Results View - Restructured to match new design
+                        <View style={styles.resultContainer}>
+                            <View style={styles.resultHeader}>
+                                <View style={styles.resultHeaderLeft}>
+                                    {/* <Text style={styles.resultTitle}>{t('price.predictionResult')}</Text> */}
+                                    <View style={styles.dateChip}>
+                                        <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                                        <Text style={styles.resultDate}>
+                                            {result.month} {result.year}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Ionicons name="checkmark-circle" size={40} color={colors.success} />
+                            </View>
+
+                            <View style={styles.priceContainerCard}>
+                                <View style={styles.priceContainerInner}>
+                                    <Text style={styles.priceLabel}>{t('price.predictedPrice')}</Text>
+                                    <Text style={styles.priceValue}>
+                                        Rs. {result.predicted_price.toFixed(2)}
+                                    </Text>
+                                    <Text style={styles.priceUnit}>{t('price.perNut')}</Text>
+                                </View>
+                                <View style={styles.priceGraph}>
+                                    <Ionicons name="trending-up" size={60} color="#FFFFFF" style={styles.priceIcon} />
+                                </View>
+                            </View>
+
+                            <View style={styles.card}>
+                                <View style={styles.cardHeader}>
+                                    <Ionicons name="stats-chart" size={22} color={colors.primary} />
+                                    <Text style={styles.cardTitle}>{t('price.marketFactors')}</Text>
+                                </View>
+                                
+                                <View style={styles.metricsGrid}>
+                                    <View style={styles.metricItem}>
+                                        <Ionicons name="leaf-outline" size={22} color={colors.success} style={styles.metricIcon} />
+                                        <Text style={styles.metricValue}>{result.yield_nuts}</Text>
+                                        <Text style={styles.metricLabel}>{t('price.yieldNuts')}</Text>
+                                    </View>
+                                    
+                                    <View style={styles.metricItem}>
+                                        <Ionicons name="trending-up-outline" size={22} color="#ff6b6b" style={styles.metricIcon} />
+                                        <Text style={styles.metricValue}>{result.inflation_rate}%</Text>
+                                        <Text style={styles.metricLabel}>{t('price.inflationRate')}</Text>
+                                    </View>
+                                    
+                                    <View style={styles.metricItem}>
+                                        <Ionicons name="airplane-outline" size={22} color="#4dabf7" style={styles.metricIcon} />
+                                        <Text style={styles.metricValue}>{result.export_volume}</Text>
+                                        <Text style={styles.metricLabel}>{t('price.exportVolume')}</Text>
+                                    </View>
+                                    
+                                    <View style={styles.metricItem}>
+                                        <Ionicons name="home-outline" size={22} color="#9775fa" style={styles.metricIcon} />
+                                        <Text style={styles.metricValue}>{result.domestic_consumption}</Text>
+                                        <Text style={styles.metricLabel}>{t('price.domesticConsumption')}</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {result.previous_prices && (
+                                <View style={styles.card}>
+                                    <View style={styles.cardHeader}>
+                                        <Ionicons name="time" size={22} color={colors.primary} />
+                                        <Text style={styles.cardTitle}>{t('price.priceHistory')}</Text>
+                                    </View>
+                                    
+                                    <View style={styles.priceHistoryChart}>
+                                        {Object.keys(result.previous_prices).map((month, index) => (
+                                            result.previous_prices[month as keyof typeof result.previous_prices] ? (
+                                                <View key={index} style={styles.historyChartItem}>
+                                                    <View style={styles.historyChartBar}>
+                                                        <View 
+                                                            style={[
+                                                                styles.historyChartBarFill,
+                                                                { height: `${Math.min(100, result.previous_prices[month as keyof typeof result.previous_prices] / result.predicted_price * 100)}%` }
+                                                            ]}
+                                                        />
+                                                    </View>
+                                                    <Text style={styles.historyChartValue}>Rs. {result.previous_prices[month as keyof typeof result.previous_prices]}</Text>
+                                                    <Text style={styles.historyChartLabel}>{month} {t('price.month' + (month === '1' ? '' : 's'))}</Text>
+                                                </View>
+                                            ) : null
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
+
+                            <TouchableOpacity
+                                style={styles.newPredictionButton}
+                                onPress={resetForm}
+                            >
+                                <Ionicons name="refresh" size={22} color="#FFFFFF" />
+                                <Text style={styles.newPredictionText}>{t('price.newPrediction')}</Text>
+                            </TouchableOpacity>
                         </View>
                     )}
                 </ScrollView>
@@ -438,127 +466,237 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#f0f2f5',
+        marginTop: -50,
     },
     keyboardAvoid: {
         flex: 1,
     },
     scrollContent: {
-        padding: 16,
-        paddingBottom: 40,
+        paddingVertical: 20,
+        paddingHorizontal: 16,
+    },
+    header: {
+        marginBottom: 16,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: colors.textPrimary,
+        marginBottom: 4,
+    },
+    headerSubtitle: {
+        fontSize: 16,
+        color: colors.textSecondary,
     },
     infoCard: {
-        backgroundColor: '#EBF8FF',
-        borderRadius: 8,
+        backgroundColor: '#edf5ff',
+        borderRadius: 12,
         padding: 16,
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         marginBottom: 20,
         borderWidth: 1,
-        borderColor: '#BEE3F8',
+        borderColor: '#d0e1ff',
     },
     infoText: {
         fontSize: 14,
-        color: '#2563EB',
+        color: '#2c5fea',
         flex: 1,
         marginLeft: 12,
+        lineHeight: 20,
     },
-    formSection: {
+    
+    // New Card-Based Design
+    card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
+        borderRadius: 16,
         marginBottom: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 3,
         elevation: 2,
+        overflow: 'hidden',
     },
-    sectionTitle: {
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f2f5',
+        backgroundColor: '#FAFBFC',
+    },
+    cardTitle: {
         fontSize: 18,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginBottom: 16,
+        fontWeight: '700',
+        color: colors.textPrimary,
+        marginLeft: 10,
     },
-    inputGroup: {
-        marginBottom: 16,
-    },
-    label: {
+    optionalText: {
         fontSize: 14,
-        color: '#4B5563',
-        marginBottom: 6,
+        fontWeight: '400',
+        color: colors.textSecondary,
+        fontStyle: 'italic',
+    },
+    cardContent: {
+        padding: 16,
+    },
+    
+    // Improved Input Styling
+    inputContainer: {
+        marginBottom: 16,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    halfInput: {
+        width: '48%',
+    },
+    inputLabel: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: colors.textPrimary,
+        marginBottom: 8,
     },
     input: {
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
-        padding: 12,
+        backgroundColor: '#F9FAFC',
+        borderRadius: 10,
+        padding: 14,
         fontSize: 16,
-        color: '#1F2937',
+        color: colors.textPrimary,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
     },
-    rowInputs: {
+    helperTextContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 6,
+    },
+    helperText: {
+        fontSize: 13,
+        color: colors.info,
+        marginLeft: 4,
+        fontStyle: 'italic',
+    },
+    inputWithUnit: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    inputUnit: {
+        backgroundColor: '#f5f7fa',
+        padding: 16,
+        borderTopRightRadius: 10,
+        borderBottomRightRadius: 10,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderLeftWidth: 0,
+    },
+    unitText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colors.textSecondary,
     },
     datePickerButton: {
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
-        padding: 12,
+        backgroundColor: '#F9FAFC',
+        borderRadius: 10,
+        padding: 14,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
     },
     datePickerText: {
         fontSize: 16,
-        color: '#1F2937',
+        color: colors.textPrimary,
+        marginLeft: 10,
     },
-    predictButton: {
-        backgroundColor: '#3B82F6',
-        borderRadius: 12,
-        paddingVertical: 14,
+    
+    // Price History Grid
+    priceHistoryGrid: {
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
     },
-    predictButtonText: {
-        color: '#FFFFFF',
+    priceHistoryItem: {
+        width: '48%',
+        backgroundColor: '#f9fafc',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#eef0f5',
+    },
+    priceHistoryMonth: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textSecondary,
+        marginBottom: 8,
+    },
+    priceHistoryInput: {
         fontSize: 16,
         fontWeight: '600',
-        marginLeft: 8,
+        color: colors.primary,
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e8ebef',
     },
-    // Results styles
+    
+    // Results View Styling
     resultContainer: {
         flex: 1,
     },
     resultHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 20,
+    },
+    resultHeaderLeft: {
+        flex: 1,
     },
     resultTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: colors.textPrimary,
+        marginBottom: 8,
+    },
+    dateChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f0f7ff',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#d1e3ff',
+        alignSelf: 'flex-start',
     },
     resultDate: {
-        fontSize: 16,
-        color: '#6B7280',
-        marginTop: 4,
+        fontSize: 14,
+        color: colors.primary,
+        marginLeft: 6,
+        fontWeight: '600',
     },
-    priceContainer: {
-        backgroundColor: '#3B82F6',
-        borderRadius: 12,
-        padding: 20,
-        alignItems: 'center',
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+    priceContainerCard: {
+        backgroundColor: colors.primary,
+        borderRadius: 18,
+        padding: 24,
+        marginBottom: 24,
+        flexDirection: 'row',
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    priceContainerInner: {
+        flex: 3,
     },
     priceLabel: {
         fontSize: 16,
@@ -569,111 +707,152 @@ const styles = StyleSheet.create({
         fontSize: 36,
         fontWeight: 'bold',
         color: '#FFFFFF',
-        marginVertical: 8,
+        marginVertical: 6,
     },
     priceUnit: {
         fontSize: 14,
         color: '#FFFFFF',
         opacity: 0.9,
     },
-    resultInfoCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    resultInfoTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginBottom: 16,
-    },
-    factorRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 16,
-    },
-    factorColumn: {
+    priceGraph: {
         flex: 1,
-    },
-    factorLabel: {
-        fontSize: 14,
-        color: '#6B7280',
-    },
-    factorValue: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginTop: 4,
-    },
-    priceHistorySection: {
-        marginTop: 16,
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    priceHistoryTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginBottom: 12,
-    },
-    priceHistoryRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    priceHistoryItem: {
-        alignItems: 'center',
-    },
-    priceHistoryMonth: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginBottom: 4,
-    },
-    priceHistoryValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1F2937',
-    },
-    resultActions: {
-        marginTop: 20,
-    },
-    newPredictionButton: {
-        backgroundColor: '#3B82F6',
-        borderRadius: 12,
-        paddingVertical: 14,
-        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
     },
+    priceIcon: {
+        opacity: 0.8,
+    },
+    
+    // Metrics Grid
+    metricsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        padding: 10,
+    },
+    metricItem: {
+        width: '50%',
+        padding: 10,
+        alignItems: 'center',
+    },
+    metricIcon: {
+        backgroundColor: '#f5f7fa',
+        padding: 12,
+        borderRadius: 40,
+        marginBottom: 8,
+        overflow: 'hidden',
+    },
+    metricValue: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: colors.textPrimary,
+        marginBottom: 4,
+    },
+    metricLabel: {
+        fontSize: 13,
+        color: colors.textSecondary,
+        textAlign: 'center',
+    },
+    
+    // Price History Chart
+    priceHistoryChart: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'flex-end',
+        padding: 20,
+        height: 180,
+        backgroundColor: '#fafbfc',
+    },
+    historyChartItem: {
+        alignItems: 'center',
+        width: '22%',
+    },
+    historyChartBar: {
+        width: '100%',
+        height: 100,
+        backgroundColor: '#ebeef2',
+        borderRadius: 6,
+        justifyContent: 'flex-end',
+        marginBottom: 8,
+    },
+    historyChartBarFill: {
+        backgroundColor: colors.primary,
+        borderRadius: 6,
+        width: '100%',
+        minHeight: 10,
+    },
+    historyChartValue: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: colors.textPrimary,
+        marginBottom: 4,
+    },
+    historyChartLabel: {
+        fontSize: 11,
+        color: colors.textSecondary,
+    },
+    
+    // New Prediction Button
+    newPredictionButton: {
+        backgroundColor: colors.success,
+        borderRadius: 14,
+        paddingVertical: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.success,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 4,
+        marginTop: 10,
+        marginBottom: 40,
+    },
     newPredictionText: {
         color: '#FFFFFF',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '600',
-        marginLeft: 8,
+        marginLeft: 10,
+        letterSpacing: 0.4,
     },
-    helperText: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginTop: 4,
-        marginBottom: 8,
-        fontStyle: 'italic',
+    
+    // Button container to create clear separation
+    buttonContainer: {
+        marginTop: 16,
+        marginBottom: 40,
+        paddingVertical: 8,
+        // backgroundColor: 'rgba(255,255,255,0.7)',
+        borderRadius: 20,
+        padding: 10,
+        // borderTopWidth: 1,
+        // borderTopColor: '#e0e0e0',
     },
-    noPriceHistoryContainer: {
-        padding: 12,
+    
+    // Enhanced Predict Button with better visibility
+    predictButton: {
+        backgroundColor: colors.primary,
+        borderRadius: 14,
+        paddingVertical: 18,
+        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+        // borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.7)',
+        marginBottom: 10,
     },
-    noPriceHistoryText: {
-        fontSize: 14,
-        color: '#6B7280',
-        fontStyle: 'italic',
+    predictButtonText: {
+        color: '#FFFFFF',
+        fontSize: 20,
+        fontWeight: '700',
+        marginLeft: 12,
+        letterSpacing: 0.5,
+        textShadowColor: 'rgba(0,0,0,0.2)',
+        textShadowOffset: {width: 0, height: 1},
+        textShadowRadius: 2,
     },
 });
 

@@ -73,5 +73,15 @@ export const copraApi = {
       console.error('API Error in deleteBatchReadings:', error);
       throw error;
     }
-  }
+  },
+
+  getMoistureLevel: async (deviceId:string) => {
+    try {
+      const response = await api.post(`/copra/getMoisturelevel/${deviceId}`);
+      return response;
+    } catch (error) {
+      console.error('API Error in getAllBatches:', error);
+      throw error;
+    }
+  },
 };

@@ -101,6 +101,22 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
       bgColor: '#FFF6EB',
       onPress: () => navigation.navigate('OilYield')
     },
+    {
+      id: 'locations',
+      title: 'Locations',
+      icon: 'location-outline',
+      color: '#FF4D4D',
+      bgColor: '#FFEBEB',
+      onPress: () => navigation.navigate('LocationList')
+    },
+    {
+      id: 'devices',
+      title: 'Devices',
+      icon: 'hardware-chip-outline',
+      color: '#7F58FF',
+      bgColor: '#F0EBFF',
+      onPress: () => navigation.navigate('Devices')
+    },
   ];
 
   const handleImageLoad = (index: number) => {

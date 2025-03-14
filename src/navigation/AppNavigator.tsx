@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,10 +11,13 @@ import WateringNavigator from "./WateringNavigator";
 import CoconutYieldNavigator from "./CoconutYieldNavigator";
 import DeviceNavigator from "./DeviceNavigator";
 import LocationNavigator from "./LocationNavigator";
-import CopraNavigator from './copraNavigator';
+import CopraNavigator from "./copraNavigator";
 import HomeScreen from "../components/screens/home/HomeScreen";
 import Loading from "../components/common/Loading";
 import { colors } from "../constants/colors";
+import { setLogoutFunction } from "../api/axios";
+import { logout } from "../api/authApi";
+import { EventRegister } from "react-native-event-listeners";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -62,16 +65,16 @@ const MainTabNavigator = () => {
       <Tab.Screen name="Watering" component={WateringNavigator} />
       <Tab.Screen name="CoconutYield" component={CoconutYieldNavigator} />
       <Tab.Screen name="OilYield" component={CopraNavigator} />
-      <Tab.Screen 
-        name="CopraIdentification" 
+      <Tab.Screen
+        name="CopraIdentification"
         component={HomeScreen}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
-            navigation.navigate('Home', { screen: 'CopraIdentification' });
+            navigation.navigate("Home", { screen: "CopraIdentification" });
           },
         })}
-        options={{ title: 'Copra ID' }}
+        options={{ title: "Copra ID" }}
       />
     </Tab.Navigator>
   );
@@ -85,8 +88,8 @@ const MainNavigator = () => {
         <LocationProvider>
           <MainStack.Navigator screenOptions={{ headerShown: false }}>
             <MainStack.Screen name="Tabs" component={MainTabNavigator} />
-            <MainStack.Screen name="LocationNavigator" component={LocationNavigator} />
-            <MainStack.Screen name="DeviceNavigator" component={DeviceNavigator} />
+            <MainStack.Screen name="LocationList" component={LocationNavigator} />
+            <MainStack.Screen name="Devices" component={DeviceNavigator} />
           </MainStack.Navigator>
         </LocationProvider>
       </DeviceProvider>
@@ -95,7 +98,17 @@ const MainNavigator = () => {
 };
 
 const AppNavigator = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+
+  useEffect(() => {
+    const logoutListener = EventRegister.addEventListener("userLogout", () => {
+      logout();
+    });
+
+    return () => {
+      EventRegister.removeEventListener(logoutListener as string);
+    };
+  }, []);
 
   if (isLoading) {
     return <Loading fullScreen message="Loading..." />;

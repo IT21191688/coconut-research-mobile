@@ -187,14 +187,23 @@ const useWateringSchedule = ({
       case "TODAY":
         startDate = new Date();
         startDate.setHours(0, 0, 0, 0);
+        
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 1); // Add one day to include the full current day
         break;
       case "WEEK":
         startDate = new Date();
         startDate.setDate(today.getDate() - 7);
+        
+        endDate = new Date();
+        endDate.setDate(today.getDate() + 1); // Add one day to include the full current day
         break;
       case "MONTH":
         startDate = new Date();
         startDate.setMonth(today.getMonth() - 1);
+        
+        endDate = new Date();
+        endDate.setDate(today.getDate() + 1); // Add one day to include the full current day
         break;
       case "CUSTOM":
         // Don't modify dateRange for custom period
