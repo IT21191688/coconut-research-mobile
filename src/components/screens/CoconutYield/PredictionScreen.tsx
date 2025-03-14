@@ -491,10 +491,10 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
 
         {/* Yield Prediction Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Yield Prediction</Text>
+          <Text style={styles.cardTitle}>{t('prediction.yieldPrediction')}</Text>
           
           <Text style={styles.predictionInfoText}>
-            The most accurate prediction is within the next 6 months.
+            {t('prediction.accurateTimeframe')}
           </Text>
 
           <View style={styles.pickerRow}>
@@ -502,7 +502,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
               style={styles.pickerButton}
               onPress={() => setShowMonthPicker(true)}
             >
-              <Text style={styles.pickerLabel}>Month</Text>
+              <Text style={styles.pickerLabel}>{t('prediction.monthPickerLabel')}</Text>
               <View style={styles.pickerValue}>
                 <Text style={styles.pickerValueText}>{MONTHS[selectedMonth - 1]}</Text>
                 <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
@@ -510,7 +510,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
             </TouchableOpacity>
             
             <View style={styles.yearDisplay}>
-              <Text style={styles.pickerLabel}>Year</Text>
+              <Text style={styles.pickerLabel}>{t('prediction.yearPickerLabel')}</Text>
               <Text style={styles.yearDisplayText}>{determineYear(selectedMonth)}</Text>
             </View>
           </View>
@@ -530,7 +530,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
-                  <Text style={styles.predictButtonText}>Predict Yield</Text>
+                  <Text style={styles.predictButtonText}>{t('prediction.makeNewPrediction')}</Text>
                   <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                 </>
               )}
@@ -542,7 +542,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
         {yieldPrediction && (
           <View style={styles.predictionResultsCard}>
             <View style={styles.predictionHeaderSection}>
-              <Text style={styles.predictionResultTitle}>Prediction Results</Text>
+              <Text style={styles.predictionResultTitle}>{t('prediction.predictionResults')}</Text>
               <View style={styles.yearBadge}>
                 <Text style={styles.yearBadgeText}>{yieldPrediction.year}</Text>
               </View>
@@ -552,7 +552,7 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
               <Text style={styles.averagePredictionValue}>
                 {yieldPrediction.average_prediction.toFixed(1)}
               </Text>
-              <Text style={styles.averagePredictionLabel}>nuts/hec.</Text>
+              <Text style={styles.averagePredictionLabel}>{t('prediction.nutsPerHectare')}</Text>
             </View>
 
             <View style={styles.predictionStatusContainer}>
@@ -561,14 +561,14 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
                 { backgroundColor: yieldPrediction.status === 'success' ? colors.success : colors.warning }
               ]} />
               <Text style={styles.predictionStatusText}>
-                {yieldPrediction.status === 'success' ? 'Prediction Successful' : 'Status: ' + yieldPrediction.status}
+                {t('prediction.predictionStatus')}
               </Text>
             </View>
 
             <View style={styles.divider} />
 
             {/* Monthly Predictions */}
-            <Text style={styles.sectionTitle}>Monthly Breakdown</Text>
+            <Text style={styles.sectionTitle}>{t('prediction.monthlyBreakdown')}</Text>
             {yieldPrediction.monthly_predictions.map((prediction, index) => (
               <View key={index} style={styles.monthlyPredictionContainer}>
                 <View style={styles.monthHeader}>
