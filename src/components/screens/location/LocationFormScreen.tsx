@@ -25,6 +25,7 @@ import { colors } from "../../../constants/colors";
 import { validateLocationForm } from "../../../utils/validation";
 import { soilTypes } from "../../../constants/config";
 import { ViewStyle } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type LocationFormScreenRouteProp = RouteProp<
   {
@@ -38,6 +39,8 @@ type LocationFormScreenRouteProp = RouteProp<
 >;
 
 const LocationFormScreen: React.FC = () => {
+  const { t } = useTranslation();
+
   // Form state
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
@@ -120,8 +123,8 @@ const LocationFormScreen: React.FC = () => {
 
       if (status !== "granted") {
         Alert.alert(
-          "Permission Denied",
-          "Permission to access location was denied. Please enable location services."
+          t("water-scheduling.locations.permissionDenied"),
+          t("water-scheduling.locations.permissionDeniedMessage")
         );
         return;
       }
@@ -135,8 +138,8 @@ const LocationFormScreen: React.FC = () => {
     } catch (error) {
       // console.error("Error getting current location:", error);
       Alert.alert(
-        "Location Error",
-        "Failed to get current location. Please enter coordinates manually."
+        t("water-scheduling.locations.locationError"),
+        t("water-scheduling.locations.locationErrorMessage")
       );
     } finally {
       setIsGettingLocation(false);
@@ -159,15 +162,19 @@ const LocationFormScreen: React.FC = () => {
 
       // Add coordinate validation
       if (!latitude || isNaN(parseFloat(latitude))) {
-        newErrors.latitude = "Valid latitude is required";
+        newErrors.latitude = t(
+          "water-scheduling.locations.validLatitudeRequired"
+        );
       } else if (parseFloat(latitude) < -90 || parseFloat(latitude) > 90) {
-        newErrors.latitude = "Latitude must be between -90 and 90";
+        newErrors.latitude = t("water-scheduling.locations.latitudeRange");
       }
 
       if (!longitude || isNaN(parseFloat(longitude))) {
-        newErrors.longitude = "Valid longitude is required";
+        newErrors.longitude = t(
+          "water-scheduling.locations.validLongitudeRequired"
+        );
       } else if (parseFloat(longitude) < -180 || parseFloat(longitude) > 180) {
-        newErrors.longitude = "Longitude must be between -180 and 180";
+        newErrors.longitude = t("water-scheduling.locations.longitudeRange");
       }
 
       setErrors(newErrors);
@@ -203,20 +210,26 @@ const LocationFormScreen: React.FC = () => {
 
       if (mode === "create") {
         await createLocation(locationData);
-        Alert.alert("Success", "Location created successfully!");
+        Alert.alert(
+          t("common.success"),
+          t("water-scheduling.locations.locationCreated")
+        );
       } else if (mode === "edit" && locationId) {
         await updateLocation(locationId, locationData);
-        Alert.alert("Success", "Location updated successfully!");
+        Alert.alert(
+          t("common.success"),
+          t("water-scheduling.locations.locationUpdated")
+        );
       }
 
       navigation.goBack();
     } catch (error) {
       // console.error("Failed to save location:", error);
       Alert.alert(
-        "Error",
-        `Failed to ${
-          mode === "create" ? "create" : "update"
-        } location. Please try again.`
+        t("common.error"),
+        mode === "create"
+          ? t("water-scheduling.locations.failedToCreate")
+          : t("water-scheduling.locations.failedToUpdate")
       );
     } finally {
       setIsSubmitting(false);
@@ -245,7 +258,9 @@ const LocationFormScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.gray800} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {mode === "create" ? "Add New Location" : "Edit Location"}
+            {mode === "create"
+              ? t("water-scheduling.locations.addNewLocation")
+              : t("water-scheduling.locations.editLocation")}
           </Text>
           <View style={styles.placeholderButton} />
         </View>
@@ -256,13 +271,17 @@ const LocationFormScreen: React.FC = () => {
         >
           {/* Basic Information Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Basic Information</Text>
+            <Text style={styles.sectionTitle}>
+              {t("water-scheduling.locations.basicInformation")}
+            </Text>
 
             <Input
-              label="Location Name"
+              label={t("water-scheduling.locations.locationName")}
               value={name}
               onChangeText={setName}
-              placeholder="e.g., East Plantation"
+              placeholder={t(
+                "water-scheduling.locations.locationNamePlaceholder"
+              )}
               error={errors.name}
               leftIcon="location"
               containerStyle={styles.inputContainer}
@@ -270,10 +289,10 @@ const LocationFormScreen: React.FC = () => {
 
             <View style={styles.rowInputs}>
               <Input
-                label="Area (acres)"
+                label={t("water-scheduling.locations.area")}
                 value={area}
                 onChangeText={setArea}
-                placeholder="e.g., 2.5"
+                placeholder={t("water-scheduling.locations.areaPlaceholder")}
                 keyboardType="decimal-pad"
                 error={errors.area}
                 leftIcon="resize"
@@ -286,10 +305,10 @@ const LocationFormScreen: React.FC = () => {
               />
 
               <Input
-                label="Total Trees"
+                label={t("water-scheduling.locations.totalTrees")}
                 value={totalTrees}
                 onChangeText={setTotalTrees}
-                placeholder="e.g., 50"
+                placeholder={t("water-scheduling.locations.treesPlaceholder")}
                 keyboardType="number-pad"
                 error={errors.totalTrees}
                 leftIcon="leaf"
@@ -304,7 +323,9 @@ const LocationFormScreen: React.FC = () => {
 
             {/* Soil Type Selector */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Soil Type</Text>
+              <Text style={styles.label}>
+                {t("water-scheduling.locations.soilType")}
+              </Text>
               <TouchableOpacity
                 style={[
                   styles.pickerButton,
@@ -332,7 +353,9 @@ const LocationFormScreen: React.FC = () => {
 
             {/* Plantation Date Picker */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Plantation Date</Text>
+              <Text style={styles.label}>
+                {t("water-scheduling.locations.plantationDate")}
+              </Text>
               <TouchableOpacity
                 style={styles.datePickerButton}
                 onPress={() => setShowDatePicker(true)}
@@ -351,10 +374,12 @@ const LocationFormScreen: React.FC = () => {
             {/* Active Status Toggle */}
             {mode === "edit" && (
               <View style={styles.statusContainer}>
-                <Text style={styles.label}>Status</Text>
+                <Text style={styles.label}>
+                  {t("water-scheduling.locations.status")}
+                </Text>
                 <View style={styles.statusToggle}>
                   <Text style={styles.statusLabel}>
-                    {isActive ? "Active" : "Inactive"}
+                    {isActive ? t("common.active") : t("common.inactive")}
                   </Text>
                   <Switch
                     value={isActive}
@@ -370,10 +395,12 @@ const LocationFormScreen: React.FC = () => {
             )}
 
             <Input
-              label="Description (Optional)"
+              label={t("water-scheduling.locations.descriptionOptional")}
               value={description}
               onChangeText={setDescription}
-              placeholder="Add notes about this location..."
+              placeholder={t(
+                "water-scheduling.locations.descriptionPlaceholder"
+              )}
               multiline
               numberOfLines={3}
               containerStyle={styles.inputContainer}
@@ -382,15 +409,19 @@ const LocationFormScreen: React.FC = () => {
 
           {/* Location Coordinates Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Location Coordinates</Text>
+            <Text style={styles.sectionTitle}>
+              {t("water-scheduling.locations.locationCoordinates")}
+            </Text>
 
             <View style={styles.coordinatesContainer}>
               <View style={styles.coordinateInputs}>
                 <Input
-                  label="Latitude"
+                  label={t("water-scheduling.locations.latitude")}
                   value={latitude}
                   onChangeText={setLatitude}
-                  placeholder="e.g., 6.8649"
+                  placeholder={t(
+                    "water-scheduling.locations.latitudePlaceholder"
+                  )}
                   keyboardType="decimal-pad"
                   error={errors.latitude}
                   containerStyle={
@@ -402,10 +433,12 @@ const LocationFormScreen: React.FC = () => {
                 />
 
                 <Input
-                  label="Longitude"
+                  label={t("water-scheduling.locations.longitude")}
                   value={longitude}
                   onChangeText={setLongitude}
-                  placeholder="e.g., 79.8997"
+                  placeholder={t(
+                    "water-scheduling.locations.longitudePlaceholder"
+                  )}
                   keyboardType="decimal-pad"
                   error={errors.longitude}
                   containerStyle={
@@ -418,7 +451,7 @@ const LocationFormScreen: React.FC = () => {
               </View>
 
               <Button
-                title="Get Current Location"
+                title={t("water-scheduling.locations.getCurrentLocation")}
                 leftIcon={
                   <Ionicons name="locate" size={18} color={colors.white} />
                 }
@@ -433,13 +466,15 @@ const LocationFormScreen: React.FC = () => {
 
           {/* Device Assignment Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Device Assignment</Text>
+            <Text style={styles.sectionTitle}>
+              {t("water-scheduling.locations.deviceAssignment")}
+            </Text>
 
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color={colors.primary} />
                 <Text style={styles.loadingText}>
-                  Loading available devices...
+                  {t("water-scheduling.locations.loadingAvailableDevices")}
                 </Text>
               </View>
             ) : (
@@ -451,12 +486,14 @@ const LocationFormScreen: React.FC = () => {
                       setShowDevicePicker(true);
                     } else {
                       Alert.alert(
-                        "No Devices Available",
-                        "There are no devices available for assignment. Would you like to register a new device?",
+                        t("water-scheduling.locations.noDevicesAvailable"),
+                        t("water-scheduling.locations.registerDeviceQuestion"),
                         [
-                          { text: "Cancel", style: "cancel" },
+                          { text: t("common.cancel"), style: "cancel" },
                           {
-                            text: "Register Device",
+                            text: t(
+                              "water-scheduling.locations.registerDevice"
+                            ),
                             onPress: () =>
                               navigation.navigate("DeviceForm", {
                                 mode: "create",
@@ -479,8 +516,8 @@ const LocationFormScreen: React.FC = () => {
                     ]}
                   >
                     {deviceId
-                      ? `Device: ${deviceId}`
-                      : "Assign a device (optional)"}
+                      ? `${t("water-scheduling.locations.device")}: ${deviceId}`
+                      : t("water-scheduling.locations.assignDeviceOptional")}
                   </Text>
                   <Ionicons
                     name="chevron-down"
@@ -494,12 +531,14 @@ const LocationFormScreen: React.FC = () => {
                     style={styles.removeDeviceButton}
                     onPress={() => {
                       Alert.alert(
-                        "Remove Device",
-                        "Are you sure you want to remove the device assignment?",
+                        t("water-scheduling.locations.removeDevice"),
+                        t(
+                          "water-scheduling.locations.removeDeviceConfirmation"
+                        ),
                         [
-                          { text: "Cancel", style: "cancel" },
+                          { text: t("common.cancel"), style: "cancel" },
                           {
-                            text: "Remove",
+                            text: t("water-scheduling.locations.remove"),
                             style: "destructive",
                             onPress: () => setDeviceId(undefined),
                           },
@@ -512,13 +551,14 @@ const LocationFormScreen: React.FC = () => {
                       size={18}
                       color={colors.error}
                     />
-                    <Text style={styles.removeDeviceText}>Remove device</Text>
+                    <Text style={styles.removeDeviceText}>
+                      {t("water-scheduling.locations.removeDevice")}
+                    </Text>
                   </TouchableOpacity>
                 )}
 
                 <Text style={styles.deviceInfoText}>
-                  Assigning a device will enable automatic soil moisture
-                  readings and improve watering schedule accuracy.
+                  {t("water-scheduling.locations.deviceAssignmentDescription")}
                 </Text>
               </View>
             )}
@@ -527,7 +567,11 @@ const LocationFormScreen: React.FC = () => {
           {/* Submit Buttons */}
           <View style={styles.buttonsContainer}>
             <Button
-              title={mode === "create" ? "Create Location" : "Update Location"}
+              title={
+                mode === "create"
+                  ? t("water-scheduling.locations.createLocation")
+                  : t("water-scheduling.locations.updateLocation")
+              }
               variant="primary"
               size="large"
               isLoading={isSubmitting}
@@ -536,7 +580,7 @@ const LocationFormScreen: React.FC = () => {
             />
 
             <Button
-              title="Cancel"
+              title={t("common.cancel")}
               variant="outline"
               size="large"
               onPress={() => navigation.goBack()}
@@ -567,7 +611,9 @@ const LocationFormScreen: React.FC = () => {
         <View style={styles.pickerModalOverlay}>
           <View style={styles.pickerModalContainer}>
             <View style={styles.pickerModalHeader}>
-              <Text style={styles.pickerModalTitle}>Select Soil Type</Text>
+              <Text style={styles.pickerModalTitle}>
+                {t("water-scheduling.locations.selectSoilType")}
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowSoilTypePicker(false)}
                 style={styles.pickerCloseButton}
@@ -621,7 +667,9 @@ const LocationFormScreen: React.FC = () => {
         <View style={styles.pickerModalOverlay}>
           <View style={styles.pickerModalContainer}>
             <View style={styles.pickerModalHeader}>
-              <Text style={styles.pickerModalTitle}>Select Device</Text>
+              <Text style={styles.pickerModalTitle}>
+                {t("water-scheduling.locations.selectDevice")}
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowDevicePicker(false)}
                 style={styles.pickerCloseButton}
@@ -649,7 +697,7 @@ const LocationFormScreen: React.FC = () => {
                     color={colors.gray600}
                   />
                   <Text style={styles.deviceItemText}>
-                    No device (clear selection)
+                    {t("water-scheduling.locations.noDeviceClearSelection")}
                   </Text>
                 </View>
                 {!deviceId && (
@@ -707,7 +755,7 @@ const LocationFormScreen: React.FC = () => {
                   color={colors.primary}
                 />
                 <Text style={styles.registerDeviceText}>
-                  Register New Device
+                  {t("water-scheduling.locations.registerNewDevice")}
                 </Text>
               </TouchableOpacity>
             </ScrollView>

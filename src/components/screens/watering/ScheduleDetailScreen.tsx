@@ -29,6 +29,7 @@ import WaterNeedChart from "../../../components/watering/WaterNeedChart";
 import SoilConditionsCard from "../../../components/watering/SoilConditionsCard";
 import WeatherConditionsCard from "../../../components/watering/WeatherConditionsCard";
 import ScheduleActionButtons from "../../../components/watering/ScheduleActionButtons";
+import { useTranslation } from "react-i18next";
 
 type ScheduleDetailScreenRouteProp = RouteProp<
   { ScheduleDetail: { scheduleId: string } },
@@ -36,6 +37,7 @@ type ScheduleDetailScreenRouteProp = RouteProp<
 >;
 
 const ScheduleDetailScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [schedule, setSchedule] = useState<any | null>(null);
   const [location, setLocation] = useState<Location | null>(null);
   const [device, setDevice] = useState<Device | null>(null);
@@ -70,8 +72,8 @@ const ScheduleDetailScreen: React.FC = () => {
     } catch (error) {
       console.error(`Failed to load schedule ${scheduleId}:`, error);
       Alert.alert(
-        "Error",
-        "Failed to load schedule details. Please try again later."
+        t("common.error"),
+        t("water-scheduling.schedule.failedToLoadSchedule")
       );
       navigation.goBack();
     } finally {
@@ -86,8 +88,8 @@ const ScheduleDetailScreen: React.FC = () => {
     } catch (error) {
       console.error("Failed to update schedule status:", error);
       Alert.alert(
-        "Error",
-        "Failed to update schedule status. Please try again."
+        t("common.error"),
+        t("water-scheduling.schedule.failedToUpdateStatus")
       );
     }
   };
@@ -108,7 +110,7 @@ const ScheduleDetailScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading schedule details...</Text>
+        <Text style={styles.loadingText}>{t("water-scheduling.schedule.loadingSchedule")}</Text>
       </SafeAreaView>
     );
   }
@@ -117,9 +119,9 @@ const ScheduleDetailScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color={colors.error} />
-        <Text style={styles.errorTitle}>Schedule Not Found</Text>
+        <Text style={styles.errorTitle}>{t("water-scheduling.schedule.scheduleNotFound")}</Text>
         <Text style={styles.errorText}>
-          The watering schedule could not be found or has been deleted.
+          {t("water-scheduling.schedule.scheduleNotFoundDescription")}
         </Text>
       </SafeAreaView>
     );
@@ -147,7 +149,7 @@ const ScheduleDetailScreen: React.FC = () => {
           </View>
 
           <Text style={styles.locationName}>
-            {location?.name || "Unknown Location"}
+            {location?.name || t("water-scheduling.locations.unknownLocation")}
           </Text>
 
           {schedule.notes && (
@@ -197,14 +199,14 @@ const ScheduleDetailScreen: React.FC = () => {
                 ]}
               >
                 {efficiency.status === "optimal"
-                  ? "Optimal watering efficiency"
+                  ? t("water-scheduling.schedule.optimalEfficiency")
                   : efficiency.status === "overwatered"
-                  ? `Overwatered by ${Math.abs(
-                      Math.round(100 - efficiency.percentage)
-                    )}%`
-                  : `Underwatered by ${Math.abs(
-                      Math.round(100 - efficiency.percentage)
-                    )}%`}
+                  ? t("water-scheduling.schedule.overwatered", {
+                      percentage: Math.abs(Math.round(100 - efficiency.percentage))
+                    })
+                  : t("water-scheduling.schedule.underwatered", {
+                      percentage: Math.abs(Math.round(100 - efficiency.percentage))
+                    })}
               </Text>
             </View>
           )}
@@ -220,18 +222,18 @@ const ScheduleDetailScreen: React.FC = () => {
         {/* Execution details if completed */}
         {schedule.status === "completed" && schedule.executionDetails && (
           <Card style={styles.executionCard}>
-            <Text style={styles.sectionTitle}>Execution Details</Text>
+            <Text style={styles.sectionTitle}>{t("water-scheduling.schedule.executionDetails")}</Text>
 
             <View style={styles.executionDetail}>
-              <Text style={styles.detailLabel}>Water Used:</Text>
+              <Text style={styles.detailLabel}>{t("water-scheduling.schedule.waterUsed")}:</Text>
               <Text style={styles.detailValue}>
-                {schedule.actualAmount || schedule.recommendedAmount} liters
+                {schedule.actualAmount || schedule.recommendedAmount} {t("water-scheduling.schedule.liters")}
               </Text>
             </View>
 
             {schedule.executionDetails.startTime && (
               <View style={styles.executionDetail}>
-                <Text style={styles.detailLabel}>Start Time:</Text>
+                <Text style={styles.detailLabel}>{t("water-scheduling.schedule.startTime")}:</Text>
                 <Text style={styles.detailValue}>
                   {formatScheduleDate(
                     schedule.executionDetails.startTime,
@@ -243,7 +245,7 @@ const ScheduleDetailScreen: React.FC = () => {
 
             {schedule.executionDetails.endTime && (
               <View style={styles.executionDetail}>
-                <Text style={styles.detailLabel}>End Time:</Text>
+                <Text style={styles.detailLabel}>{t("water-scheduling.schedule.endTime")}:</Text>
                 <Text style={styles.detailValue}>
                   {formatScheduleDate(
                     schedule.executionDetails.endTime,
@@ -255,19 +257,19 @@ const ScheduleDetailScreen: React.FC = () => {
 
             {schedule.executionDetails.duration && (
               <View style={styles.executionDetail}>
-                <Text style={styles.detailLabel}>Duration:</Text>
+                <Text style={styles.detailLabel}>{t("water-scheduling.schedule.duration")}:</Text>
                 <Text style={styles.detailValue}>
-                  {schedule.executionDetails.duration} minutes
+                  {schedule.executionDetails.duration} {t("water-scheduling.schedule.minutes")}
                 </Text>
               </View>
             )}
 
             <View style={styles.executionDetail}>
-              <Text style={styles.detailLabel}>Executed By:</Text>
+              <Text style={styles.detailLabel}>{t("water-scheduling.schedule.executedBy")}:</Text>
               <Text style={styles.detailValue}>
                 {schedule.executionDetails.executedBy === "automatic"
-                  ? "Automatic System"
-                  : "Manual"}
+                  ? t("water-scheduling.schedule.automaticSystem")
+                  : t("water-scheduling.schedule.manual")}
               </Text>
             </View>
           </Card>
@@ -289,7 +291,7 @@ const ScheduleDetailScreen: React.FC = () => {
 
         {/* Location and device links */}
         <Card style={styles.linksCard}>
-          <Text style={styles.sectionTitle}>Related Resources</Text>
+          <Text style={styles.sectionTitle}>{t("water-scheduling.schedule.relatedResources")}</Text>
 
           {/* Location link */}
           <TouchableOpacity
@@ -301,12 +303,12 @@ const ScheduleDetailScreen: React.FC = () => {
             </View>
             <View style={styles.linkContent}>
               <Text style={styles.linkTitle}>
-                {location?.name || "View Location"}
+                {location?.name || t("water-scheduling.schedule.viewLocation")}
               </Text>
               <Text style={styles.linkSubtitle}>
                 {location
-                  ? `${location.totalTrees} trees, ${location.area} acres`
-                  : "Location details"}
+                  ? `${location.totalTrees} ${t("water-scheduling.locations.trees")}, ${location.area} ${t("water-scheduling.locations.acres")}`
+                  : t("water-scheduling.schedule.locationDetails")}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.gray400} />
@@ -329,10 +331,10 @@ const ScheduleDetailScreen: React.FC = () => {
                 <Text style={styles.linkTitle}>{device.deviceId}</Text>
                 <Text style={styles.linkSubtitle}>
                   {device.type === "soil_sensor"
-                    ? "Soil Sensor"
+                    ? t("water-scheduling.devices.soilSensor")
                     : device.type === "irrigation_controller"
-                    ? "Irrigation Controller"
-                    : "Weather Station"}
+                    ? t("water-scheduling.devices.irrigationController")
+                    : t("water-scheduling.devices.weatherStation")}
                 </Text>
               </View>
               <Ionicons

@@ -21,7 +21,6 @@ import { EventRegister } from "react-native-event-listeners";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const MainStack = createNativeStackNavigator(); // Add this for nested navigation
 
 // Main tab navigator when logged in
 const MainTabNavigator = () => {
@@ -61,7 +60,7 @@ const MainTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Watering" component={WateringNavigator} />
       <Tab.Screen name="CoconutYield" component={CoconutYieldNavigator} />
       <Tab.Screen name="OilYield" component={CopraNavigator} />
@@ -80,17 +79,26 @@ const MainTabNavigator = () => {
   );
 };
 
-// This component wraps MainTabNavigator with the providers
+// Home stack that includes LocationNavigator and DeviceNavigator
+const HomeStack = () => {
+  const HomeStackNav = createNativeStackNavigator();
+  
+  return (
+    <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStackNav.Screen name="HomeScreen" component={HomeScreen} />
+      <HomeStackNav.Screen name="LocationList" component={LocationNavigator} />
+      <HomeStackNav.Screen name="Devices" component={DeviceNavigator} />
+    </HomeStackNav.Navigator>
+  );
+};
+
+// This component wraps everything with the providers
 const MainNavigator = () => {
   return (
     <WateringProvider>
       <DeviceProvider>
         <LocationProvider>
-          <MainStack.Navigator screenOptions={{ headerShown: false }}>
-            <MainStack.Screen name="Tabs" component={MainTabNavigator} />
-            <MainStack.Screen name="LocationList" component={LocationNavigator} />
-            <MainStack.Screen name="Devices" component={DeviceNavigator} />
-          </MainStack.Navigator>
+          <MainTabNavigator />
         </LocationProvider>
       </DeviceProvider>
     </WateringProvider>
