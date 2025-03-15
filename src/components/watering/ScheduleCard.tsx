@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WateringSchedule } from '../../types';
 import StatusBadge from '../common/StatusBadge';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next'; // Import useTranslation hook
 
 interface ScheduleCardProps {
   schedule: WateringSchedule | any;
@@ -24,9 +25,25 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   showDetails = false,
   style,
 }) => {
+  // Initialize translation hook
+  const { t, i18n } = useTranslation();
+  
+  // Get appropriate locale based on current language
+  const getCurrentLocale = () => {
+    const language = i18n.language;
+    switch (language) {
+      case 'ta':
+        return 'ta-IN'; // Tamil locale
+      case 'si':
+        return 'si-LK'; // Sinhala locale
+      default:
+        return 'en-US'; // Default to English locale
+    }
+  };
+  
   const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(getCurrentLocale(), {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -35,7 +52,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
   const formatTime = (dateString: string | Date) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString(getCurrentLocale(), {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
@@ -43,10 +60,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   };
 
   const getWaterNeedCategory = (amount: number): string => {
-    if (amount >= 50) return "High";
-    if (amount >= 30) return "Moderate";
-    if (amount > 0) return "Low";
-    return "None";
+    if (amount >= 50) return t('scheduleCard.waterNeedCategories.high');
+    if (amount >= 30) return t('scheduleCard.waterNeedCategories.moderate');
+    if (amount > 0) return t('scheduleCard.waterNeedCategories.low');
+    return t('scheduleCard.waterNeedCategories.none');
   };
 
   const getWaterNeedColor = (amount: number) => {
@@ -83,7 +100,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       <View style={styles.header}>
         <View>
           <Text style={styles.locationName}>
-            {schedule.locationId.name || 'Location'}
+            {schedule.locationId.name || t('scheduleCard.location')}
           </Text>
           <Text style={styles.dateTime}>
             {formatDate(schedule.date)}, {formatTime(schedule.date)}
@@ -97,11 +114,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           <Ionicons name="water-outline" size={18} color={colors.primary} />
           {schedule.status === 'completed' && schedule.actualAmount ? (
             <Text style={styles.waterInfo}>
-              {schedule.actualAmount}/{schedule.recommendedAmount} liters used
+              {t('scheduleCard.litersUsed', {
+                actual: schedule.actualAmount,
+                recommended: schedule.recommendedAmount
+              })}
             </Text>
           ) : (
             <Text style={styles.waterInfo}>
-              {schedule.recommendedAmount} liters
+              {t('scheduleCard.liters', { amount: schedule.recommendedAmount })}
             </Text>
           )}
           <View style={[styles.needCategoryBadge, { backgroundColor: waterNeedColor.bg }]}>
@@ -113,7 +133,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
         {showDetails && (
           <TouchableOpacity style={styles.detailsButton} onPress={onPress}>
-            <Text style={styles.detailsText}>View Details</Text>
+            <Text style={styles.detailsText}>{t('scheduleCard.viewDetails')}</Text>
             <Ionicons name="chevron-forward" size={16} color={colors.primary} />
           </TouchableOpacity>
         )}
@@ -134,7 +154,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             onPress={onPress}
             activeOpacity={0.7}
           >
-            <Text style={styles.viewDetailsText}>View Details</Text>
+            <Text style={styles.viewDetailsText}>{t('scheduleCard.viewDetails')}</Text>
             <Ionicons name="chevron-forward" size={16} color={colors.primary} />
           </TouchableOpacity>
         </View>

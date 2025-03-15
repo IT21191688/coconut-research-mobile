@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import Card from '../common/Card';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next'; // Import useTranslation hook
 
 interface SoilConditionsCardProps {
   soilConditions: {
@@ -25,9 +26,15 @@ const SoilConditionsCard: React.FC<SoilConditionsCardProps> = ({
   soilConditions,
   plantAge,
   style,
-  title = 'Soil Conditions',
+  title,
   containerStyle,
 }) => {
+  // Initialize translation hook
+  const { t } = useTranslation();
+  
+  // If no custom title is provided, use the translated default title
+  const cardTitle = title || t('soilConditions.title');
+  
   const getMoistureColor = (moisture: number) => {
     if (moisture < 20) return colors.error; // Too dry
     if (moisture < 40) return colors.warning; // Dry
@@ -35,18 +42,26 @@ const SoilConditionsCard: React.FC<SoilConditionsCardProps> = ({
     if (moisture < 80) return colors.info; // Moist
     return colors.primary; // Very moist
   };
+  
+  const getMoistureLabel = (moisture: number): string => {
+    if (moisture < 20) return t('soilConditions.moisture.tooDry');
+    if (moisture < 40) return t('soilConditions.moisture.dry');
+    if (moisture < 60) return t('soilConditions.moisture.optimal');
+    if (moisture < 80) return t('soilConditions.moisture.moist');
+    return t('soilConditions.moisture.veryMoist');
+  };
 
   const getSoilTypeColor = (soilType: string): string => {
     switch (soilType) {
-      case 'Lateritic':
+      case t('soilConditions.soilTypes.lateritic'):
         return '#CD7F32'; // Bronze
-      case 'Sandy Loam':
+      case t('soilConditions.soilTypes.sandyLoam'):
         return '#DAA520'; // Golden
-      case 'Cinnamon Sand':
+      case t('soilConditions.soilTypes.cinnamonSand'):
         return '#D2691E'; // Cinnamon
-      case 'Red Yellow Podzolic':
+      case t('soilConditions.soilTypes.redYellowPodzolic'):
         return '#A52A2A'; // Brown
-      case 'Alluvial':
+      case t('soilConditions.soilTypes.alluvial'):
         return '#708090'; // Slate gray
       default:
         return '#8B4513'; // Default brown
@@ -55,7 +70,7 @@ const SoilConditionsCard: React.FC<SoilConditionsCardProps> = ({
 
   return (
     <Card style={[styles.container, containerStyle]} variant="flat">
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title}>{cardTitle}</Text>
       
       <View style={styles.moistureGrid}>
         <View style={styles.moistureColumn}>
@@ -114,15 +129,19 @@ const SoilConditionsCard: React.FC<SoilConditionsCardProps> = ({
             { backgroundColor: getSoilTypeColor(soilConditions.soilType) }
           ]} />
           <View>
-            <Text style={styles.infoLabel}>Soil Type</Text>
+            <Text style={styles.infoLabel}>{t('soilConditions.soilType')}</Text>
             <Text style={styles.infoValue}>{soilConditions.soilType}</Text>
           </View>
         </View>
         
         {plantAge !== undefined && (
           <View style={styles.ageContainer}>
-            <Text style={styles.infoLabel}>Plant Age</Text>
-            <Text style={styles.infoValue}>{plantAge} {plantAge === 1 ? 'year' : 'years'}</Text>
+            <Text style={styles.infoLabel}>{t('soilConditions.plantAge')}</Text>
+            <Text style={styles.infoValue}>
+              {plantAge} {plantAge === 1 
+                ? t('soilConditions.year') 
+                : t('soilConditions.years')}
+            </Text>
           </View>
         )}
       </View>
@@ -130,19 +149,19 @@ const SoilConditionsCard: React.FC<SoilConditionsCardProps> = ({
       <View style={styles.legendContainer}>
         <View style={styles.legendItem}>
           <View style={[styles.legendColor, { backgroundColor: colors.error }]} />
-          <Text style={styles.legendText}>Too Dry</Text>
+          <Text style={styles.legendText}>{t('soilConditions.moisture.tooDry')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendColor, { backgroundColor: colors.warning }]} />
-          <Text style={styles.legendText}>Dry</Text>
+          <Text style={styles.legendText}>{t('soilConditions.moisture.dry')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendColor, { backgroundColor: colors.success }]} />
-          <Text style={styles.legendText}>Optimal</Text>
+          <Text style={styles.legendText}>{t('soilConditions.moisture.optimal')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendColor, { backgroundColor: colors.info }]} />
-          <Text style={styles.legendText}>Moist</Text>
+          <Text style={styles.legendText}>{t('soilConditions.moisture.moist')}</Text>
         </View>
       </View>
     </Card>

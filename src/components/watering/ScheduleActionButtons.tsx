@@ -14,6 +14,7 @@ import Button from "../common/Button";
 import { colors } from "../../constants/colors";
 import { updateScheduleStatus } from "../../api/wateringApi";
 import { WateringStatus } from "../../types";
+import { useTranslation } from "react-i18next"; // Import useTranslation hook
 
 interface ScheduleActionButtonsProps {
   scheduleId: string;
@@ -34,6 +35,9 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
   showCompleteOnly = false,
   showSkipOnly = false,
 }) => {
+  // Initialize translation hook
+  const { t } = useTranslation();
+  
   const [completeModalVisible, setCompleteModalVisible] = useState(false);
   const [skipModalVisible, setSkipModalVisible] = useState(false);
   const [actualAmount, setActualAmount] = useState(
@@ -43,10 +47,19 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
   const [skipReason, setSkipReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Predefined reasons for skipping watering
+  const skipReasons = [
+    t("customWatering.recentRainfall"),
+    t("customWatering.alreadyWateredManually"),
+    t("customWatering.equipmentUnavailable"),
+    t("customWatering.soilMoistureAdequate"),
+    t("customWatering.otherReason"),
+  ];
+
   const handleMarkAsCompleted = async () => {
     try {
       setIsSubmitting(true);
-      const details:any = {
+      const details: any = {
         actualAmount: Number(actualAmount),
         notes: notes.trim() || undefined,
         executedBy: "manual",
@@ -59,12 +72,12 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
       }
 
       setCompleteModalVisible(false);
-      Alert.alert("Success", "Watering schedule marked as completed");
+      Alert.alert("Success", t("customWatering.successCompleted"));
     } catch (error) {
       console.error("Failed to update schedule status:", error);
       Alert.alert(
-        "Error",
-        "Failed to mark schedule as completed. Please try again later."
+        t("common.error"),
+        t("customWatering.failedToComplete")
       );
     } finally {
       setIsSubmitting(false);
@@ -74,8 +87,10 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
   const handleSkipWatering = async () => {
     try {
       setIsSubmitting(true);
-      const details:any = {
-        notes: skipReason.trim() || undefined,
+      const details: any = {
+        notes: skipReason === t("customWatering.otherReason") 
+          ? notes.trim() || undefined 
+          : skipReason.trim() || undefined,
         executedBy: "manual",
       };
 
@@ -86,10 +101,10 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
       }
 
       setSkipModalVisible(false);
-      Alert.alert("Success", "Watering schedule marked as skipped");
+      Alert.alert("Success", t("customWatering.successSkipped"));
     } catch (error) {
       console.error("Failed to update schedule status:", error);
-      Alert.alert("Error", "Failed to skip schedule. Please try again later.");
+      Alert.alert(t("common.error"), t("customWatering.failedToSkip"));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,7 +116,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
 
   const renderCompleteButton = () => (
     <Button
-      title="Mark as Completed"
+      title={t("customWatering.markAsCompleted")}
       variant="primary"
       leftIcon={
         <Ionicons
@@ -117,11 +132,11 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
 
   const renderSkipButton = () => (
     <Button
-      title="Skip Watering"
+      title={t("customWatering.skipWatering")}
       variant="outline"
       leftIcon={
         <Ionicons
-          //name="alert-triangle-outline"
+          name="close-circle-outline"
           size={20}
           color={colors.gray600}
         />
@@ -155,7 +170,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Complete Watering Task</Text>
+              <Text style={styles.modalTitle}>{t("customWatering.completeWateringTask")}</Text>
               <TouchableOpacity
                 onPress={() => setCompleteModalVisible(false)}
                 style={styles.closeButton}
@@ -167,10 +182,10 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
 
             <View style={styles.modalContent}>
               <Text style={styles.modalQuestion}>
-                Mark this watering task as completed?
+                {t("customWatering.markWateringCompleted")}
               </Text>
 
-              <Text style={styles.inputLabel}>Actual amount used:</Text>
+              <Text style={styles.inputLabel}>{t("customWatering.actualAmountUsed")}</Text>
               <View style={styles.amountInputContainer}>
                 <TextInput
                   style={styles.amountInput}
@@ -179,19 +194,17 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
                   keyboardType="decimal-pad"
                   editable={!isSubmitting}
                 />
-                <Text style={styles.amountUnit}>liters</Text>
+                <Text style={styles.amountUnit}>{t("customWatering.liters")}</Text>
               </View>
 
               <Text style={styles.inputLabel}>
-                Additional notes (optional):
+                {t("customWatering.additionalNotes")}
               </Text>
               <TextInput
                 style={styles.notesInput}
                 value={notes}
-                //style={styles.notesInput}
-                //value={notes}
                 onChangeText={setNotes}
-                placeholder="E.g., Used drip irrigation method"
+                placeholder={t("customWatering.notesPlaceholder")}
                 multiline
                 numberOfLines={3}
                 editable={!isSubmitting}
@@ -200,14 +213,14 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
 
             <View style={styles.modalActions}>
               <Button
-                title="Cancel"
+                title={t("customWatering.cancel")}
                 variant="outline"
                 onPress={() => setCompleteModalVisible(false)}
                 style={styles.modalCancelButton}
                 disabled={isSubmitting}
               />
               <Button
-                title="Confirm Completion"
+                title={t("customWatering.confirmCompletion")}
                 variant="primary"
                 onPress={handleMarkAsCompleted}
                 style={styles.modalConfirmButton}
@@ -228,7 +241,7 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Skip Watering Task</Text>
+              <Text style={styles.modalTitle}>{t("customWatering.skipWateringTask")}</Text>
               <TouchableOpacity
                 onPress={() => setSkipModalVisible(false)}
                 style={styles.closeButton}
@@ -239,17 +252,11 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
             </View>
 
             <View style={styles.modalContent}>
-              <Text style={styles.modalQuestion}>Skip this watering task?</Text>
+              <Text style={styles.modalQuestion}>{t("customWatering.skipThisTask")}</Text>
 
-              <Text style={styles.inputLabel}>Reason for skipping:</Text>
+              <Text style={styles.inputLabel}>{t("customWatering.reasonForSkipping")}</Text>
               <View style={styles.reasonsContainer}>
-                {[
-                  "Recent rainfall",
-                  "Already watered manually",
-                  "Equipment unavailable",
-                  "Soil moisture adequate",
-                  "Other reason",
-                ].map((reason) => (
+                {skipReasons.map((reason) => (
                   <TouchableOpacity
                     key={reason}
                     style={[
@@ -281,12 +288,12 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
                 ))}
               </View>
 
-              {skipReason === "Other reason" && (
+              {skipReason === t("customWatering.otherReason") && (
                 <TextInput
                   style={styles.notesInput}
                   value={notes}
                   onChangeText={setNotes}
-                  placeholder="Please specify the reason"
+                  placeholder={t("customWatering.pleaseSpecifyReason")}
                   multiline
                   numberOfLines={2}
                   editable={!isSubmitting}
@@ -296,17 +303,17 @@ const ScheduleActionButtons: React.FC<ScheduleActionButtonsProps> = ({
 
             <View style={styles.modalActions}>
               <Button
-                title="Cancel"
+                title={t("customWatering.cancel")}
                 variant="outline"
                 onPress={() => setSkipModalVisible(false)}
                 style={styles.modalCancelButton}
                 disabled={isSubmitting}
               />
               <Button
-                title="Confirm Skip"
+                title={t("customWatering.confirmSkip")}
                 variant="primary"
                 onPress={handleSkipWatering}
-                //style={[styles.modalConfirmButton, styles.skipConfirmButton]}
+                style={styles.modalConfirmButton}
                 isLoading={isSubmitting}
               />
             </View>
@@ -412,9 +419,6 @@ const styles = StyleSheet.create({
   modalConfirmButton: {
     flex: 1,
     marginLeft: 8,
-  },
-  skipConfirmButton: {
-    backgroundColor: colors.gray500,
   },
   reasonsContainer: {
     marginBottom: 16,
