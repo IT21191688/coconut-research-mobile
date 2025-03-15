@@ -17,6 +17,7 @@
     },
     "android": {
       "permissions": [
+        "INTERNET",
         "INTERNET"
       ],
       "adaptiveIcon": {
@@ -32,6 +33,12 @@
       "eas": {
         "projectId": "3dd7a429-053a-4cdf-abde-1c7d86b90c98"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3dd7a429-053a-4cdf-abde-1c7d86b90c98"
     }
   }
 }
