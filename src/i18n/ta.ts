@@ -178,6 +178,13 @@ export default {
   navigation: {
     viewPredictionHistory: "கணிப்பு வரலாற்றைக் காண்க",
     coconutPricePredict: "தேங்காய் விலைகளை கணிக்கவும்",
+    tabs: {
+      home: "வீடு",
+      waterScheduling: "நீர் அட்டவணை",
+      coconutYield: "தேங்காய் விளைச்சல்",
+      oilYield: "எண்ணெய் விளைச்சல்",
+      copraId: "கொப்ரா அடையாளம்"
+    }
   },
 
   "water-scheduling": {
@@ -858,6 +865,7 @@ export default {
     },
   },
   home: {
+    home: "வீடு",
     welcomeBack: "மீண்டும் வரவேற்கிறோம்",
     smartFarmManagement: "ஸ்மார்ட் பண்ணை மேலாண்மை",
     monitorFarm: "எங்கிருந்தும் உங்கள் தென்னை பண்ணையை கண்காணிக்கவும்",

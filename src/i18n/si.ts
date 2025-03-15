@@ -174,6 +174,13 @@ export default {
   navigation: {
     viewPredictionHistory: "පුරෝකථන ඉතිහාසය බලන්න",
     coconutPricePredict: "පොල් මිල පුරෝකථනය කරන්න",
+    tabs: {
+      home: "නිවස",
+      waterScheduling: "ජල සැලසුම",
+      coconutYield: "පොල් අස්වැන්න",
+      oilYield: "තෙල් අස්වැන්න",
+      copraId: "කොප්රා හඳුනාගැනීම"
+    }
   },
 
   "water-scheduling": {
@@ -847,25 +854,27 @@ export default {
       regular: "පස් තත්ත්වයන් මත පදනම්ව සාමාන්‍ය ජල සැපයුමක් නිර්දේශ කරයි.",
     },
   },
-  home: {
-    welcomeBack: "නැවත සාදරයෙන් පිළිගනිමු",
-    smartFarmManagement: "බුද්ධිමත් ගොවිපොළ කළමනාකරණය",
-    monitorFarm: "ඔබේ පොල් වතු ඕනෑම තැනක සිට නිරීක්ෂණය කරන්න",
-    copraClassification: "කොප්රා වර්ගීකරණය",
-    dataInsights: "වඩා හොඳ ප්‍රතිඵල සඳහා දත්ත මත පදනම් වූ අවබෝධයන් ලබා ගන්න",
-    weatherIntegration: "කාලගුණ ඒකාබද්ධ කිරීම",
-    optimizeIrrigation: "අනාවැකි මත පදනම්ව වාරිමාර්ග ප්‍රශස්ත කරන්න",
-    remoteControl: "දුරස්ථ පාලනය",
-    automateIrrigation: "වාරිමාර්ග සහ පොහොර යෙදීම ස්වයංක්‍රීය කරන්න",
-    waterScheduling: "ජල කාලසටහන",
-    coconutYield: "පොල් අස්වැන්න",
-    copraIdentification: "කොප්රා හඳුනාගැනීම",
-    dryingTime: "කොප්රා වියළීමේ කාලය",
-    locations: "ස්ථාන",
-    devices: "උපකරණ",
-    account: "ගිණුම",
-    settings: "සැකසුම්",
-    selectLanguage: "භාෂාව තෝරන්න",
-    signOut: "වරන්න"
-  }
+   home: {
+      home: "නිවස",
+      welcomeBack: "නැවත සාදරයෙන් පිළිගනිමු",
+      smartFarmManagement: "බුද්ධිමත් ගොවිපොළ කළමනාකරණය",
+      monitorFarm: "ඔබේ පොල් වතු ඕනෑම තැනක සිට නිරීක්ෂණය කරන්න",
+      copraClassification: "කොප්රා වර්ගීකරණය",
+      dataInsights: "වඩා හොඳ ප්‍රතිඵල සඳහා දත්ත මත පදනම් වූ අවබෝධයන් ලබා ගන්න",
+      weatherIntegration: "කාලගුණ ඒකාබද්ධ කිරීම",
+      optimizeIrrigation: "අනාවැකි මත පදනම්ව වාරිමාර්ග ප්‍රශස්ත කරන්න",
+      remoteControl: "දුරස්ථ පාලනය",
+      automateIrrigation: "වාරිමාර්ග සහ පොහොර යෙදීම ස්වයංක්‍රීය කරන්න",
+      waterScheduling: "ජල කාලසටහන",
+      coconutYield: "පොල් අස්වැන්න",
+      copraIdentification: "කොප්රා හඳුනාගැනීම",
+      dryingTime: "කොප්රා වියළීමේ කාලය",
+      locations: "ස්ථාන",
+      devices: "උපකරණ",
+      account: "ගිණුම",
+      settings: "සැකසුම්",
+      selectLanguage: "භාෂාව තෝරන්න",
+      signOut: "වරන්න"
+    }
+    
 };

@@ -175,6 +175,13 @@ export default {
   navigation: {
     viewPredictionHistory: "View Prediction History",
     coconutPricePredict: "Predict Coconut Prices",
+    tabs: {
+      home: "Home",
+      waterScheduling: "Water Scheduling",
+      coconutYield: "Coconut Yield",
+      oilYield: "Oil Yield",
+      copraId: "Copra ID"
+    }
   },
 
   "water-scheduling": {
@@ -849,6 +856,7 @@ export default {
     },
   },
   home: {
+    home: "Home",
     welcomeBack: "Welcome back",
     smartFarmManagement: "Smart Farm Management",
     monitorFarm: "Monitor your coconut farm from anywhere",
