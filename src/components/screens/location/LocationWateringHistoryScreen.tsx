@@ -19,6 +19,7 @@ import Card from "../../common/Card";
 import Button from "../../common/Button";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LineChart, BarChart } from "react-native-chart-kit";
+import { useTranslation } from "react-i18next";
 
 type LocationWateringHistoryRouteProp = RouteProp<
   { LocationWateringHistory: { locationId: string; locationName: string } },
@@ -28,6 +29,7 @@ type LocationWateringHistoryRouteProp = RouteProp<
 const { width } = Dimensions.get("window");
 
 const LocationWateringHistoryScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState<WateringSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">(
@@ -70,8 +72,8 @@ const LocationWateringHistoryScreen: React.FC = () => {
     } catch (error) {
       // console.error("Failed to load watering history:", error);
       Alert.alert(
-        "Error",
-        "Failed to load watering history. Please try again later."
+        t("common.error"),
+        t("water-scheduling.watering.failedToLoadHistory")
       );
     } finally {
       setIsLoading(false);
@@ -173,10 +175,10 @@ const LocationWateringHistoryScreen: React.FC = () => {
       ],
       legend: [
         chartType === "amount"
-          ? "Water Amount (L)"
+          ? t("water-scheduling.watering.waterAmountChart")
           : chartType === "efficiency"
-          ? "Watering Efficiency (%)"
-          : "Watering Frequency",
+          ? t("water-scheduling.watering.efficiencyChart")
+          : t("water-scheduling.watering.frequencyChart"),
       ],
     };
   };
@@ -275,7 +277,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading watering history...</Text>
+        <Text style={styles.loadingText}>{t("water-scheduling.watering.loadingHistory")}</Text>
       </SafeAreaView>
     );
   }
@@ -289,7 +291,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
         >
           <Ionicons name="arrow-back" size={24} color={colors.gray800} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Watering History</Text>
+        <Text style={styles.headerTitle}>{t("water-scheduling.watering.wateringHistory")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -298,7 +300,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
 
         {/* Time Range Selector */}
         <Card style={styles.selectorCard}>
-          <Text style={styles.sectionTitle}>Time Range</Text>
+          <Text style={styles.sectionTitle}>{t("water-scheduling.watering.timeRange")}</Text>
           <View style={styles.timeRangeButtons}>
             <TouchableOpacity
               style={[
@@ -313,7 +315,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
                   timeRange === "week" && styles.activeTimeRangeText,
                 ]}
               >
-                Week
+                {t("water-scheduling.watering.week")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -329,7 +331,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
                   timeRange === "month" && styles.activeTimeRangeText,
                 ]}
               >
-                Month
+                {t("water-scheduling.watering.month")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -345,14 +347,14 @@ const LocationWateringHistoryScreen: React.FC = () => {
                   timeRange === "year" && styles.activeTimeRangeText,
                 ]}
               >
-                Year
+                {t("water-scheduling.watering.year")}
               </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.customDateContainer}>
             <View style={styles.datePickerButton}>
-              <Text style={styles.datePickerLabel}>Start:</Text>
+              <Text style={styles.datePickerLabel}>{t("water-scheduling.watering.start")}:</Text>
               <TouchableOpacity
                 style={styles.datePicker}
                 onPress={() => setShowStartDatePicker(true)}
@@ -369,7 +371,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
             </View>
 
             <View style={styles.datePickerButton}>
-              <Text style={styles.datePickerLabel}>End:</Text>
+              <Text style={styles.datePickerLabel}>{t("water-scheduling.watering.end")}:</Text>
               <TouchableOpacity
                 style={styles.datePicker}
                 onPress={() => setShowEndDatePicker(true)}
@@ -389,23 +391,23 @@ const LocationWateringHistoryScreen: React.FC = () => {
 
         {/* Summary Stats */}
         <Card style={styles.statsCard}>
-          <Text style={styles.sectionTitle}>Summary</Text>
+          <Text style={styles.sectionTitle}>{t("water-scheduling.watering.summary")}</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{stats.totalWaterUsed}</Text>
-              <Text style={styles.statLabel}>Total Water (L)</Text>
+              <Text style={styles.statLabel}>{t("water-scheduling.watering.totalWater")}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{stats.averageAmount}</Text>
-              <Text style={styles.statLabel}>Avg Per Schedule (L)</Text>
+              <Text style={styles.statLabel}>{t("water-scheduling.watering.avgPerSchedule")}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{schedules.length}</Text>
-              <Text style={styles.statLabel}>Total Schedules</Text>
+              <Text style={styles.statLabel}>{t("water-scheduling.watering.totalSchedules")}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{stats.completedCount}</Text>
-              <Text style={styles.statLabel}>Completed</Text>
+              <Text style={styles.statLabel}>{t("water-scheduling.watering.completed")}</Text>
             </View>
           </View>
         </Card>
@@ -413,7 +415,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
         {/* Chart Type Selector */}
         <Card style={styles.chartCard}>
           <View style={styles.chartHeader}>
-            <Text style={styles.sectionTitle}>Watering Trends</Text>
+            <Text style={styles.sectionTitle}>{t("water-scheduling.watering.wateringTrends")}</Text>
             <View style={styles.chartTypeButtons}>
               <TouchableOpacity
                 style={[
@@ -428,7 +430,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
                     chartType === "amount" && styles.activeChartTypeText,
                   ]}
                 >
-                  Amount
+                  {t("water-scheduling.watering.amount")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -444,7 +446,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
                     chartType === "efficiency" && styles.activeChartTypeText,
                   ]}
                 >
-                  Efficiency
+                  {t("water-scheduling.watering.efficiency")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -460,7 +462,7 @@ const LocationWateringHistoryScreen: React.FC = () => {
                     chartType === "frequency" && styles.activeChartTypeText,
                   ]}
                 >
-                  Frequency
+                  {t("water-scheduling.watering.frequency")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -500,10 +502,9 @@ const LocationWateringHistoryScreen: React.FC = () => {
           ) : (
             <View style={styles.noDataContainer}>
               <Ionicons name="water-outline" size={48} color={colors.gray300} />
-              <Text style={styles.noDataTitle}>No Watering Data</Text>
+              <Text style={styles.noDataTitle}>{t("water-scheduling.watering.noWateringData")}</Text>
               <Text style={styles.noDataSubtitle}>
-                There are no watering schedules for this location in the
-                selected time range.
+                {t("water-scheduling.watering.noWateringDataDescription")}
               </Text>
             </View>
           )}
