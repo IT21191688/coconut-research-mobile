@@ -502,18 +502,28 @@ export const CreateReadingScreen = () => {
         return;
       }
 
+      const moistureLevel = parseFloat(formData.moistureLevel);
+      
+      // Set drying time to 0 if moisture level is 7 or lower
+      const dryingTime = moistureLevel <= 7 ? 0 : null;
+      
       const params = {
         ...formData,
-        moistureLevel: parseFloat(formData.moistureLevel),
+        moistureLevel: moistureLevel,
         coordinates: {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         },
         startTime: formData.startTime,
         status,
+        // If moisture level is 7 or lower, set dryingTime to 0
+        ...(dryingTime !== null && { dryingTime }),
       };
 
+      // Always use the existing createReading method, but with the dryingTime parameter
+      // set to 0 when moisture level is 7 or lower
       const response = await copraApi.createReading(params);
+
       setPredictionResult({
         dryingTime: response.data.dryingTime,
         success: true,
@@ -526,6 +536,7 @@ export const CreateReadingScreen = () => {
         });
       }, 2000);
     } catch (error) {
+      console.error("Error creating reading:", error);
       setPredictionResult({
         dryingTime: 0,
         success: false,
@@ -659,6 +670,11 @@ export const CreateReadingScreen = () => {
               Data fetched from device: {selectedDevice.deviceId}
             </Text>
           )}
+          {parseFloat(formData.moistureLevel) <= 7 && formData.moistureLevel !== "" && !isNaN(parseFloat(formData.moistureLevel)) && (
+            <Text style={styles.readyForProcessingText}>
+              Moisture level ≤ 7: Ready for processing (drying time: 0 hours)
+            </Text>
+          )}
         </View>
 
         {status && (
@@ -706,10 +722,14 @@ export const CreateReadingScreen = () => {
             {predictionResult.success ? (
               <View style={styles.predictionInfo}>
                 <Text style={styles.predictionTitle}>
-                  Predicted Drying Time
+                  {parseFloat(formData.moistureLevel) <= 7 
+                    ? "Ready for Processing" 
+                    : "Predicted Drying Time"}
                 </Text>
                 <Text style={styles.predictionTime}>
-                  {predictionResult.dryingTime.toFixed(1)} hours
+                  {parseFloat(formData.moistureLevel) <= 7 
+                    ? "0 hours" 
+                    : `${predictionResult.dryingTime.toFixed(1)} hours`}
                 </Text>
               </View>
             ) : (
@@ -735,7 +755,11 @@ export const CreateReadingScreen = () => {
                 color="#fff"
                 style={styles.buttonIcon}
               />
-              <Text style={styles.buttonText}>Predict Drying Time</Text>
+              <Text style={styles.buttonText}>
+                {parseFloat(formData.moistureLevel) <= 7 && formData.moistureLevel !== "" && !isNaN(parseFloat(formData.moistureLevel))
+                  ? "Save Reading"
+                  : "Predict Drying Time"}
+              </Text>
             </>
           )}
         </TouchableOpacity>
@@ -745,7 +769,6 @@ export const CreateReadingScreen = () => {
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

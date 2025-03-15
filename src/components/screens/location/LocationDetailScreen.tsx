@@ -24,6 +24,7 @@ import Card from "../../common/Card";
 import StatusBadge from "../../common/StatusBadge";
 import Button from "../../common/Button";
 import { colors } from "../../../constants/colors";
+import { useTranslation } from "react-i18next";
 
 type LocationDetailScreenRouteProp = RouteProp<
   { LocationDetails: { locationId: string } },
@@ -31,6 +32,7 @@ type LocationDetailScreenRouteProp = RouteProp<
 >;
 
 const LocationDetailScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [location, setLocation] = useState<any | null>(null);
   const [device, setDevice] = useState<Device | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,8 +63,8 @@ const LocationDetailScreen: React.FC = () => {
     } catch (error) {
       // console.error(`Failed to load location ${locationId}:`, error);
       Alert.alert(
-        "Error",
-        "Failed to load location details. Please try again later."
+        t("common.error"),
+        t("water-scheduling.locations.failedToLoad")
       );
       navigation.goBack();
     } finally {
@@ -104,23 +106,23 @@ const LocationDetailScreen: React.FC = () => {
   
   const handleDeleteLocation = async () => {
     Alert.alert(
-      "Delete Location",
-      "Are you sure you want to delete this location? This action cannot be undone.",
+      t("water-scheduling.locations.deleteLocation"),
+      t("water-scheduling.locations.deleteConfirmation"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
             try {
               await deleteLocation(locationId);
-              Alert.alert("Success", "Location deleted successfully");
+              Alert.alert(t("common.success"), t("water-scheduling.locations.locationDeleted"));
               navigation.goBack();
             } catch (error) {
               // console.error(`Failed to delete location ${locationId}:`, error);
               Alert.alert(
-                "Error",
-                "Failed to delete location. Please try again later."
+                t("common.error"),
+                t("water-scheduling.locations.failedToDelete")
               );
             }
           },
@@ -142,8 +144,8 @@ const LocationDetailScreen: React.FC = () => {
     } catch (error) {
       // console.error("Failed to get unassigned devices:", error);
       Alert.alert(
-        "Error",
-        "Failed to fetch available devices. Please try again later."
+        t("common.error"),
+        t("water-scheduling.locations.failedToFetchDevices")
       );
     } finally {
       setIsAssigningDevice(false);
@@ -159,9 +161,9 @@ const LocationDetailScreen: React.FC = () => {
     } catch (error) {
       // console.error("Failed to assign device:", error);
       Alert.alert(
-        "Error",
+        t("common.error"),
         String(error) ||
-          "Failed to assign device to location. Please try again."
+          t("water-scheduling.locations.failedToAssignDevice")
       );
     } finally {
       setIsAssigningDevice(false);
@@ -170,12 +172,12 @@ const LocationDetailScreen: React.FC = () => {
 
   const handleRemoveDevice = async () => {
     Alert.alert(
-      "Remove Device",
-      "Are you sure you want to remove the assigned device from this location?",
+      t("water-scheduling.locations.removeDevice"),
+      t("water-scheduling.locations.removeDeviceConfirmation"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Remove",
+          text: t("water-scheduling.locations.remove"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -185,8 +187,8 @@ const LocationDetailScreen: React.FC = () => {
             } catch (error) {
               // console.error("Failed to remove device:", error);
               Alert.alert(
-                "Error",
-                "Failed to remove device. Please try again later."
+                t("common.error"),
+                t("water-scheduling.locations.failedToRemoveDevice")
               );
             }
           },
@@ -201,7 +203,7 @@ const LocationDetailScreen: React.FC = () => {
       const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
       Linking.openURL(url).catch((err) => {
         // console.error("Failed to open maps:", err);
-        Alert.alert("Error", "Unable to open maps application");
+        Alert.alert(t("common.error"), t("water-scheduling.locations.unableToOpenMaps"));
       });
     }
   };
@@ -226,11 +228,11 @@ const LocationDetailScreen: React.FC = () => {
 
     return (
       <Text style={styles.calculatedAge}>
-        {diffYears > 0 ? `${diffYears} year${diffYears !== 1 ? "s" : ""}` : ""}
+        {diffYears > 0 ? `${diffYears} ${diffYears !== 1 ? t("common.years") : t("common.year")}` : ""}
         {diffMonths > 0
-          ? ` ${diffMonths} month${diffMonths !== 1 ? "s" : ""}`
+          ? ` ${diffMonths} ${diffMonths !== 1 ? t("common.months") : t("common.month")}`
           : diffYears === 0
-          ? "< 1 month"
+          ? t("water-scheduling.locations.lessThanOneMonth")
           : ""}
       </Text>
     );
@@ -240,7 +242,7 @@ const LocationDetailScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading location details...</Text>
+        <Text style={styles.loadingText}>{t("water-scheduling.locations.loadingLocation")}</Text>
       </SafeAreaView>
     );
   }
@@ -256,7 +258,7 @@ const LocationDetailScreen: React.FC = () => {
           >
             <Ionicons name="arrow-back" size={24} color={colors.gray800} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Location Details</Text>
+          <Text style={styles.headerTitle}>{t("water-scheduling.locations.locationDetails")}</Text>
           <TouchableOpacity
             style={styles.editButton}
             onPress={handleEditLocation}
@@ -283,7 +285,7 @@ const LocationDetailScreen: React.FC = () => {
                     color={colors.primary}
                   />
                   <Text style={styles.statValue}>{location.area}</Text>
-                  <Text style={styles.statLabel}>acres</Text>
+                  <Text style={styles.statLabel}>{t("water-scheduling.locations.acres")}</Text>
                 </View>
 
                 <View style={styles.statItem}>
@@ -293,7 +295,7 @@ const LocationDetailScreen: React.FC = () => {
                     color={colors.success}
                   />
                   <Text style={styles.statValue}>{location.totalTrees}</Text>
-                  <Text style={styles.statLabel}>trees</Text>
+                  <Text style={styles.statLabel}>{t("water-scheduling.locations.trees")}</Text>
                 </View>
 
                 <View style={styles.statItem}>
@@ -304,14 +306,14 @@ const LocationDetailScreen: React.FC = () => {
                     ]}
                   />
                   <Text style={styles.statValue}>{location.soilType}</Text>
-                  <Text style={styles.statLabel}>soil type</Text>
+                  <Text style={styles.statLabel}>{t("water-scheduling.locations.soilType")}</Text>
                 </View>
               </View>
             </Card>
 
             {/* Plantation Details Card */}
             <Card style={styles.detailCard}>
-              <Text style={styles.sectionTitle}>Plantation Details</Text>
+              <Text style={styles.sectionTitle}>{t("water-scheduling.locations.plantationDetails")}</Text>
 
               <View style={styles.detailRow}>
                 <View style={styles.detailLabelContainer}>
@@ -320,7 +322,7 @@ const LocationDetailScreen: React.FC = () => {
                     size={20}
                     color={colors.gray600}
                   />
-                  <Text style={styles.detailLabel}>Planted on:</Text>
+                  <Text style={styles.detailLabel}>{t("water-scheduling.locations.plantedOn")}:</Text>
                 </View>
                 <View style={styles.detailValueContainer}>
                   <Text style={styles.detailValue}>
@@ -337,7 +339,7 @@ const LocationDetailScreen: React.FC = () => {
                     size={20}
                     color={colors.gray600}
                   />
-                  <Text style={styles.detailLabel}>Coordinates:</Text>
+                  <Text style={styles.detailLabel}>{t("water-scheduling.locations.coordinates")}:</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.coordinatesContainer}
@@ -357,7 +359,7 @@ const LocationDetailScreen: React.FC = () => {
 
               {location.description && (
                 <View style={styles.descriptionContainer}>
-                  <Text style={styles.descriptionLabel}>Description:</Text>
+                  <Text style={styles.descriptionLabel}>{t("water-scheduling.locations.description")}:</Text>
                   <Text style={styles.descriptionText}>
                     {location.description}
                   </Text>
@@ -367,12 +369,12 @@ const LocationDetailScreen: React.FC = () => {
 
             {/* Device Section */}
             <Card style={styles.deviceCard}>
-              <Text style={styles.sectionTitle}>Device Assignment</Text>
+              <Text style={styles.sectionTitle}>{t("water-scheduling.locations.deviceAssignment")}</Text>
 
               {isDeviceLoading ? (
                 <View style={styles.deviceLoadingContainer}>
                   <ActivityIndicator size="small" color={colors.primary} />
-                  <Text style={styles.loadingText}>Loading device info...</Text>
+                  <Text style={styles.loadingText}>{t("water-scheduling.locations.loadingDeviceInfo")}</Text>
                 </View>
               ) : location.deviceId && device ? (
                 <View style={styles.deviceInfoContainer}>
@@ -385,7 +387,7 @@ const LocationDetailScreen: React.FC = () => {
                     </View>
                   </View>
                   <Button
-                    title="Remove Device"
+                    title={t("water-scheduling.locations.removeDevice")}
                     leftIcon={
                       <Ionicons
                         name="close-circle-outline"
@@ -406,13 +408,12 @@ const LocationDetailScreen: React.FC = () => {
                     size={48}
                     color={colors.gray300}
                   />
-                  <Text style={styles.noDeviceText}>No device assigned</Text>
+                  <Text style={styles.noDeviceText}>{t("water-scheduling.locations.noDeviceAssigned")}</Text>
                   <Text style={styles.noDeviceSubtext}>
-                    Assign a device to monitor soil moisture and automate
-                    watering schedules
+                    {t("water-scheduling.locations.assignDeviceDescription")}
                   </Text>
                   <Button
-                    title="Assign Device"
+                    title={t("water-scheduling.locations.assignDevice")}
                     leftIcon={
                       <Ionicons
                         name="add-circle-outline"
@@ -431,13 +432,13 @@ const LocationDetailScreen: React.FC = () => {
             {/* Watering History Button */}
             <Card style={styles.wateringHistoryCard}>
               <View style={styles.wateringHistoryHeader}>
-                <Text style={styles.sectionTitle}>Watering History</Text>
+                <Text style={styles.sectionTitle}>{t("water-scheduling.locations.wateringHistory")}</Text>
                 <Text style={styles.wateringHistorySubtext}>
-                  View watering data and trends for this location
+                  {t("water-scheduling.locations.wateringHistoryDescription")}
                 </Text>
               </View>
               <Button
-                title="View Watering History"
+                title={t("water-scheduling.locations.viewWateringHistory")}
                 leftIcon={
                   <Ionicons
                     name="water-outline"
@@ -454,7 +455,7 @@ const LocationDetailScreen: React.FC = () => {
             {/* Action Buttons */}
             <View style={styles.actionButtonsContainer}>
               <Button
-                title="Delete Location"
+                title={t("water-scheduling.locations.deleteLocation")}
                 variant="outline"
                 leftIcon={
                   <Ionicons
@@ -477,7 +478,7 @@ const LocationDetailScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Available Devices</Text>
+              <Text style={styles.modalTitle}>{t("water-scheduling.locations.availableDevices")}</Text>
               <TouchableOpacity
                 onPress={() => setShowDeviceModal(false)}
                 style={styles.closeButton}
@@ -517,13 +518,12 @@ const LocationDetailScreen: React.FC = () => {
                   size={48}
                   color={colors.gray400}
                 />
-                <Text style={styles.noDevicesText}>No devices available</Text>
+                <Text style={styles.noDevicesText}>{t("water-scheduling.locations.noDevicesAvailable")}</Text>
                 <Text style={styles.noDevicesSubtext}>
-                  All devices are currently assigned or there are no devices
-                  registered.
+                  {t("water-scheduling.locations.noDevicesAvailableDescription")}
                 </Text>
                 <Button
-                  title="Register New Device"
+                  title={t("water-scheduling.locations.registerNewDevice")}
                   variant="primary"
                   onPress={() => {
                     setShowDeviceModal(false);

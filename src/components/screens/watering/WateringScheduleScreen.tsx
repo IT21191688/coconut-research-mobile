@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { useWatering } from "../../../context/WateringContext";
 import ScheduleCard from "../../../components/watering/ScheduleCard";
 import Button from "../../../components/common/Button";
@@ -21,6 +22,7 @@ import { colors } from "../../../constants/colors";
 import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const WateringScheduleScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation:any = useNavigation();
   const {
     todaySchedules,
@@ -61,13 +63,13 @@ const WateringScheduleScreen: React.FC = () => {
         <Card style={styles.emptyTodayContainer} variant="flat">
           <Ionicons name="water-outline" size={48} color={colors.gray300} />
           <Text style={styles.emptyTodayTitle}>
-            No watering scheduled today
+            {t("water-scheduling.main.noWateringToday")}
           </Text>
           <Text style={styles.emptyTodayText}>
-            You don't have any watering tasks scheduled for today.
+            {t("water-scheduling.main.noWateringTodayDescription")}
           </Text>
           <Button
-            title="Create Watering Schedule"
+            title={t("water-scheduling.main.createWateringSchedule")}
             variant="primary"
             leftIcon={
               <Ionicons
@@ -88,19 +90,19 @@ const WateringScheduleScreen: React.FC = () => {
         <View style={styles.todaySummary}>
           <View style={styles.countBadge}>
             <Text style={styles.countNumber}>{wateringStats.pendingCount}</Text>
-            <Text style={styles.countLabel}>pending</Text>
+            <Text style={styles.countLabel}>{t("water-scheduling.main.pending")}</Text>
           </View>
           <View style={styles.countBadge}>
             <Text style={styles.countNumber}>
               {wateringStats.completedCount}
             </Text>
-            <Text style={styles.countLabel}>completed</Text>
+            <Text style={styles.countLabel}>{t("water-scheduling.main.completed")}</Text>
           </View>
           <View style={styles.countBadge}>
             <Text style={styles.countNumber}>
               {wateringStats.totalWaterUsed}
             </Text>
-            <Text style={styles.countLabel}>liters used</Text>
+            <Text style={styles.countLabel}>{t("water-scheduling.main.litersUsed")}</Text>
           </View>
         </View>
 
@@ -114,7 +116,7 @@ const WateringScheduleScreen: React.FC = () => {
         ))}
 
         <Button
-          title="Create New Schedule"
+          title={t("water-scheduling.main.createNewSchedule")}
           variant="outline"
           leftIcon={
             <Ionicons
@@ -132,13 +134,13 @@ const WateringScheduleScreen: React.FC = () => {
 
   const renderUpcomingSection = () => {
     if (upcomingSchedules.length === 0) {
-      return <Text style={styles.noUpcomingText}>No upcoming schedules</Text>;
+      return <Text style={styles.noUpcomingText}>{t("water-scheduling.main.noUpcomingSchedules")}</Text>;
     }
 
     return (
       <>
         <Text style={styles.upcomingTitle}>
-          Upcoming Schedules ({upcomingSchedules.length})
+          {t("water-scheduling.main.upcomingSchedulesCount", {count: upcomingSchedules.length})}
         </Text>
         {upcomingSchedules.slice(0, 3).map((schedule) => (
           <ScheduleCard
@@ -154,7 +156,7 @@ const WateringScheduleScreen: React.FC = () => {
             onPress={() => navigation.navigate("ScheduleHistory")}
           >
             <Text style={styles.viewAllText}>
-              View All ({upcomingSchedules.length})
+              {t("water-scheduling.main.viewAll", {count: upcomingSchedules.length})}
             </Text>
             <Ionicons name="chevron-forward" size={16} color={colors.primary} />
           </TouchableOpacity>
@@ -163,52 +165,11 @@ const WateringScheduleScreen: React.FC = () => {
     );
   };
 
-  // const renderResourceButtons = () => (
-  //   <View style={styles.resourceButtonsContainer}>
-  //     <Text style={styles.resourceTitle}>Manage Resources</Text>
-  //     <View style={styles.resourceButtons}>
-  //       <TouchableOpacity
-  //         style={styles.resourceButton}
-  //         onPress={handleViewLocations}
-  //       >
-  //         <View
-  //           style={[
-  //             styles.resourceIcon,
-  //             { backgroundColor: colors.primary + "20" },
-  //           ]}
-  //         >
-  //           <Ionicons name="location" size={24} color={colors.primary} />
-  //         </View>
-  //         <Text style={styles.resourceText}>Locations</Text>
-  //       </TouchableOpacity>
-
-  //       <TouchableOpacity
-  //         style={styles.resourceButton}
-  //         onPress={handleViewDevices}
-  //       >
-  //         <View
-  //           style={[
-  //             styles.resourceIcon,
-  //             { backgroundColor: colors.secondary + "20" },
-  //           ]}
-  //         >
-  //           <Ionicons
-  //             name="hardware-chip-outline"
-  //             size={24}
-  //             color={colors.secondary}
-  //           />
-  //         </View>
-  //         <Text style={styles.resourceText}>Devices</Text>
-  //       </TouchableOpacity>
-  //     </View>
-  //   </View>
-  // );
-
   if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading watering schedules...</Text>
+        <Text style={styles.loadingText}>{t("water-scheduling.main.loadingSchedules")}</Text>
       </SafeAreaView>
     );
   }
@@ -226,16 +187,14 @@ const WateringScheduleScreen: React.FC = () => {
         }
       >
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Today's Watering</Text>
+          <Text style={styles.sectionTitle}>{t("water-scheduling.main.todaysWatering")}</Text>
           {renderTodaySection()}
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Upcoming</Text>
+          <Text style={styles.sectionTitle}>{t("water-scheduling.main.upcoming")}</Text>
           {renderUpcomingSection()}
         </View>
-
-        {/* {renderResourceButtons()} */}
       </ScrollView>
 
       <TouchableOpacity

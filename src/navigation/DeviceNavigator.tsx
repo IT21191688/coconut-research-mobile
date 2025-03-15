@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import DeviceListScreen from '../components/screens/device/DeviceListScreen';
 import DeviceDetailScreen from '../components/screens/device/DeviceDetailScreen';
@@ -12,6 +13,8 @@ import { DEVICE_ROUTES } from '../constants/routes';
 const Stack = createNativeStackNavigator();
 
 const DeviceNavigator = () => {
+  const { t } = useTranslation();
+
   return (
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
@@ -42,31 +45,32 @@ const DeviceNavigator = () => {
         name={DEVICE_ROUTES.DEVICE_LIST}
         component={DeviceListScreen}
         options={({ route }) => ({
-          headerShown : false
+          title: t('water-scheduling.devices.deviceList'),
+          headerShown: false
         })}
       />
       <Stack.Screen
         name={DEVICE_ROUTES.DEVICE_DETAILS}
         component={DeviceDetailScreen}
         options={({ route }) => ({
-          title: 'Device Details',
-          headerShown : false
+          title: t('water-scheduling.devices.deviceDetails'),
+          headerShown: false
         })}
       />
       <Stack.Screen
         name={DEVICE_ROUTES.REGISTER_DEVICE}
         component={DeviceFormScreen}
         options={{
-          title: 'Register Device',
-          headerShown : false
+          title: t('water-scheduling.devices.registerDevice'),
+          headerShown: false
         }}
       />
       <Stack.Screen
         name={DEVICE_ROUTES.EDIT_DEVICE}
         component={DeviceFormScreen}
         options={{
-          title: 'Edit Device',
-          headerShown : false
+          title: t('water-scheduling.devices.editDevice'),
+          headerShown: false
         }}
       />
     </Stack.Navigator>
