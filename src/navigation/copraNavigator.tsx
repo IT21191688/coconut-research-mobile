@@ -1,6 +1,85 @@
-import React from 'react';
+// import React from 'react';
 
+// import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// import { CreateReadingScreen } from '../components/screens/copra/CreateReadingScreen';
+// import { BatchHistoryScreen } from '../components/screens/copra/BatchHistoryScreen';
+// import { AllBatchesScreen } from '../components/screens/copra/AllBatchesScreen';
+// import { UpdateReadingScreen } from '../components/screens/copra/UpdateReadingScreen';
+// import { MoistureGraphScreen } from '../components/screens/copra/MoistureGraphScreen';
+// import { DryingRecommendationsScreen } from '../components/screens/copra/DryingRecommendationsScreen';
+
+// const Stack = createNativeStackNavigator();
+
+
+// export const CopraNavigator = () => {
+//   return (
+//     <Stack.Navigator
+//       initialRouteName="CreateReading"
+//       screenOptions={{
+//         headerStyle: {
+//           backgroundColor: '#FFFFFF', // White background
+//         },
+//         headerTintColor: '#000000', // Black text & icons
+//         headerTitleStyle: {
+//           fontWeight: '600',
+//           color: '#000000', // Ensure text is black
+//         },
+//       }}
+//     >
+
+//       <Stack.Screen
+//         name="CreateReading"
+//         component={CreateReadingScreen}
+//         options={{
+//           title: 'Create Reading',
+//         }}
+//       />
+//       <Stack.Screen
+//         name="BatchHistory"
+//         component={BatchHistoryScreen}
+//         options={{
+//           title: 'Batch History',
+//         }}
+//       />
+//       <Stack.Screen
+//         name="AllBatches"
+//         component={AllBatchesScreen}
+//         options={{
+//           title: 'All Batches',
+//         }}
+//       />
+//       <Stack.Screen
+//         name="UpdateReading"
+//         component={UpdateReadingScreen}
+//         options={{
+//           title: 'Update Reading',
+//         }}
+//       />
+//       <Stack.Screen
+//         name="MoistureGraph"
+//         component={MoistureGraphScreen}
+//         options={{
+//           title: 'Moisture Graph',
+//         }}
+//       />
+//        <Stack.Screen
+//         name="DryingRecommendations"
+//         component={DryingRecommendationsScreen}
+//         options={{
+//           title: 'Drying Recommendations',
+//         }}
+//       />
+      
+      
+//     </Stack.Navigator>
+//   );
+// };
+
+// export default CopraNavigator;
+
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { CreateReadingScreen } from '../components/screens/copra/CreateReadingScreen';
 import { BatchHistoryScreen } from '../components/screens/copra/BatchHistoryScreen';
 import { AllBatchesScreen } from '../components/screens/copra/AllBatchesScreen';
@@ -10,8 +89,9 @@ import { DryingRecommendationsScreen } from '../components/screens/copra/DryingR
 
 const Stack = createNativeStackNavigator();
 
-
 export const CopraNavigator = () => {
+  const { t } = useTranslation();
+  
   return (
     <Stack.Navigator
       initialRouteName="CreateReading"
@@ -25,55 +105,51 @@ export const CopraNavigator = () => {
           color: '#000000', // Ensure text is black
         },
       }}
-    >
-
+    > 
       <Stack.Screen
         name="CreateReading"
         component={CreateReadingScreen}
         options={{
-          title: 'Create Reading',
+          title: t('copra.createReading'),
         }}
       />
       <Stack.Screen
         name="BatchHistory"
         component={BatchHistoryScreen}
         options={{
-          title: 'Batch History',
+          title: t('copra.batchHistory'),
         }}
       />
       <Stack.Screen
         name="AllBatches"
         component={AllBatchesScreen}
         options={{
-          title: 'All Batches',
+          title: t('copra.allBatches'),
         }}
       />
       <Stack.Screen
         name="UpdateReading"
         component={UpdateReadingScreen}
         options={{
-          title: 'Update Reading',
+          title: t('copra.updateReading'),
         }}
       />
       <Stack.Screen
         name="MoistureGraph"
         component={MoistureGraphScreen}
         options={{
-          title: 'Moisture Graph',
+          title: t('copra.moistureGraph'),
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="DryingRecommendations"
         component={DryingRecommendationsScreen}
         options={{
-          title: 'Drying Recommendations',
+          title: t('copra.dryingRecommendations'),
         }}
       />
-      
-      
     </Stack.Navigator>
   );
 };
 
 export default CopraNavigator;
-
