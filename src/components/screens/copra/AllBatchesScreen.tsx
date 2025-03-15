@@ -457,7 +457,8 @@ export const AllBatchesScreen = () => {
   };
 
   const navigateToBatchHistory = (batchId: string) => {
-    navigation.navigate('BatchHistory' as never, { batchId } as never);
+    // @ts-ignore
+    navigation.navigate('BatchHistory', { batchId });
   };
 
   const navigateToCreateReading = () => {

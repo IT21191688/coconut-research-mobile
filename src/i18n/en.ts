@@ -9,6 +9,7 @@ export default {
     soilType: "soil type",
     selectToPredict: "Please select a location to predict yield",
   },
+
   prediction: {
     title: "Yield Prediction",
     predicted: "Predicted",
@@ -96,6 +97,7 @@ export default {
     nutsPerHectare: "nuts/hec.",
     predictionStatus: "Prediction Status",
   },
+
   price: {
     screenTitle: "Coconut Price Prediction",
     infoMessage:
@@ -133,6 +135,7 @@ export default {
     newPrediction: "New Prediction",
     optional: "optional",
   },
+
   common: {
     loadingLocation: "Loading location...",
     cancel: "Cancel",
@@ -150,8 +153,10 @@ export default {
     optional: "optional",
     loading: "Loading...",
     weatherUnavailable: "Weather data unavailable",
-    save:"Save"
+    save: "Save",
+    success: "Success"
   },
+
   months: [
     "January",
     "February",
@@ -166,10 +171,12 @@ export default {
     "November",
     "December",
   ],
+
   navigation: {
     viewPredictionHistory: "View Prediction History",
     coconutPricePredict: "Predict Coconut Prices",
   },
+
   "water-scheduling": {
     locations: {
       // General location related translations
@@ -287,6 +294,7 @@ export default {
       deviceAttached: "Device attached",
       noDevice: "No device",
     },
+
     watering: {
       wateringHistory: "Watering History",
       loadingHistory: "Loading watering history...",
@@ -314,6 +322,7 @@ export default {
       noWateringDataDescription:
         "There are no watering schedules for this location in the selected time range.",
     },
+
     schedule: {
       noLocations: "No Locations",
       createLocationPrompt:
@@ -369,6 +378,7 @@ export default {
       scheduleDetails: "Schedule Details",
       scheduleHistory: "Schedule History",
     },
+
     history: {
       setDateRange: "Set Date Range",
       chooseDateRange: "Choose date range",
@@ -395,6 +405,7 @@ export default {
       schedulesFound: "{{count}} schedules found",
       customDateFilterApplied: "Custom date filter applied",
     },
+
     main: {
       todaysWatering: "Today's Watering",
       upcoming: "Upcoming",
@@ -411,6 +422,7 @@ export default {
       completed: "completed",
       litersUsed: "liters used",
     },
+
     devices: {
       // General device section translations
       deviceList: "Devices",
@@ -522,6 +534,7 @@ export default {
       humidityThresholdRange: "Humidity threshold must be between 0 and 100%",
     },
   },
+
   copra: {
     // Navigation screens
     createReading: "Create Reading",
@@ -543,8 +556,7 @@ export default {
     readings: "Readings",
     updated: "Updated",
     copraBatches: "Copra Batches",
-    activeBatches:
-      "{{count}} Active Batches",
+    activeBatches: "{{count}} Active Batches",
     loadingBatches: "Loading batches...",
     daysAgo: "{{count}} day ago",
     hoursAgo: "{{count}} hour{{count, plural, one{} other{s}}} ago",
@@ -634,7 +646,7 @@ export default {
     noteUpdatedSuccess: "Note updated successfully",
     failedToUpdateNote: "Failed to update note. Please try again.",
     addReadingNotes: "Add notes about this reading...",
-    statusText:"status",
+    statusText: "status",
 
     // Status messages
     status: {
@@ -725,6 +737,115 @@ export default {
         normal:
           "Optimal drying temperature is between 30-35°C (86-95°F). Higher temperatures may cause quality loss.",
       },
+    },
+  },
+  customWatering: {
+    // Action buttons
+    markAsCompleted: "Mark as Completed",
+    skipWatering: "Skip Watering",
+
+    // Complete modal
+    completeWateringTask: "Complete Watering Task",
+    markWateringCompleted: "Mark this watering task as completed?",
+    actualAmountUsed: "Actual amount used:",
+    liters: "liters",
+    additionalNotes: "Additional notes (optional):",
+    notesPlaceholder: "E.g., Used drip irrigation method",
+    cancel: "Cancel",
+    confirmCompletion: "Confirm Completion",
+    successCompleted: "Watering schedule marked as completed",
+    failedToComplete:
+      "Failed to mark schedule as completed. Please try again later.",
+
+    // Skip modal
+    skipWateringTask: "Skip Watering Task",
+    skipThisTask: "Skip this watering task?",
+    reasonForSkipping: "Reason for skipping:",
+    recentRainfall: "Recent rainfall",
+    alreadyWateredManually: "Already watered manually",
+    equipmentUnavailable: "Equipment unavailable",
+    soilMoistureAdequate: "Soil moisture adequate",
+    otherReason: "Other reason",
+    pleaseSpecifyReason: "Please specify the reason",
+    confirmSkip: "Confirm Skip",
+    successSkipped: "Watering schedule marked as skipped",
+    failedToSkip: "Failed to skip schedule. Please try again later.",
+  },
+
+  scheduleCalendar: {
+    wateringCalendar: "Watering Calendar",
+    today: "Today",
+    noSchedulesFound: "No schedules found",
+    noWateringSchedulesFor: "No watering schedules for {{date}}",
+    selectDateToView: "Select a date to view schedules",
+  },
+
+  scheduleCard: {
+    location: "Location",
+    litersUsed: "{{actual}}/{{recommended}} liters used",
+    liters: "{{amount}} liters",
+    viewDetails: "View Details",
+    waterNeedCategories: {
+      high: "High",
+      moderate: "Moderate",
+      low: "Low",
+      none: "None",
+    },
+  },
+
+  soilConditions: {
+    title: "Soil Conditions",
+    soilType: "Soil Type",
+    plantAge: "Plant Age",
+    year: "year",
+    years: "years",
+    moisture: {
+      tooDry: "Too Dry",
+      dry: "Dry",
+      optimal: "Optimal",
+      moist: "Moist",
+      veryMoist: "Very Moist",
+    },
+    soilTypes: {
+      lateritic: "Lateritic",
+      sandyLoam: "Sandy Loam",
+      cinnamonSand: "Cinnamon Sand",
+      redYellowPodzolic: "Red Yellow Podzolic",
+      alluvial: "Alluvial",
+    },
+  },
+
+  waterNeedChart: {
+    title: "Recommended Water",
+    mlModelConfidence: "ML model confidence: {{confidence}}%",
+    recommendations: {
+      noWatering: "No watering needed at this time.",
+      lightWatering: "Light watering recommended.",
+      moderateWatering: "Moderate watering recommended.",
+      fullWatering: "Full watering recommended.",
+    },
+  },
+
+  weatherConditions: {
+    title: "Weather Conditions",
+    asOf: "as of {{dateTime}}",
+    temperature: "Temperature",
+    humidity: "Humidity",
+    rainfall: "Rainfall",
+    rainfallLabels: {
+      none: "None",
+      light: "Light",
+      moderate: "Moderate",
+      heavy: "Heavy",
+    },
+    summaries: {
+      rainfallDetected:
+        "Rainfall of {{amount}}mm detected. Adjust watering accordingly.",
+      hotAndDry: "Hot and dry conditions. Plants may need additional water.",
+      coolAndHumid:
+        "Cool and humid conditions. Reduced watering may be sufficient.",
+      highHumidity: "High humidity may reduce plant water needs.",
+      regular: "Regular watering recommended based on soil conditions.",
     },
   },
 };

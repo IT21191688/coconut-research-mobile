@@ -8,6 +8,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../common/Card';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next'; // Import useTranslation hook
 
 interface WeatherConditionsCardProps {
   weatherConditions: {
@@ -25,9 +26,15 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
   weatherConditions,
   date,
   style,
-  title = 'Weather Conditions',
+  title,
   containerStyle,
 }) => {
+  // Initialize translation hook
+  const { t, i18n } = useTranslation();
+  
+  // If no custom title is provided, use the translated default title
+  const cardTitle = title || t('weatherConditions.title');
+  
   const getTemperatureColor = (temperature: number) => {
     if (temperature < 15) return '#6495ED'; // Cold (Cornflower Blue)
     if (temperature < 25) return '#98FB98'; // Mild (Pale Green)
@@ -50,17 +57,30 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
   };
 
   const getRainfallLabel = (rainfall: number) => {
-    if (rainfall <= 0) return 'None';
-    if (rainfall < 1) return 'Light';
-    if (rainfall < 10) return 'Moderate';
-    return 'Heavy';
+    if (rainfall <= 0) return t('weatherConditions.rainfallLabels.none');
+    if (rainfall < 1) return t('weatherConditions.rainfallLabels.light');
+    if (rainfall < 10) return t('weatherConditions.rainfallLabels.moderate');
+    return t('weatherConditions.rainfallLabels.heavy');
+  };
+
+  // Get appropriate locale based on current language
+  const getCurrentLocale = () => {
+    const language = i18n.language;
+    switch (language) {
+      case 'ta':
+        return 'ta-IN'; // Tamil locale
+      case 'si':
+        return 'si-LK'; // Sinhala locale
+      default:
+        return 'en-US'; // Default to English locale
+    }
   };
 
   const formatDateTime = (dateString?: string | Date) => {
     if (!dateString) return '';
     
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString(getCurrentLocale(), {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
@@ -68,14 +88,29 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
       hour12: true
     });
   };
+  
+  // Helper function to generate weather summary
+  const getRainfallSummary = (weather: { temperature: number; humidity: number; rainfall: number }) => {
+    if (weather.rainfall > 0) {
+      return t('weatherConditions.summaries.rainfallDetected', { amount: weather.rainfall });
+    } else if (weather.temperature > 30 && weather.humidity < 50) {
+      return t('weatherConditions.summaries.hotAndDry');
+    } else if (weather.temperature < 20 && weather.humidity > 70) {
+      return t('weatherConditions.summaries.coolAndHumid');
+    } else if (weather.humidity > 80) {
+      return t('weatherConditions.summaries.highHumidity');
+    } else {
+      return t('weatherConditions.summaries.regular');
+    }
+  };
 
   return (
     <Card style={[styles.container, containerStyle]} variant="flat">
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{cardTitle}</Text>
         {date && (
           <Text style={styles.dateText}>
-            as of {formatDateTime(date)}
+            {t('weatherConditions.asOf', { dateTime: formatDateTime(date) })}
           </Text>
         )}
       </View>
@@ -96,7 +131,7 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
           <Text style={styles.metricValue}>
             {weatherConditions.temperature}°C
           </Text>
-          <Text style={styles.metricLabel}>Temperature</Text>
+          <Text style={styles.metricLabel}>{t('weatherConditions.temperature')}</Text>
         </View>
         
         {/* Humidity */}
@@ -114,7 +149,7 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
           <Text style={styles.metricValue}>
             {weatherConditions.humidity}%
           </Text>
-          <Text style={styles.metricLabel}>Humidity</Text>
+          <Text style={styles.metricLabel}>{t('weatherConditions.humidity')}</Text>
         </View>
         
         {/* Rainfall */}
@@ -132,7 +167,7 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
           <Text style={styles.metricValue}>
             {weatherConditions.rainfall} mm
           </Text>
-          <Text style={styles.metricLabel}>Rainfall</Text>
+          <Text style={styles.metricLabel}>{t('weatherConditions.rainfall')}</Text>
         </View>
       </View>
       
@@ -147,19 +182,19 @@ const WeatherConditionsCard: React.FC<WeatherConditionsCardProps> = ({
 };
 
 // Helper function to generate weather summary
-const getRainfallSummary = (weather: { temperature: number; humidity: number; rainfall: number }) => {
-  if (weather.rainfall > 0) {
-    return `Rainfall of ${weather.rainfall}mm detected. Adjust watering accordingly.`;
-  } else if (weather.temperature > 30 && weather.humidity < 50) {
-    return `Hot and dry conditions. Plants may need additional water.`;
-  } else if (weather.temperature < 20 && weather.humidity > 70) {
-    return `Cool and humid conditions. Reduced watering may be sufficient.`;
-  } else if (weather.humidity > 80) {
-    return `High humidity may reduce plant water needs.`;
-  } else {
-    return `Regular watering recommended based on soil conditions.`;
-  }
-};
+// const getRainfallSummary = (weather: { temperature: number; humidity: number; rainfall: number }) => {
+//   if (weather.rainfall > 0) {
+//     return `Rainfall of ${weather.rainfall}mm detected. Adjust watering accordingly.`;
+//   } else if (weather.temperature > 30 && weather.humidity < 50) {
+//     return `Hot and dry conditions. Plants may need additional water.`;
+//   } else if (weather.temperature < 20 && weather.humidity > 70) {
+//     return `Cool and humid conditions. Reduced watering may be sufficient.`;
+//   } else if (weather.humidity > 80) {
+//     return `High humidity may reduce plant water needs.`;
+//   } else {
+//     return `Regular watering recommended based on soil conditions.`;
+//   }
+// };
 
 const styles = StyleSheet.create({
   container: {
