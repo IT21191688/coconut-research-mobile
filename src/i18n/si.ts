@@ -520,4 +520,210 @@ export default {
       humidityThresholdRange: "ආර්ද්‍රතා සීමාව 0 සිට 100% අතර විය යුතුය",
     },
   },
+  copra: {
+    // Navigation screens
+    createReading: "කියවීම සාදන්න",
+    batchHistory: "කාණ්ඩ ඉතිහාසය",
+    allBatches: "සියලුම කාණ්ඩ",
+    updateReading: "කියවීම යාවත්කාලීන කරන්න",
+    moistureGraph: "තෙත ප්‍රස්තාරය",
+    dryingRecommendations: "වියළීමේ නිර්දේශ",
+
+    // AllBatchesScreen
+    noBatchesFound: "කාණ්ඩ හමු නොවීය",
+    createBatchPrompt:
+      "ඔබගේ පොල් වියළීමේ ක්‍රියාවලිය පසුවිපරම් කිරීමට නව කාණ්ඩයක් සාදන්න",
+    createNewBatch: "නව කාණ්ඩයක් සාදන්න",
+    batchLabel: "කාණ්ඩය {{id}}",
+    statusActive: "ක්‍රියාකාරී",
+    statusDrying: "වියළෙමින්",
+    statusComplete: "සම්පූර්ණයි",
+    readings: "කියවීම්",
+    updated: "යාවත්කාලීන කළ",
+    copraBatches: "පොල් කාණ්ඩ",
+    activeBatches: "{{count}} ක්‍රියාකාරී කාණ්ඩ",
+    loadingBatches: "කාණ්ඩ පූරණය වෙමින්...",
+    daysAgo: "දින {{count}} කට පෙර",
+    hoursAgo: "පැය {{count}}{{count, plural, one{} other{ක්}}} පෙර",
+    justNow: "දැන්ම",
+
+    // BatchHistoryScreen
+    failedToFetchHistory: "කාණ්ඩ ඉතිහාසය ලබා ගැනීමට අසමත් විය",
+    confirmDelete: "මකාදැමීම තහවුරු කරන්න",
+    deleteRecordConfirmation:
+      "ඔබට මෙම වාර්තාව මකා දැමීමට අවශ්‍ය බව විශ්වාසද? මෙම ක්‍රියාව අහෝසි කළ නොහැක.",
+    recordDeletedSuccess: "වාර්තාව සාර්ථකව මකා දමන ලදී",
+    failedToDeleteRecord:
+      "වාර්තාව මකා දැමීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+    deleteEntireBatch: "මුළු කාණ්ඩයම මකන්න",
+    deleteBatchConfirmation:
+      "ඔබට මෙම මුළු කාණ්ඩයම මකා දැමීමට අවශ්‍ය බව විශ්වාසද? සියලුම කියවීම් ස්ථිරවම ඉවත් කරනු ලැබේ. මෙම ක්‍රියාව අහෝසි කළ නොහැක.",
+    deleteBatch: "කාණ්ඩය මකන්න",
+    batchDeletedSuccess: "කාණ්ඩය සාර්ථකව මකා දමන ලදී",
+    failedToDeleteBatch:
+      "කාණ්ඩය මකා දැමීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+    notEnoughData: "ප්‍රමාණවත් දත්ත නොමැත",
+    needMoreReadings:
+      "අර්ථවත් ප්‍රස්තාරයක් ජනනය කිරීමට ඔබට අවම වශයෙන් කියවීම් 2ක් අවශ්‍ය වේ. කරුණාකර තවත් කියවීම් එක් කරන්න.",
+    generateGraph: "ප්‍රස්තාරය ජනනය කරන්න",
+    moisture: "තෙත",
+    dryingTime: "වියළීමේ කාලය",
+    oilYield: "තෙල් අස්වැන්න (කි.ග්‍රෑ. 10)",
+    temperature: "උෂ්ණත්වය",
+    humidity: "ආර්ද්‍රතාවය",
+    start: "ආරම්භය",
+    expectedEnd: "අපේක්ෂිත අවසානය",
+
+    // CreateReadingScreen
+    permissionDenied: "අවසරය ප්‍රතික්ෂේප විය",
+    locationPermissionRequired: "කාලගුණ දත්ත සඳහා ස්ථාන අවසරය අවශ්‍ය වේ",
+    failedToFetchDevices: "උපකරණ ලබා ගැනීමට අසමත් විය",
+    couldNotRetrieveMoisture: "උපකරණයෙන් තෙත කියවීම ලබා ගැනීමට නොහැකි විය",
+    validationError: "වලංගුකරණ දෝෂය",
+    fillRequiredFields: "කරුණාකර අවශ්‍ය සියලුම ක්ෂේත්‍ර පුරවන්න",
+    locationNotAvailable: "ස්ථාන දත්ත නොමැත",
+    selectMoistureSensor: "තෙත සංවේදකය තෝරන්න",
+    noMoistureSensorsFound: "තෙත සංවේදක හමු නොවීය",
+    viewAllBatches: "සියලු කාණ්ඩ බලන්න",
+    newCopraReading: "නව පොල් කියවීම",
+    batchId: "කාණ්ඩ අංකය",
+    enterBatchId: "කාණ්ඩ අංකය ඇතුළත් කරන්න",
+    deviceId: "උපකරණ අංකය",
+    moistureLevel: "තෙත මට්ටම",
+    fetchingFromDevice: "උපකරණයෙන් ලබා ගනිමින්...",
+    enterMoistureLevel: "තෙත මට්ටම ඇතුළත් කරන්න",
+    dataFetchedFromDevice: "උපකරණයෙන් දත්ත ලබා ගත්තා",
+    readyForProcessing: "තෙත මට්ටම ≤ 7: සැකසීමට සූදානම් (වියළීමේ කාලය: පැය 0)",
+    currentStatus: "වත්මන් තත්ත්වය",
+    notes: "සටහන්",
+    enterNotes: "සටහන් ඇතුළත් කරන්න",
+    readyForProcessingTitle: "සැකසීමට සූදානම්",
+    predictedDryingTime: "පුරෝකථනය කළ වියළීමේ කාලය",
+    zeroHours: "පැය 0",
+    hoursValue: "පැය {{hours}}",
+    failedToCreateReading:
+      "කියවීම සෑදීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+    saveReading: "කියවීම සුරකින්න",
+    predictDryingTime: "වියළීමේ කාලය පුරෝකථනය කරන්න",
+    soilSensor: "පස සංවේදකය",
+    moistureSensor: "තෙත සංවේදකය",
+
+    // MoistureGraphScreen
+    moistureTrendAnalysis: "තෙත ප්‍රවණතා විශ්ලේෂණය",
+    trackingMoistureLevels:
+      "කාණ්ඩය #{{id}} සඳහා කාලය තුළ තෙත මට්ටම් පසුවිපරම් කිරීම",
+    moistureLevelTrend: "තෙත මට්ටම් ප්‍රවණතාව",
+    greenLinesIndicate: "කොළ ඉරි සඳහන් කරන්නේ සුදුසු තෙත පරාසයයි (6-8%)",
+    targetMoistureSettings: "ඉලක්ක තෙත සැකසුම්",
+    targetMoisture: "ඉලක්ක තෙත",
+    dryingProjections: "වියළීමේ පුරෝකථන",
+    currentMoisture: "වත්මන් තෙත",
+    moistureToLose: "අහිමි විය යුතු තෙත",
+    noReadingsAvailable: "කියවීම් නොමැත",
+    projected: "පුරෝකථනය කළ",
+    minOptimal: "අවම සුදුසු",
+    maxOptimal: "උපරිම සුදුසු",
+    noRecommendationsNeeded: "නිර්දේශ අවශ්‍ය නැත",
+    batchAlreadyDried:
+      "මෙම කාණ්ඩය දැනටමත් ප්‍රමාණවත් ලෙස වියළී ඇති අතර වැඩිදුර වියළීමේ නිර්දේශ අවශ්‍ය නොවේ.",
+
+    // UpdateReadingScreen
+    updateReadingNotes: "කියවීමේ සටහන් යාවත්කාලීන කරන්න",
+    noteUpdatedSuccess: "සටහන සාර්ථකව යාවත්කාලීන කරන ලදී",
+    failedToUpdateNote:
+      "සටහන යාවත්කාලීන කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+    addReadingNotes: "මෙම කියවීම ගැන සටහන් එක් කරන්න...",
+    statusText: "තත්ත්වය",
+
+    // Status messages
+    status: {
+      too_wet: "ඉතා තෙත්",
+      wet: "තෙත්",
+      optimal: "සුදුසු",
+      dry: "වියළි",
+      too_dry: "ඉතා වියළි",
+      default: "නොදනී",
+      newly_harvested: "අලුතින් අස්වනු නෙළා ඇති",
+      moderate_level: "මධ්‍යස්ථ තෙත",
+      dryed: "වියළා ඇති",
+      over_dryed: "අධික ලෙස වියළා ඇති",
+    },
+
+    // DryingRecommendationsScreen
+    optimizedForBatch:
+      "වත්මන් තත්ත්වයන් මත පදනම්ව කාණ්ඩය #{{id}} සඳහා ප්‍රශස්ත කර ඇත",
+    weather: "කාලගුණය",
+    dryingStatus: "වියළීමේ තත්ත්වය",
+    qualityReminders: "ගුණාත්මක මතක් කිරීම්",
+    returnToMoistureGraph: "තෙත ප්‍රස්තාරයට ආපසු යන්න",
+
+    // Quality Reminders
+    reminder1: "• නිසි වියළීම තෙල් ගුණාත්මකභාවය සහ අස්වැන්න සඳහා තීරණාත්මකයි",
+    reminder2: "• උපරිම තෙල් නිස්සාරණය සඳහා ඉලක්ක තෙත 6-8%",
+    reminder3: "• අධික වියළීමෙන් වළකින්න, එය තෙල් අස්වැන්න අඩු කළ හැකිය",
+    reminder4: "• වියළීමේ ක්‍රියාවලිය තුළ දූෂණයෙන් ආරක්ෂා කරන්න",
+    reminder5: "• පුස් හෝ පළිබෝධ ලක්ෂණ සඳහා නිරීක්ෂණය කරන්න",
+
+    // Recommendations for newly harvested
+    recommendations: {
+      initialDryingSetup: {
+        title: "මූලික වියළීමේ පිහිටුම",
+        description:
+          "උපරිම නිරාවරණය සඳහා පොල් සම තට්ටුවක් ලෙස වියළීමේ පැදුරු හෝ වේදිකා මත සමානව විහිදුවන්න.",
+      },
+      airCirculation: {
+        title: "වාතය සංසරණය",
+        description:
+          "මුල් අධික-තෙත වාෂ්පීකරණ අවධිය වේගවත් කිරීමට ප්‍රමාණවත් වාතාශ්‍රය සහතික කරන්න.",
+      },
+      sunExposure: {
+        title: "හිරු එළිය",
+        highHumidity:
+          "අධික ආර්ද්‍රතාවය හේතුවෙන්, වියළීමේ කාලය වැඩි කරන්න සහ හැකි නම් කෘත්‍රිම තාප ප්‍රභවයන් භාවිතා කරන්න.",
+        normal:
+          "සෘජු හිරු එළිය අලුතෙන් අස්වනු නෙළූ පොල් සඳහා ඉතා සුදුසුය. දිනකට පැය 6-8 ක හිරු එළිය ලැබීමට උත්සාහ කරන්න.",
+      },
+      firstTurn: {
+        title: "පළමු හැරවීම",
+        description:
+          "සියලු මතුපිට සමානව වියළීම සහතික කිරීමට පැය 4-5 කට පසු පොල් හරවන්න.",
+      },
+      protection: {
+        title: "ආරක්ෂාව",
+        description:
+          "රාත්‍රී කාලයේ හෝ අනපේක්ෂිත වර්ෂාපතනය අතරතුර තෙත නැවත අවශෝෂණය වීම වැළැක්වීමට පොල් ආවරණය කරන්න.",
+      },
+
+      // Recommendations for moderate level
+      controlledDrying: {
+        title: "පාලිත වියළීම",
+        lowTemperature:
+          "වත්මන් උෂ්ණත්වය සුදුසු ප්‍රමාණයට වඩා අඩුය. ස්වාභාවික වියළීමට අමතරව විළුඳු වියළීම භාවිතා කිරීම සලකා බලන්න.",
+        normal:
+          "අඛණ්ඩ වියළීමේ තත්ත්වයන් පවත්වා ගන්න. මෙම අවධියේදී තෙත අහිමිවීමේ අනුපාතය මන්දගාමී වේ.",
+      },
+      regularTurning: {
+        title: "නිතිපතා හැරවීම",
+        description:
+          "අසමාන වියළීම සහ අධික තෙත පොකට්ටුවල විය හැකි පුස් වර්ධනය වැළැක්වීමට සෑම පැය 2-3කට වරක් පොල් හරවන්න.",
+      },
+      moistureMonitoring: {
+        title: "තෙත නිරීක්ෂණය",
+        description:
+          "දිනකට දෙවරක් තෙත මට්ටම් පරීක්ෂා කරන්න. සුදුසු ඉලක්ක පරාසය 6-8% වේ.",
+      },
+      spatialArrangement: {
+        title: "අවකාශ පිහිටුම",
+        description:
+          "මධ්‍යයේ සිට කෙළවර දක්වා සහ ඒ හා සමානව පොල් ප්‍රතිව්‍යූහගත කරන්න.",
+      },
+      heatManagement: {
+        title: "තාප කළමනාකරණය",
+        highHumidity:
+          "අධික ආර්ද්‍රතා තත්ත්වයන් සමඟ, වියළීමේ කාලය දීර්ඝ කිරීම සහ වාතය සංසරණය වැඩි දියුණු කිරීමට විදුලි පංකා භාවිතා කිරීම සලකා බලන්න.",
+        normal:
+          "සුදුසු වියළීමේ උෂ්ණත්වය සෙල්සියස් 30-35°C (ෆැරන්හයිට් 86-95°F) අතර වේ. ඉහළ උෂ්ණත්වය ගුණාත්මක හානියට හේතු විය හැක.",
+      },
+    },
+  },
 };

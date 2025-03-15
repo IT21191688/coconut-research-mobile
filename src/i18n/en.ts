@@ -150,6 +150,7 @@ export default {
     optional: "optional",
     loading: "Loading...",
     weatherUnavailable: "Weather data unavailable",
+    save:"Save"
   },
   months: [
     "January",
@@ -519,6 +520,211 @@ export default {
       temperatureThresholdRange:
         "Temperature threshold must be between -50 and 100°C",
       humidityThresholdRange: "Humidity threshold must be between 0 and 100%",
+    },
+  },
+  copra: {
+    // Navigation screens
+    createReading: "Create Reading",
+    batchHistory: "Batch History",
+    allBatches: "All Batches",
+    updateReading: "Update Reading",
+    moistureGraph: "Moisture Graph",
+    dryingRecommendations: "Drying Recommendations",
+
+    // AllBatchesScreen
+    noBatchesFound: "No Batches Found",
+    createBatchPrompt:
+      "Create a new batch to start tracking your copra drying process",
+    createNewBatch: "Create New Batch",
+    batchLabel: "Batch {{id}}",
+    statusActive: "Active",
+    statusDrying: "Drying",
+    statusComplete: "Complete",
+    readings: "Readings",
+    updated: "Updated",
+    copraBatches: "Copra Batches",
+    activeBatches:
+      "{{count}} Active Batches",
+    loadingBatches: "Loading batches...",
+    daysAgo: "{{count}} day ago",
+    hoursAgo: "{{count}} hour{{count, plural, one{} other{s}}} ago",
+    justNow: "Just now",
+
+    // BatchHistoryScreen
+    failedToFetchHistory: "Failed to fetch batch history",
+    confirmDelete: "Confirm Delete",
+    deleteRecordConfirmation:
+      "Are you sure you want to delete this record? This action cannot be undone.",
+    recordDeletedSuccess: "Record deleted successfully",
+    failedToDeleteRecord: "Failed to delete the record. Please try again.",
+    deleteEntireBatch: "Delete Entire Batch",
+    deleteBatchConfirmation:
+      "Are you sure you want to delete this entire batch? All readings will be permanently removed. This action cannot be undone.",
+    deleteBatch: "Delete Batch",
+    batchDeletedSuccess: "Batch deleted successfully",
+    failedToDeleteBatch: "Failed to delete the batch. Please try again.",
+    notEnoughData: "Not Enough Data",
+    needMoreReadings:
+      "You need at least 2 readings to generate a meaningful graph. Please add more readings.",
+    generateGraph: "Generate Graph",
+    moisture: "Moisture",
+    dryingTime: "Drying Time",
+    oilYield: "Oil Yield (10kg)",
+    temperature: "Temperature",
+    humidity: "Humidity",
+    start: "Start",
+    expectedEnd: "Expected End",
+
+    // CreateReadingScreen
+    permissionDenied: "Permission denied",
+    locationPermissionRequired:
+      "Location permission is required for weather data",
+    failedToFetchDevices: "Failed to fetch devices",
+    couldNotRetrieveMoisture: "Could not retrieve moisture reading from device",
+    validationError: "Validation Error",
+    fillRequiredFields: "Please fill in all required fields",
+    locationNotAvailable: "Location data is not available",
+    selectMoistureSensor: "Select Moisture Sensor",
+    noMoistureSensorsFound: "No moisture sensors found",
+    viewAllBatches: "View All Batches",
+    newCopraReading: "New Copra Reading",
+    batchId: "Batch ID",
+    enterBatchId: "Enter Batch ID",
+    deviceId: "Device ID",
+    moistureLevel: "Moisture Level",
+    fetchingFromDevice: "Fetching from device...",
+    enterMoistureLevel: "Enter Moisture Level",
+    dataFetchedFromDevice: "Data fetched from device",
+    readyForProcessing:
+      "Moisture level ≤ 7: Ready for processing (drying time: 0 hours)",
+    currentStatus: "Current Status",
+    notes: "Notes",
+    enterNotes: "Enter Notes",
+    readyForProcessingTitle: "Ready for Processing",
+    predictedDryingTime: "Predicted Drying Time",
+    zeroHours: "0 hours",
+    hoursValue: "{{hours}} hours",
+    failedToCreateReading: "Failed to create reading. Please try again.",
+    saveReading: "Save Reading",
+    predictDryingTime: "Predict Drying Time",
+    soilSensor: "Soil Sensor",
+    moistureSensor: "Moisture Sensor",
+
+    // MoistureGraphScreen
+    moistureTrendAnalysis: "Moisture Trend Analysis",
+    trackingMoistureLevels:
+      "Tracking moisture levels over time for batch #{{id}}",
+    moistureLevelTrend: "Moisture Level Trend",
+    greenLinesIndicate: "Green lines indicate optimal moisture range (6-8%)",
+    targetMoistureSettings: "Target Moisture Settings",
+    targetMoisture: "Target Moisture",
+    dryingProjections: "Drying Projections",
+    currentMoisture: "Current Moisture",
+    moistureToLose: "Moisture to Lose",
+    noReadingsAvailable: "No readings available",
+    projected: "Projected",
+    minOptimal: "Min Optimal",
+    maxOptimal: "Max Optimal",
+    noRecommendationsNeeded: "No Recommendations Needed",
+    batchAlreadyDried:
+      "This batch is already sufficiently dried and doesn't require further drying recommendations.",
+
+    // UpdateReadingScreen
+    updateReadingNotes: "Update Reading Notes",
+    noteUpdatedSuccess: "Note updated successfully",
+    failedToUpdateNote: "Failed to update note. Please try again.",
+    addReadingNotes: "Add notes about this reading...",
+    statusText:"status",
+
+    // Status messages
+    status: {
+      too_wet: "TOO WET",
+      wet: "WET",
+      optimal: "OPTIMAL",
+      dry: "DRY",
+      too_dry: "TOO DRY",
+      default: "UNKNOWN",
+      newly_harvested: "Newly Harvested",
+      moderate_level: "Moderate Moisture",
+      dryed: "Dried",
+      over_dryed: "Over Dried",
+    },
+
+    // DryingRecommendationsScreen
+    optimizedForBatch:
+      "Optimized for batch #{{id}} based on current conditions",
+    weather: "Weather",
+    dryingStatus: "Drying Status",
+    qualityReminders: "Quality Reminders",
+    returnToMoistureGraph: "Return to Moisture Graph",
+
+    // Quality Reminders
+    reminder1: "• Proper drying is critical for oil quality and yield",
+    reminder2: "• Target moisture 6-8% for optimal oil extraction",
+    reminder3: "• Avoid over-drying as it can reduce oil yields",
+    reminder4: "• Protect from contamination during the drying process",
+    reminder5: "• Monitor for any signs of mold or pests",
+
+    // Recommendations for newly harvested
+    recommendations: {
+      initialDryingSetup: {
+        title: "Initial Drying Setup",
+        description:
+          "Spread the copra evenly on drying mats or platforms in a single layer to maximize exposure.",
+      },
+      airCirculation: {
+        title: "Air Circulation",
+        description:
+          "Ensure adequate ventilation to accelerate the initial high-moisture evaporation phase.",
+      },
+      sunExposure: {
+        title: "Sun Exposure",
+        highHumidity:
+          "Due to high humidity, increase drying time and use artificial heat sources if available.",
+        normal:
+          "Direct sunlight is optimal for newly harvested copra. Aim for 6-8 hours of sun exposure daily.",
+      },
+      firstTurn: {
+        title: "First Turn",
+        description:
+          "Turn the copra after 4-5 hours to ensure even drying on all surfaces.",
+      },
+      protection: {
+        title: "Protection",
+        description:
+          "Cover the copra during night time or unexpected rainfall to prevent moisture reabsorption.",
+      },
+
+      // Recommendations for moderate level
+      controlledDrying: {
+        title: "Controlled Drying",
+        lowTemperature:
+          "Current temperatures are lower than optimal. Consider using kiln drying to supplement natural drying.",
+        normal:
+          "Maintain consistent drying conditions. The rate of moisture loss slows at this stage.",
+      },
+      regularTurning: {
+        title: "Regular Turning",
+        description:
+          "Turn the copra every 2-3 hours to prevent uneven drying and potential mold growth in pockets of higher moisture.",
+      },
+      moistureMonitoring: {
+        title: "Moisture Monitoring",
+        description:
+          "Check moisture levels twice daily. The optimal target range is 6-8%.",
+      },
+      spatialArrangement: {
+        title: "Spatial Arrangement",
+        description:
+          "Rearrange copra to ensure pieces from the center are moved to the edges and vice versa.",
+      },
+      heatManagement: {
+        title: "Heat Management",
+        highHumidity:
+          "With high humidity conditions, consider extending drying time and using fans to improve air circulation.",
+        normal:
+          "Optimal drying temperature is between 30-35°C (86-95°F). Higher temperatures may cause quality loss.",
+      },
     },
   },
 };
