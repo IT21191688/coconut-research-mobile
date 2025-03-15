@@ -18,8 +18,10 @@ import Card from "../../common/Card";
 import StatusBadge from "../../common/StatusBadge";
 import { colors } from "../../../constants/colors";
 import Button from "../../common/Button";
+import { useTranslation } from "react-i18next";
 
 const LocationListScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -42,8 +44,8 @@ const LocationListScreen: React.FC = () => {
       const fetchedLocations = await getLocations();
       setLocations(fetchedLocations);
     } catch (error) {
-      console.error("Failed to load locations:", error);
-      Alert.alert("Error", "Failed to load locations. Please try again later.");
+      // console.error("Failed to load locations:", error);
+      Alert.alert(t("common.error"), t("water-scheduling.locations.failedToLoadLocations"));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -56,11 +58,11 @@ const LocationListScreen: React.FC = () => {
   };
 
   const handleAddLocation = () => {
-    navigation.navigate("LocationForm", { mode: "create" });
+    (navigation.navigate as any)("LocationForm", { mode: "create" });
   };
 
   const handleLocationPress = (locationId: string) => {
-    navigation.navigate("LocationDetails", { locationId });
+    (navigation.navigate as any)("LocationDetails", { locationId });
   };
 
   const renderSoilTypeIcon = (soilType: string) => {
@@ -102,12 +104,12 @@ const LocationListScreen: React.FC = () => {
       <View style={styles.locationDetails}>
         <View style={styles.detailRow}>
           <Ionicons name="resize-outline" size={16} color={colors.gray600} />
-          <Text style={styles.detailText}>{item.area} acres</Text>
+          <Text style={styles.detailText}>{item.area} {t("water-scheduling.locations.acres")}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Ionicons name="leaf-outline" size={16} color={colors.gray600} />
-          <Text style={styles.detailText}>{item.totalTrees} trees</Text>
+          <Text style={styles.detailText}>{item.totalTrees} {t("water-scheduling.locations.trees")}</Text>
         </View>
 
         <View style={styles.detailRow}>
@@ -124,7 +126,7 @@ const LocationListScreen: React.FC = () => {
               size={16}
               color={colors.primary}
             />
-            <Text style={styles.deviceText}>Device attached</Text>
+            <Text style={styles.deviceText}>{t("water-scheduling.locations.deviceAttached")}</Text>
           </View>
         ) : (
           <View style={styles.deviceContainer}>
@@ -133,7 +135,7 @@ const LocationListScreen: React.FC = () => {
               size={16}
               color={colors.gray500}
             />
-            <Text style={styles.noDeviceText}>No device</Text>
+            <Text style={styles.noDeviceText}>{t("water-scheduling.locations.noDevice")}</Text>
           </View>
         )}
       </View>
@@ -145,7 +147,7 @@ const LocationListScreen: React.FC = () => {
       return (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.emptyText}>Loading locations...</Text>
+          <Text style={styles.emptyText}>{t("water-scheduling.locations.loadingLocations")}</Text>
         </View>
       );
     }
@@ -158,12 +160,12 @@ const LocationListScreen: React.FC = () => {
           color={colors.gray400}
           style={styles.emptyIcon}
         />
-        <Text style={styles.emptyTitle}>No Locations Found</Text>
+        <Text style={styles.emptyTitle}>{t("water-scheduling.locations.noLocationsFound")}</Text>
         <Text style={styles.emptyText}>
-          You haven't added any coconut farm locations yet.
+          {t("water-scheduling.locations.noLocationsDescription")}
         </Text>
         <Button
-          title="Add Your First Location"
+          title={t("water-scheduling.locations.addFirstLocation")}
           onPress={handleAddLocation}
           variant="primary"
           style={styles.addButton}
@@ -175,7 +177,7 @@ const LocationListScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Locations</Text>
+        <Text style={styles.title}>{t("water-scheduling.locations.locationList")}</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleAddLocation}>
           <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
@@ -203,7 +205,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
-    marginTop:30
+    marginTop: 30,
   },
   header: {
     flexDirection: "row",

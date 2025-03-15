@@ -23,6 +23,7 @@ import { Device } from "../../../types";
 import Input from "../../common/Input";
 import Button from "../../common/Button";
 import { colors } from "../../../constants/colors";
+import { useTranslation } from "react-i18next";
 
 type DeviceFormScreenRouteProp = RouteProp<
   {
@@ -35,12 +36,15 @@ type DeviceFormScreenRouteProp = RouteProp<
   "DeviceForm"
 >;
 
-const deviceTypes = [
-  { value: "soil_sensor", label: "Soil Sensor" },
-  { value: "moisture_sensor", label: "Moisture Sensor" },
-];
-
 const DeviceFormScreen: React.FC = () => {
+  const { t } = useTranslation();
+  
+  // Device types with translation keys
+  const deviceTypes = [
+    { value: "soil_sensor", label: t("water-scheduling.devices.soilSensor") },
+    { value: "moisture_sensor", label: t("water-scheduling.devices.moistureSensor") },
+  ];
+
   // Form state
   const [deviceId, setDeviceId] = useState("");
   const [deviceType, setDeviceType] = useState(deviceTypes[0].value);
@@ -80,10 +84,10 @@ const DeviceFormScreen: React.FC = () => {
       const device = await getDeviceById(id);
       setFormDataFromDevice(device);
     } catch (error) {
-      console.error("Failed to load device data:", error);
+      // console.error("Failed to load device data:", error);
       Alert.alert(
-        "Error",
-        "Failed to load device data. Please try again later."
+        t("common.error"),
+        t("water-scheduling.devices.failedToLoad")
       );
       navigation.goBack();
     } finally {
@@ -132,32 +136,30 @@ const DeviceFormScreen: React.FC = () => {
 
     // Device ID validation
     if (!deviceId) {
-      newErrors.deviceId = "Device ID is required";
+      newErrors.deviceId = t("water-scheduling.devices.deviceIdRequired");
     } else if (deviceId.length < 3) {
-      newErrors.deviceId = "Device ID must be at least 3 characters";
+      newErrors.deviceId = t("water-scheduling.devices.deviceIdMinLength");
     }
 
     // Firmware validation
     if (!firmware) {
-      newErrors.firmware = "Firmware version is required";
+      newErrors.firmware = t("water-scheduling.devices.firmwareRequired");
     }
 
     // Interval validations
     if (!readingInterval || isNaN(Number(readingInterval))) {
-      newErrors.readingInterval = "Reading interval must be a number";
+      newErrors.readingInterval = t("water-scheduling.devices.readingIntervalNumber");
     } else if (Number(readingInterval) < 1 || Number(readingInterval) > 1440) {
-      newErrors.readingInterval =
-        "Reading interval must be between 1 and 1440 minutes";
+      newErrors.readingInterval = t("water-scheduling.devices.readingIntervalRange");
     }
 
     if (!reportingInterval || isNaN(Number(reportingInterval))) {
-      newErrors.reportingInterval = "Reporting interval must be a number";
+      newErrors.reportingInterval = t("water-scheduling.devices.reportingIntervalNumber");
     } else if (
       Number(reportingInterval) < 1 ||
       Number(reportingInterval) > 1440
     ) {
-      newErrors.reportingInterval =
-        "Reporting interval must be between 1 and 1440 minutes";
+      newErrors.reportingInterval = t("water-scheduling.devices.reportingIntervalRange");
     }
 
     // Advanced settings validation (only if visible)
@@ -168,8 +170,7 @@ const DeviceFormScreen: React.FC = () => {
           Number(moistureThreshold) < 0 ||
           Number(moistureThreshold) > 100)
       ) {
-        newErrors.moistureThreshold =
-          "Moisture threshold must be between 0 and 100";
+        newErrors.moistureThreshold = t("water-scheduling.devices.moistureThresholdRange");
       }
 
       if (
@@ -178,8 +179,7 @@ const DeviceFormScreen: React.FC = () => {
           Number(temperatureThreshold) < -50 ||
           Number(temperatureThreshold) > 100)
       ) {
-        newErrors.temperatureThreshold =
-          "Temperature threshold must be between -50 and 100°C";
+        newErrors.temperatureThreshold = t("water-scheduling.devices.temperatureThresholdRange");
       }
 
       if (
@@ -188,8 +188,7 @@ const DeviceFormScreen: React.FC = () => {
           Number(humidityThreshold) < 0 ||
           Number(humidityThreshold) > 100)
       ) {
-        newErrors.humidityThreshold =
-          "Humidity threshold must be between 0 and 100%";
+        newErrors.humidityThreshold = t("water-scheduling.devices.humidityThresholdRange");
       }
     }
 
@@ -237,20 +236,20 @@ const DeviceFormScreen: React.FC = () => {
 
       if (mode === "create") {
         await registerDevice(deviceData);
-        Alert.alert("Success", "Device registered successfully!");
+        Alert.alert(t("common.success"), t("water-scheduling.devices.deviceRegistered"));
       } else {
         await updateDevice(routeDeviceId || deviceId, deviceData);
-        Alert.alert("Success", "Device updated successfully!");
+        Alert.alert(t("common.success"), t("water-scheduling.devices.deviceUpdated"));
       }
 
       navigation.goBack();
     } catch (error) {
-      console.error("Failed to save device:", error);
+      // console.error("Failed to save device:", error);
       Alert.alert(
-        "Error",
-        `Failed to ${
-          mode === "create" ? "register" : "update"
-        } device. Please try again.`
+        t("common.error"),
+        mode === "create" 
+          ? t("water-scheduling.devices.failedToRegister") 
+          : t("water-scheduling.devices.failedToUpdate")
       );
     } finally {
       setIsSubmitting(false);
@@ -261,7 +260,7 @@ const DeviceFormScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading device data...</Text>
+        <Text style={styles.loadingText}>{t("water-scheduling.devices.loadingDevice")}</Text>
       </SafeAreaView>
     );
   }
@@ -280,7 +279,9 @@ const DeviceFormScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.gray800} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {mode === "create" ? "Register New Device" : "Edit Device"}
+            {mode === "create" 
+              ? t("water-scheduling.devices.registerDevice") 
+              : t("water-scheduling.devices.editDevice")}
           </Text>
           <View style={styles.placeholderButton} />
         </View>
@@ -291,13 +292,13 @@ const DeviceFormScreen: React.FC = () => {
         >
           {/* Basic Information Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Device Information</Text>
+            <Text style={styles.sectionTitle}>{t("water-scheduling.devices.deviceInformation")}</Text>
 
             <Input
-              label="Device ID"
+              label={t("water-scheduling.devices.deviceId")}
               value={deviceId}
               onChangeText={setDeviceId}
-              placeholder="e.g., DEV001"
+              placeholder={t("water-scheduling.devices.deviceIdPlaceholder")}
               error={errors.deviceId}
               leftIcon="hardware-chip-outline"
               containerStyle={styles.inputContainer}
@@ -306,7 +307,7 @@ const DeviceFormScreen: React.FC = () => {
 
             {/* Device Type Selector */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Device Type</Text>
+              <Text style={styles.label}>{t("water-scheduling.devices.deviceType")}</Text>
               <TouchableOpacity
                 style={[
                   styles.pickerButton,
@@ -337,10 +338,10 @@ const DeviceFormScreen: React.FC = () => {
             </View>
 
             <Input
-              label="Firmware Version"
+              label={t("water-scheduling.devices.firmware")}
               value={firmware}
               onChangeText={setFirmware}
-              placeholder="e.g., 1.0.0"
+              placeholder={t("water-scheduling.devices.firmwarePlaceholder")}
               error={errors.firmware}
               leftIcon="code-outline"
               containerStyle={styles.inputContainer}
@@ -348,10 +349,12 @@ const DeviceFormScreen: React.FC = () => {
 
             {/* Active Status Toggle */}
             <View style={styles.statusContainer}>
-              <Text style={styles.label}>Status</Text>
+              <Text style={styles.label}>{t("water-scheduling.devices.status")}</Text>
               <View style={styles.statusToggle}>
                 <Text style={styles.statusLabel}>
-                  {isActive ? "Active" : "Inactive"}
+                  {isActive 
+                    ? t("water-scheduling.devices.statusActive") 
+                    : t("water-scheduling.devices.statusInactive")}
                 </Text>
                 <Switch
                   value={isActive}
@@ -368,7 +371,9 @@ const DeviceFormScreen: React.FC = () => {
           {/* Submit Buttons */}
           <View style={styles.buttonsContainer}>
             <Button
-              title={mode === "create" ? "Register Device" : "Update Device"}
+              title={mode === "create" 
+                ? t("water-scheduling.devices.registerDevice") 
+                : t("water-scheduling.devices.updateDevice")}
               variant="primary"
               size="large"
               isLoading={isSubmitting}
@@ -377,7 +382,7 @@ const DeviceFormScreen: React.FC = () => {
             />
 
             <Button
-              title="Cancel"
+              title={t("common.cancel")}
               variant="outline"
               size="large"
               onPress={() => navigation.goBack()}
@@ -392,7 +397,7 @@ const DeviceFormScreen: React.FC = () => {
         <View style={styles.pickerModalOverlay}>
           <View style={styles.pickerModalContainer}>
             <View style={styles.pickerModalHeader}>
-              <Text style={styles.pickerModalTitle}>Select Device Type</Text>
+              <Text style={styles.pickerModalTitle}>{t("water-scheduling.devices.selectDeviceType")}</Text>
               <TouchableOpacity
                 onPress={() => setShowDeviceTypePicker(false)}
                 style={styles.pickerCloseButton}
@@ -452,11 +457,12 @@ const isNumeric = (value: string): boolean => {
 };
 
 const getDeviceTypeLabel = (type: string): string => {
+  const { t } = useTranslation();
   switch (type) {
     case "soil_sensor":
-      return "Soil Sensor";
+      return t("water-scheduling.devices.soilSensor");
     case "moisture_sensor":
-      return "Moisture Sensor";
+      return t("water-scheduling.devices.moistureSensor");
     default:
       return type;
   }

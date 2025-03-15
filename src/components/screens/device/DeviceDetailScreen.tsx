@@ -23,8 +23,10 @@ import StatusBadge from "../../common/StatusBadge";
 import Button from "../../common/Button";
 import { colors } from "../../../constants/colors";
 import { DEVICE_ROUTES } from "../../../constants/routes";
+import { useTranslation } from "react-i18next";
 
 const DeviceDetailScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [device, setDevice] = useState<Device | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -50,10 +52,10 @@ const DeviceDetailScreen: React.FC = () => {
       const fetchedDevice = await getDeviceById(deviceId);
       setDevice(fetchedDevice);
     } catch (error) {
-      console.error(`Failed to load device ${deviceId}:`, error);
+      // console.error(`Failed to load device ${deviceId}:`, error);
       Alert.alert(
-        "Error",
-        "Failed to load device details. Please try again later."
+        t("common.error"),
+        t("water-scheduling.devices.failedToLoad")
       );
       navigation.goBack();
     } finally {
@@ -67,7 +69,7 @@ const DeviceDetailScreen: React.FC = () => {
       const locationData = await getLocationByDeviceId(deviceId);
       setLocation(locationData);
     } catch (error) {
-      console.error('Failed to load location for device:', error);
+      console.error("Failed to load location for device:", error);
       setLocation(null);
     } finally {
       setIsLocationLoading(false);
@@ -76,28 +78,22 @@ const DeviceDetailScreen: React.FC = () => {
 
   const handleEditDevice = () => {
     if (device) {
-      navigation.navigate(
-        "RegisterDevice" as never,
-        {
-          mode: "edit",
-          deviceId: device.deviceId,
-          deviceData: device,
-        } as never
-      );
+      (navigation.navigate as any)("RegisterDevice", {
+        mode: "edit",
+        deviceId: device.deviceId,
+        deviceData: device,
+      });
     }
   };
 
   const handleDeleteDevice = async () => {
     try {
       await deleteDevice(deviceId);
-      Alert.alert("Success", "Device deleted successfully");
+      Alert.alert(t("common.success"), t("water-scheduling.devices.deviceDeleted"));
       navigation.goBack();
     } catch (error) {
       console.error(`Failed to delete device ${deviceId}:`, error);
-      Alert.alert(
-        "Error",
-        "Failed to delete device. Please try again later."
-      );
+      Alert.alert(t("common.error"), t("water-scheduling.devices.failedToUpdate"));
     }
   };
 
@@ -111,25 +107,28 @@ const DeviceDetailScreen: React.FC = () => {
         location
       ) {
         Alert.alert(
-          "Cannot Change Status",
-          "This device is currently assigned to a location. Please unassign it first before changing to inactive or maintenance status.",
-          [{ text: "OK" }]
+          t("water-scheduling.devices.cannotChangeStatus"),
+          t("water-scheduling.devices.deviceAssignedWarning"),
+          [{ text: t("common.ok") }]
         );
         return;
       }
 
       await updateDevice(deviceId, { status: newStatus });
       loadDevice(); // Reload device to get updated status
-      Alert.alert("Success", `Device status updated to ${newStatus}`);
+      Alert.alert(
+        t("common.success"), 
+        t("water-scheduling.devices.statusUpdated", { status: newStatus })
+      );
     } catch (error: any) {
       console.error(`Failed to update device status:`, error);
 
       // Check if it's our specific error
       const errorMessage =
         error.response?.data?.message ||
-        "Failed to update device status. Please try again later.";
+        t("water-scheduling.devices.failedToUpdate");
 
-      Alert.alert("Error", errorMessage);
+      Alert.alert(t("common.error"), errorMessage);
     }
   };
 
@@ -149,11 +148,11 @@ const DeviceDetailScreen: React.FC = () => {
   const getDeviceTypeLabel = (type: string = ""): string => {
     switch (type) {
       case "soil_sensor":
-        return "Soil Sensor";
+        return t("water-scheduling.devices.soilSensor");
       case "weather_station":
-        return "Weather Station";
+        return t("water-scheduling.devices.weatherStation");
       case "irrigation_controller":
-        return "Irrigation Controller";
+        return t("water-scheduling.devices.irrigationController");
       default:
         return type;
     }
@@ -187,9 +186,9 @@ const DeviceDetailScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading device details...</Text>
+        <Text style={styles.loadingText}>{t("water-scheduling.devices.loadingDevice")}</Text>
       </SafeAreaView>
     );
   }
@@ -205,7 +204,7 @@ const DeviceDetailScreen: React.FC = () => {
           >
             <Ionicons name="arrow-back" size={24} color={colors.gray800} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Device Details</Text>
+          <Text style={styles.headerTitle}>{t("water-scheduling.devices.deviceDetails")}</Text>
           <TouchableOpacity
             style={styles.editButton}
             onPress={handleEditDevice}
@@ -224,7 +223,7 @@ const DeviceDetailScreen: React.FC = () => {
                   <Text style={styles.deviceId}>{device.deviceId}</Text>
                   <View style={styles.deviceTypeContainer}>
                     <Ionicons
-                      name={getDeviceTypeIcon(device.type)}
+                      name={getDeviceTypeIcon(device.type) as any}
                       size={18}
                       color={colors.primary}
                     />
@@ -252,13 +251,13 @@ const DeviceDetailScreen: React.FC = () => {
                     />
                   </View>
                   <Text style={styles.batteryText}>
-                    {device.batteryLevel}% Battery
+                    {device.batteryLevel}% {t("water-scheduling.devices.batteryLevel")}
                   </Text>
                 </View>
               )}
 
               <View style={styles.deviceDetails}>
-                {device.firmware && (
+                {(device as any).firmware && (
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabelContainer}>
                       <Ionicons
@@ -266,13 +265,15 @@ const DeviceDetailScreen: React.FC = () => {
                         size={18}
                         color={colors.gray600}
                       />
-                      <Text style={styles.detailLabel}>Firmware:</Text>
+                      <Text style={styles.detailLabel}>{t("water-scheduling.devices.firmware")}:</Text>
                     </View>
-                    <Text style={styles.detailValue}>{device.firmware}</Text>
+                    <Text style={styles.detailValue}>
+                      {(device as any).firmware}
+                    </Text>
                   </View>
                 )}
 
-                {device.lastMaintenance && (
+                {(device as any).lastMaintenance && (
                   <View style={styles.detailRow}>
                     <View style={styles.detailLabelContainer}>
                       <Ionicons
@@ -280,10 +281,12 @@ const DeviceDetailScreen: React.FC = () => {
                         size={18}
                         color={colors.gray600}
                       />
-                      <Text style={styles.detailLabel}>Last Maintenance:</Text>
+                      <Text style={styles.detailLabel}>{t("water-scheduling.devices.lastUpdated")}:</Text>
                     </View>
                     <Text style={styles.detailValue}>
-                      {new Date(device.lastMaintenance).toLocaleDateString()}
+                      {new Date(
+                        (device as any).lastMaintenance
+                      ).toLocaleDateString()}
                     </Text>
                   </View>
                 )}
@@ -295,10 +298,10 @@ const DeviceDetailScreen: React.FC = () => {
                       size={18}
                       color={colors.gray600}
                     />
-                    <Text style={styles.detailLabel}>Reading Interval:</Text>
+                    <Text style={styles.detailLabel}>{t("water-scheduling.devices.readingInterval")}:</Text>
                   </View>
                   <Text style={styles.detailValue}>
-                    {device.settings?.readingInterval || 30} minutes
+                    {device.settings?.readingInterval || 30} {t("water-scheduling.devices.minutesUnit")}
                   </Text>
                 </View>
 
@@ -309,10 +312,10 @@ const DeviceDetailScreen: React.FC = () => {
                       size={18}
                       color={colors.gray600}
                     />
-                    <Text style={styles.detailLabel}>Reporting Interval:</Text>
+                    <Text style={styles.detailLabel}>{t("water-scheduling.devices.reportingInterval")}:</Text>
                   </View>
                   <Text style={styles.detailValue}>
-                    {device.settings?.reportingInterval || 60} minutes
+                    {device.settings?.reportingInterval || 60} {t("water-scheduling.devices.minutesUnit")}
                   </Text>
                 </View>
               </View>
@@ -320,12 +323,14 @@ const DeviceDetailScreen: React.FC = () => {
 
             {/* Location Assignment Card */}
             <Card style={styles.locationCard}>
-              <Text style={styles.sectionTitle}>Location Assignment</Text>
+              <Text style={styles.sectionTitle}>{t("water-scheduling.devices.locationAssignment")}</Text>
 
               {isLocationLoading ? (
-                <View style={styles.loadingContainer}>
+                <View style={styles.loadingIndicatorContainer}>
                   <ActivityIndicator size="small" color={colors.primary} />
-                  <Text style={styles.loadingText}>Loading location details...</Text>
+                  <Text style={styles.loadingText}>
+                    {t("common.loadingLocation")}
+                  </Text>
                 </View>
               ) : location ? (
                 <View>
@@ -336,7 +341,7 @@ const DeviceDetailScreen: React.FC = () => {
                       color={colors.primary}
                     />
                     <Text style={styles.assignedLocationText}>
-                      Assigned to: {location.name}
+                      {t("water-scheduling.devices.assignedToLocation", { location: location.name })}
                     </Text>
                   </View>
                 </View>
@@ -348,11 +353,10 @@ const DeviceDetailScreen: React.FC = () => {
                     color={colors.gray400}
                   />
                   <Text style={styles.unassignedText}>
-                    This device is not assigned to any location
+                    {t("water-scheduling.devices.notAssignedToLocation")}
                   </Text>
                   <Text style={styles.unassignedSubtext}>
-                    Assign this device to a location from the location details
-                    screen
+                    {t("water-scheduling.devices.assignInLocationDetails")}
                   </Text>
                 </View>
               )}
@@ -362,9 +366,9 @@ const DeviceDetailScreen: React.FC = () => {
             {device.type === "soil_sensor" && device.lastReading && (
               <Card style={styles.readingsCard}>
                 <View style={styles.readingsHeader}>
-                  <Text style={styles.sectionTitle}>Current Readings</Text>
+                  <Text style={styles.sectionTitle}>{t("water-scheduling.devices.currentReadings")}</Text>
                   <Text style={styles.lastUpdatedText}>
-                    Last updated: {formatDateTime(device.lastReading.timestamp)}
+                    {t("water-scheduling.devices.lastUpdatedAt", { time: formatDateTime(device.lastReading.timestamp) })}
                   </Text>
                 </View>
 
@@ -434,7 +438,7 @@ const DeviceDetailScreen: React.FC = () => {
 
             {/* Device Status Actions */}
             <Card style={styles.actionsCard}>
-              <Text style={styles.sectionTitle}>Device Status</Text>
+              <Text style={styles.sectionTitle}>{t("water-scheduling.devices.status")}</Text>
 
               {device.status === "active" ? (
                 <View style={styles.statusActions}>
@@ -446,14 +450,13 @@ const DeviceDetailScreen: React.FC = () => {
                         color={colors.warning}
                       />
                       <Text style={styles.statusWarningText}>
-                        This device is assigned to a location. Unassign it to
-                        change status.
+                        {t("water-scheduling.devices.unassignedToChange")}
                       </Text>
                     </View>
                   ) : (
                     <>
                       <Button
-                        title="Mark as Maintenance"
+                        title={t("water-scheduling.devices.markAsMaintenance")}
                         variant="outline"
                         leftIcon={
                           <Ionicons
@@ -467,7 +470,7 @@ const DeviceDetailScreen: React.FC = () => {
                         textStyle={{ color: colors.warning }}
                       />
                       <Button
-                        title="Mark as Inactive"
+                        title={t("water-scheduling.devices.markAsInactive")}
                         variant="outline"
                         leftIcon={
                           <Ionicons
@@ -485,7 +488,7 @@ const DeviceDetailScreen: React.FC = () => {
                 </View>
               ) : device.status === "maintenance" ? (
                 <Button
-                  title="Mark as Active"
+                  title={t("water-scheduling.devices.markAsActive")}
                   variant="primary"
                   leftIcon={
                     <Ionicons
@@ -499,7 +502,7 @@ const DeviceDetailScreen: React.FC = () => {
                 />
               ) : (
                 <Button
-                  title="Reactivate Device"
+                  title={t("water-scheduling.devices.reactivateDevice")}
                   variant="primary"
                   leftIcon={
                     <Ionicons
@@ -517,7 +520,7 @@ const DeviceDetailScreen: React.FC = () => {
             {/* Delete Button */}
             <View style={styles.deleteContainer}>
               <Button
-                title="Delete Device"
+                title={t("water-scheduling.devices.deleteDevice")}
                 variant="outline"
                 leftIcon={
                   <Ionicons
@@ -540,7 +543,7 @@ const DeviceDetailScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Delete Device</Text>
+              <Text style={styles.modalTitle}>{t("water-scheduling.devices.deleteDeviceTitle")}</Text>
               <TouchableOpacity
                 onPress={() => setShowDeleteConfirm(false)}
                 style={styles.modalCloseButton}
@@ -557,23 +560,22 @@ const DeviceDetailScreen: React.FC = () => {
                 style={styles.modalIcon}
               />
               <Text style={styles.modalText}>
-                Are you sure you want to delete this device? This action cannot
-                be undone.
+                {t("water-scheduling.devices.deleteDeviceConfirm")}
               </Text>
               <Text style={styles.modalWarning}>
-                All associated data will be permanently deleted.
+                {t("water-scheduling.devices.deleteDeviceWarning")}
               </Text>
             </View>
 
             <View style={styles.modalActions}>
               <Button
-                title="Cancel"
+                title={t("common.cancel")}
                 variant="outline"
                 onPress={() => setShowDeleteConfirm(false)}
                 style={styles.modalCancelButton}
               />
               <Button
-                title="Delete"
+                title={t("common.delete")}
                 variant="primary"
                 leftIcon={
                   <Ionicons
@@ -597,15 +599,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundLight,
-    marginTop:30
+    marginTop: 30,
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContainer: {
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
   },
+  loadingIndicatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
   loadingText: {
-    marginTop: 8,
+    marginLeft: 8,
     fontSize: 14,
     color: colors.gray600,
   },

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { getDevices } from "../../../api/deviceApi";
 import { getLocationByDeviceId } from "../../../api/locationApi";
 import { Device } from "../../../types";
@@ -22,6 +23,7 @@ import Button from "../../common/Button";
 import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const DeviceListScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [locationMap, setLocationMap] = useState<Record<string, any>>({});
@@ -50,30 +52,30 @@ const DeviceListScreen: React.FC = () => {
               locationsData[device.deviceId] = location;
             }
           } catch (error) {
-            console.error(`Failed to load location for device ${device.deviceId}:`, error);
+            // console.error(`Failed to load location for device ${device.deviceId}:`, error);
           }
         }
       }
       setLocationMap(locationsData);
       
     } catch (error) {
-      console.error("Failed to load devices:", error);
-      Alert.alert("Error", "Failed to load devices. Please try again later.");
+      // console.error("Failed to load devices:", error);
+      Alert.alert(t("common.error"), t("water-scheduling.devices.failedToLoadDevices"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleAddDevice = () => {
-    navigation.navigate('RegisterDevice' as never, {
+    (navigation.navigate as any)('RegisterDevice', {
       mode: "create"
-    } as never);
+    });
   };
-
+  
   const handleDevicePress = (deviceId: string) => {
-    navigation.navigate(DEVICE_ROUTES.DEVICE_DETAILS as never, {
+    (navigation.navigate as any)(DEVICE_ROUTES.DEVICE_DETAILS, {
       deviceId
-    } as never);
+    });
   };
 
   const getBatteryIcon = (level?: number) => {
@@ -107,11 +109,11 @@ const DeviceListScreen: React.FC = () => {
   const getDeviceTypeLabel = (type: string): string => {
     switch (type) {
       case "soil_sensor":
-        return "Soil Sensor";
+        return t("water-scheduling.devices.soilSensor");
       case "weather_station":
-        return "Weather Station";
+        return t("water-scheduling.devices.weatherStation");
       case "irrigation_controller":
-        return "Irrigation Controller";
+        return t("water-scheduling.devices.irrigationController");
       default:
         return type;
     }
@@ -138,7 +140,7 @@ const DeviceListScreen: React.FC = () => {
           {item.batteryLevel !== undefined && (
             <View style={styles.batteryContainer}>
               <Ionicons
-                name={getBatteryIcon(item.batteryLevel)}
+                //name={getBatteryIcon(item.batteryLevel)}
                 size={16}
                 color={getBatteryColor(item.batteryLevel)}
               />
@@ -150,7 +152,7 @@ const DeviceListScreen: React.FC = () => {
         <View style={styles.deviceDetails}>
           <View style={styles.deviceTypeContainer}>
             <Ionicons
-              name={getDeviceTypeIcon(item.type)}
+              //name={getDeviceTypeIcon(item.type)}
               size={20}
               color={colors.primary}
             />
@@ -161,7 +163,7 @@ const DeviceListScreen: React.FC = () => {
 
           {item.lastReading && (
             <View style={styles.lastReadingContainer}>
-              <Text style={styles.lastReadingLabel}>Last Reading:</Text>
+              <Text style={styles.lastReadingLabel}>{t("water-scheduling.devices.lastReading")}:</Text>
               <Text style={styles.lastReadingTime}>
                 {new Date(item.lastReading.timestamp).toLocaleTimeString([], {
                   hour: '2-digit',
@@ -177,13 +179,13 @@ const DeviceListScreen: React.FC = () => {
           <View style={styles.locationContainer}>
             <Ionicons name="location-outline" size={16} color={colors.gray600} />
             <Text style={styles.locationText}>
-              Assigned to: {locationData.name}
+              {t("water-scheduling.devices.assignedToLocation", { location: locationData.name })}
             </Text>
           </View>
         ) : (
           <View style={styles.unassignedContainer}>
             <Ionicons name="alert-circle-outline" size={16} color={colors.warning} />
-            <Text style={styles.unassignedText}>Not assigned to any location</Text>
+            <Text style={styles.unassignedText}>{t("water-scheduling.devices.notAssignedToLocation")}</Text>
           </View>
         )}
       </Card>
@@ -195,7 +197,7 @@ const DeviceListScreen: React.FC = () => {
       return (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.emptyText}>Loading devices...</Text>
+          <Text style={styles.emptyText}>{t("water-scheduling.devices.loadingDevices")}</Text>
         </View>
       );
     }
@@ -208,12 +210,12 @@ const DeviceListScreen: React.FC = () => {
           color={colors.gray400}
           style={styles.emptyIcon}
         />
-        <Text style={styles.emptyTitle}>No Devices Found</Text>
+        <Text style={styles.emptyTitle}>{t("water-scheduling.devices.noDevices")}</Text>
         <Text style={styles.emptyText}>
-          You haven't registered any devices yet.
+          {t("water-scheduling.devices.noDevicesDescription")}
         </Text>
         <Button
-          title="Register Your First Device"
+          title={t("water-scheduling.devices.addFirstDevice")}
           onPress={handleAddDevice}
           variant="primary"
           style={styles.addFirstButton}
@@ -225,7 +227,7 @@ const DeviceListScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Devices</Text>
+        <Text style={styles.title}>{t("water-scheduling.devices.deviceList")}</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={handleAddDevice}
