@@ -182,9 +182,19 @@ export const BatchHistoryScreen = () => {
     } as never);
   };
 
+  const getDisplayDryingTime = (moistureLevel: number, dryingTime: number) => {
+    // If moisture level is 7 or lower, display drying time as 0
+    if (moistureLevel <= 7) {
+      return 0;
+    }
+    return dryingTime;
+  };
+
   const renderItem = ({ item }: { item: Reading }) => {
     // Calculate oil yield for 10kg of copra
     const oilYield = calculateOilYield(item.moistureLevel);
+    // Get the correct drying time to display
+    const displayDryingTime = getDisplayDryingTime(item.moistureLevel, item.dryingTime);
     
     return (
       <View style={styles.card}>
@@ -220,7 +230,7 @@ export const BatchHistoryScreen = () => {
 
           <View style={styles.timeContainer}>
             <MaterialIcons name="timer" size={32} color="#4CAF50" />
-            <Text style={styles.timeValue}>{item.dryingTime.toFixed(1)}h</Text>
+            <Text style={styles.timeValue}>{displayDryingTime.toFixed(1)}h</Text>
             <Text style={styles.timeLabel}>Drying Time</Text>
           </View>
           
@@ -255,12 +265,15 @@ export const BatchHistoryScreen = () => {
               Start: {new Date(item.startTime).toLocaleString()}
             </Text>
           </View>
-          <View style={styles.timeRow}>
-            <MaterialIcons name="update" size={18} color="#666" />
-            <Text style={styles.timeInfoText}>
-              Expected End: {calculateEndTime(item.startTime, item.dryingTime)}
-            </Text>
-          </View>
+          {/* Only show expected end time if there's a drying time greater than 0 */}
+          {displayDryingTime > 0 && (
+            <View style={styles.timeRow}>
+              <MaterialIcons name="update" size={18} color="#666" />
+              <Text style={styles.timeInfoText}>
+                Expected End: {calculateEndTime(item.startTime, displayDryingTime)}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Notes Section */}
