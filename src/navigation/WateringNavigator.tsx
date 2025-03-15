@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 // Import screens
 import WateringScheduleScreen from '../components/screens/watering/WateringScheduleScreen';
@@ -13,13 +14,15 @@ import ScheduleHistoryScreen from '../components/screens/watering/ScheduleHistor
 const Stack = createNativeStackNavigator();
 
 const WateringNavigator = () => {
+  const { t } = useTranslation();
+
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="WateringSchedule"
         component={WateringScheduleScreen}
         options={({ navigation }) => ({
-          title: 'Watering Schedules',
+          title: t('water-scheduling.schedule.wateringSchedules'),
           headerStyle: {
             backgroundColor: colors.white,
           },
@@ -42,7 +45,7 @@ const WateringNavigator = () => {
         name="ScheduleDetail"
         component={ScheduleDetailScreen}
         options={({ navigation }) => ({
-          title: 'Schedule Details',
+          title: t('water-scheduling.schedule.scheduleDetails'),
           headerStyle: {
             backgroundColor: colors.white,
           },
@@ -58,7 +61,7 @@ const WateringNavigator = () => {
         name="CreateSchedule"
         component={CreateScheduleScreen}
         options={({ navigation }) => ({
-          title: 'Create Schedule',
+          title: t('water-scheduling.schedule.createSchedule'),
           headerStyle: {
             backgroundColor: colors.white,
           },
@@ -74,7 +77,7 @@ const WateringNavigator = () => {
         name="ScheduleHistory"
         component={ScheduleHistoryScreen}
         options={({ navigation }) => ({
-          title: 'Schedule Details',
+          title: t('water-scheduling.schedule.scheduleHistory'),
           headerStyle: {
             backgroundColor: colors.white,
           },

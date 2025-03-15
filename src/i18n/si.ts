@@ -366,6 +366,9 @@ export default {
       optimalEfficiency: "උපතිම ජල සැපයුම් කාර්යක්ෂමතාව",
       overwatered: "{{percentage}}% ක් වැඩිපුර ජලය සපයා ඇත",
       underwatered: "{{percentage}}% ක් අඩුවෙන් ජලය සපයා ඇත",
+      wateringSchedules: "ජල සැපයුම් කාලසටහන්",
+      scheduleDetails: "කාලසටහන් විස්තර",
+      scheduleHistory: "කාලසටහන් ඉතිහාසය",
     },
     history: {
       setDateRange: "දින පරාසය සකසන්න",
