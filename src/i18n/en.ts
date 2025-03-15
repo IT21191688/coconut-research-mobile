@@ -364,6 +364,9 @@ export default {
       optimalEfficiency: "Optimal watering efficiency",
       overwatered: "Overwatered by {{percentage}}%",
       underwatered: "Underwatered by {{percentage}}%",
+      wateringSchedules: "Watering Schedules",
+      scheduleDetails: "Schedule Details",
+      scheduleHistory: "Schedule History",
     },
     history: {
       setDateRange: "Set Date Range",
@@ -417,7 +420,7 @@ export default {
       noDevices: "No Devices Found",
       addFirstDevice: "Register Your First Device",
       noDevicesDescription: "You haven't registered any devices yet.",
-      
+
       // Device properties
       deviceType: "Device Type",
       status: "Status",
@@ -428,7 +431,7 @@ export default {
       readingInterval: "Reading Interval",
       reportingInterval: "Reporting Interval",
       locationAssignment: "Location Assignment",
-      
+
       // Device status actions
       maintainDevice: "Maintain Device",
       deactivateDevice: "Deactivate Device",
@@ -438,25 +441,27 @@ export default {
       markAsInactive: "Mark as Inactive",
       markAsActive: "Mark as Active",
       reactivateDevice: "Reactivate Device",
-      
+
       // Device readings
       currentReadings: "Current Readings",
       lastReading: "Last Reading",
       lastUpdatedAt: "Last updated: {{time}}",
       moistureReadings: "Moisture Readings",
-      
+
       // Location assignment
       assignedToLocation: "Assigned to: {{location}}",
       notAssignedToLocation: "Not assigned to any location",
-      assignInLocationDetails: "Assign this device to a location from the location details screen",
-      unassignedToChange: "This device is assigned to a location. Unassign it to change status.",
-      
+      assignInLocationDetails:
+        "Assign this device to a location from the location details screen",
+      unassignedToChange:
+        "This device is assigned to a location. Unassign it to change status.",
+
       // Device types
       soilSensor: "Soil Sensor",
       weatherStation: "Weather Station",
       irrigationController: "Irrigation Controller",
       moistureSensor: "Moisture Sensor",
-      
+
       // Form fields and placeholders
       deviceInformation: "Device Information",
       deviceIdPlaceholder: "e.g., DEV001",
@@ -465,49 +470,55 @@ export default {
       statusInactive: "Inactive",
       selectDeviceType: "Select Device Type",
       updateDevice: "Update Device",
-      
+
       // Time and measurements
       minutesUnit: "minutes",
-      
+
       // Success/error messages
       deviceRegistered: "Device registered successfully!",
       deviceDeleted: "Device deleted successfully",
       deviceUpdated: "Device updated successfully",
       deviceNotFound: "Device not found",
       statusUpdated: "Device status updated to {{status}}",
-      
+
       // Loading states
       loadingDevice: "Loading device data...",
       loadingDevices: "Loading devices...",
-      
+
       // Error messages
       failedToLoad: "Failed to load device data",
       failedToLoadDevices: "Failed to load devices. Please try again later.",
       failedToUpdate: "Failed to update device",
       failedToRegister: "Failed to register device. Please try again.",
-      
+
       // Confirmation dialogs
       confirmStatusChange: "Change device status",
-      statusChangeMessage: "Are you sure you want to change this device status?",
+      statusChangeMessage:
+        "Are you sure you want to change this device status?",
       cannotChangeStatus: "Cannot Change Status",
-      deviceAssignedWarning: "This device is currently assigned to a location. Please unassign it first before changing to inactive or maintenance status.",
+      deviceAssignedWarning:
+        "This device is currently assigned to a location. Please unassign it first before changing to inactive or maintenance status.",
       deleteConfirmation: "Are you sure you want to delete this device?",
       deleteWarning: "All associated data will be permanently deleted",
       deleteDeviceTitle: "Delete Device",
-      deleteDeviceConfirm: "Are you sure you want to delete this device? This action cannot be undone.",
+      deleteDeviceConfirm:
+        "Are you sure you want to delete this device? This action cannot be undone.",
       deleteDeviceWarning: "All associated data will be permanently deleted.",
-      
+
       // Validation messages
       deviceIdRequired: "Device ID is required",
       deviceIdMinLength: "Device ID must be at least 3 characters",
       firmwareRequired: "Firmware version is required",
       readingIntervalNumber: "Reading interval must be a number",
-      readingIntervalRange: "Reading interval must be between 1 and 1440 minutes",
+      readingIntervalRange:
+        "Reading interval must be between 1 and 1440 minutes",
       reportingIntervalNumber: "Reporting interval must be a number",
-      reportingIntervalRange: "Reporting interval must be between 1 and 1440 minutes",
+      reportingIntervalRange:
+        "Reporting interval must be between 1 and 1440 minutes",
       moistureThresholdRange: "Moisture threshold must be between 0 and 100",
-      temperatureThresholdRange: "Temperature threshold must be between -50 and 100°C",
-      humidityThresholdRange: "Humidity threshold must be between 0 and 100%"
+      temperatureThresholdRange:
+        "Temperature threshold must be between -50 and 100°C",
+      humidityThresholdRange: "Humidity threshold must be between 0 and 100%",
     },
   },
 };
