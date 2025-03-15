@@ -370,6 +370,9 @@ export default {
       optimalEfficiency: "சிறந்த நீர் பாய்ச்சும் திறன்",
       overwatered: "{{percentage}}% அதிகமாக நீர் பாய்ச்சியுள்ளது",
       underwatered: "{{percentage}}% குறைவாக நீர் பாய்ச்சியுள்ளது",
+      wateringSchedules: "நீர் பாய்ச்சும் அட்டவணைகள்",
+      scheduleDetails: "அட்டவணை விவரங்கள்",
+      scheduleHistory: "அட்டவணை வரலாறு",
     },
     history: {
       setDateRange: "தேதி வரம்பை அமைக்கவும்",
