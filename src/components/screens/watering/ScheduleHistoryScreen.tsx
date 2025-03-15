@@ -622,7 +622,7 @@ const ScheduleHistoryScreen = () => {
         {renderFilterPill('TODAY', t("water-scheduling.history.today"))}
         {renderFilterPill('WEEK', t("water-scheduling.history.thisWeek"))}
         {renderFilterPill('MONTH', t("water-scheduling.history.thisMonth"))}
-        {renderFilterPill('CUSTOM', t("water-scheduling.history.customRange"))}
+        {/* {renderFilterPill('CUSTOM', t("water-scheduling.history.customRange"))} */}
       </View>
 
       {/* Schedule count display */}
@@ -734,6 +734,8 @@ const styles = StyleSheet.create({
   periodFilterContainer: {
     flexDirection: 'row',
     marginBottom: 12,
+    justifyContent: 'space-between',
+    width: '100%'
   },
   filterPill: {
     paddingHorizontal: 12,
@@ -757,7 +759,7 @@ const styles = StyleSheet.create({
   countContainer: {
     marginBottom: 12,
     padding: 8,
-    backgroundColor: colors.gray50,
+    backgroundColor: colors.gray500,
     borderRadius: 8,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,

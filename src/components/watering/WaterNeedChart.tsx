@@ -5,6 +5,7 @@ import { colors } from '../../constants/colors';
 import { getWaterNeedColors, getWaterNeedLabel } from '../../utils/wateringHelpers';
 import Card from '../common/Card';
 import ConfidenceGauge from '../common/ConfidenceGauge';
+import { useTranslation } from 'react-i18next'; // Import useTranslation hook
 
 interface WaterNeedChartProps {
   amount: number;
@@ -21,6 +22,9 @@ const WaterNeedChart: React.FC<WaterNeedChartProps> = ({
   showDetail = true,
   style,
 }) => {
+  // Initialize translation hook
+  const { t } = useTranslation();
+  
   const waterColors = getWaterNeedColors(amount);
   const waterLabel = getWaterNeedLabel(amount);
 
@@ -28,11 +32,24 @@ const WaterNeedChart: React.FC<WaterNeedChartProps> = ({
   const formattedAmount = Number.isInteger(amount) 
     ? amount.toString() 
     : amount.toFixed(1);
+    
+  // Get recommendation text based on water amount
+  const getRecommendationText = (amount: number): string => {
+    if (amount === 0) {
+      return t('waterNeedChart.recommendations.noWatering');
+    } else if (amount < 30) {
+      return t('waterNeedChart.recommendations.lightWatering');
+    } else if (amount < 50) {
+      return t('waterNeedChart.recommendations.moderateWatering');
+    } else {
+      return t('waterNeedChart.recommendations.fullWatering');
+    }
+  };
 
   return (
     <Card style={[styles.container, style]} variant="elevated">
       <View style={styles.header}>
-        <Text style={styles.title}>Recommended Water</Text>
+        <Text style={styles.title}>{t('waterNeedChart.title')}</Text>
         {showGauge && confidence > 0 && (
           <ConfidenceGauge 
             value={confidence} 
@@ -83,7 +100,7 @@ const WaterNeedChart: React.FC<WaterNeedChartProps> = ({
                   color={colors.textSecondary}
                 />
                 <Text style={styles.infoText}>
-                  ML model confidence: {confidence.toFixed(0)}%
+                  {t('waterNeedChart.mlModelConfidence', { confidence: confidence.toFixed(0) })}
                 </Text>
               </View>
             )}
@@ -92,19 +109,6 @@ const WaterNeedChart: React.FC<WaterNeedChartProps> = ({
       </View>
     </Card>
   );
-};
-
-// Generate recommendation text based on water amount
-const getRecommendationText = (amount: number): string => {
-  if (amount === 0) {
-    return 'No watering needed at this time.';
-  } else if (amount < 30) {
-    return 'Light watering recommended.';
-  } else if (amount < 50) {
-    return 'Moderate watering recommended.';
-  } else {
-    return 'Full watering recommended.';
-  }
 };
 
 const styles = StyleSheet.create({
