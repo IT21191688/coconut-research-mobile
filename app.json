@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "coconut-farm-mobile",
-    "slug": "coconut-farm-mobile",
+    "name": "Coco Tech",
+    "slug": "coco-tech",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -16,14 +16,22 @@
       "supportsTablet": true
     },
     "android": {
-      "permissions": ["INTERNET"],
+      "permissions": [
+        "INTERNET"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.thanujadha20.coconutfarmmobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3dd7a429-053a-4cdf-abde-1c7d86b90c98"
+      }
     }
   }
 }
