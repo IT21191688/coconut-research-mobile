@@ -17,14 +17,16 @@ export const CopraNavigator = () => {
       initialRouteName="CreateReading"
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#007AFF',
+          backgroundColor: '#FFFFFF', // White background
         },
-        headerTintColor: '#fff',
+        headerTintColor: '#000000', // Black text & icons
         headerTitleStyle: {
           fontWeight: '600',
+          color: '#000000', // Ensure text is black
         },
       }}
     >
+
       <Stack.Screen
         name="CreateReading"
         component={CreateReadingScreen}
