@@ -19,46 +19,48 @@ import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
-// Using online images
-const slideImages = [
-  { 
-    id: '1',
-    image: 'https://images.unsplash.com/photo-1509822929063-6b6cfc9b42f2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80', 
-    title: 'Smart Farm Management',
-    subtitle: 'Monitor your coconut farm from anywhere'
-  },
-  { 
-    id: '2',
-    image: 'https://images.unsplash.com/photo-1598928636135-d146006ff4be?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-    title: 'Maximize Yield',
-    subtitle: 'Get data-driven insights for better results'
-  },
-  { 
-    id: '3',
-    image: 'https://images.unsplash.com/photo-1552410260-0fd9b577afa6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-    title: 'Weather Integration',
-    subtitle: 'Optimize irrigation based on forecasts'
-  },
-  { 
-    id: '4',
-    image: 'https://images.unsplash.com/photo-1600673925282-a6bdc9f4f75f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-    title: 'Remote Control',
-    subtitle: 'Automate irrigation and fertilization'
-  }
-];
-
 const HomeScreen: React.FC = ({ navigation }: any) => {
   const { user, logout } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const [imagesLoaded, setImagesLoaded] = useState(
-    slideImages.map(() => false)
-  );
+  const { t, i18n } = useTranslation();
+  
   // Add new state for profile menu and language settings
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLanguageOptions, setShowLanguageOptions] = useState(false);
-  const { t, i18n } = useTranslation();
+  
+  // Using translated slide images
+  const slideImages = [
+    { 
+      id: '1',
+      image: require('../../../../assets/images/HomeSlide1.jpg'), 
+      title: t('home.smartFarmManagement'),
+      subtitle: t('home.monitorFarm')
+    },
+    { 
+      id: '2',
+      image: require('../../../../assets/images/HomeSlide3.jpg'),
+      title: t('home.copraClassification'),
+      subtitle: t('home.dataInsights')
+    },
+    { 
+      id: '3',
+      image: require('../../../../assets/images/HomeSlide2.jpg'),
+      title: t('home.weatherIntegration'),
+      subtitle: t('home.optimizeIrrigation')
+    },
+    { 
+      id: '4',
+      image: require('../../../../assets/images/HomeSlide4.jpg'),
+      title: t('home.remoteControl'),
+      subtitle: t('home.automateIrrigation')
+    }
+  ];
+  
+  const [imagesLoaded, setImagesLoaded] = useState(
+    slideImages.map(() => false)
+  );
 
   // Auto scroll for image slider
   useEffect(() => {
@@ -77,7 +79,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
   const menuItems = [
     {
       id: 'water',
-      title: 'Water Scheduling',
+      title: t('home.waterScheduling'),
       icon: 'water-outline',
       color: '#4DA3FF',
       bgColor: '#EBF5FF',
@@ -85,7 +87,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'yield',
-      title: 'Coconut Yield',
+      title: t('home.coconutYield'),
       icon: 'leaf-outline',
       color: '#4CD964',
       bgColor: '#EAFFF2',
@@ -93,7 +95,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'copra',
-      title: 'Copra Identification',
+      title: t('home.copraIdentification'),
       icon: 'scan-outline',
       color: '#9B59B6',
       bgColor: '#F8EFFF',
@@ -101,7 +103,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'oil',
-      title: 'Drying Time in Copra',
+      title: t('home.dryingTime'),
       icon: 'flask-outline',
       color: '#FF9500',
       bgColor: '#FFF6EB',
@@ -109,7 +111,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'locations',
-      title: 'Locations',
+      title: t('home.locations'),
       icon: 'location-outline',
       color: '#FF4D4D',
       bgColor: '#FFEBEB',
@@ -117,7 +119,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     },
     {
       id: 'devices',
-      title: 'Devices',
+      title: t('home.devices'),
       icon: 'hardware-chip-outline',
       color: '#7F58FF',
       bgColor: '#F0EBFF',
@@ -131,11 +133,11 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     setImagesLoaded(newLoadedState);
   };
 
-  const renderSlideItem = (item:any, index:any) => {
+  const renderSlideItem = (item: any, index: any) => {
     return (
       <View style={styles.slideItem}>
         <Image 
-          source={{ uri: item.image }} 
+          source={item.image} 
           style={styles.slideImage}
           onLoad={() => handleImageLoad(index)}
           resizeMode="cover"
@@ -188,7 +190,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     );
   };
 
-  const onSlideChange = (event:any) => {
+  const onSlideChange = (event: any) => {
     const slideIndex = Math.floor(
       event.nativeEvent.contentOffset.x / event.nativeEvent.layoutMeasurement.width
     );
@@ -209,7 +211,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
         {/* Header with profile */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.welcomeText}>Welcome back</Text>
+            <Text style={styles.welcomeText}>{t('home.welcomeBack')}</Text>
             <Text style={styles.nameText}>{user?.name || 'John Doe'}</Text>
           </View>
           <TouchableOpacity 
@@ -252,7 +254,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
                 }}
               >
                 <Ionicons name="person-outline" size={20} color="#374151" />
-                <Text style={styles.menuOptionText}>Account</Text>
+                <Text style={styles.menuOptionText}>{t('home.account')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -260,14 +262,14 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
                 onPress={() => setShowLanguageOptions(true)}
               >
                 <Ionicons name="settings-outline" size={20} color="#374151" />
-                <Text style={styles.menuOptionText}>Settings</Text>
+                <Text style={styles.menuOptionText}>{t('home.settings')}</Text>
                 <Ionicons name="chevron-forward" size={16} color="#6B7280" />
               </TouchableOpacity>
 
               {/* Language Options */}
               {showLanguageOptions && (
                 <View style={styles.languageOptionsContainer}>
-                  <Text style={styles.languageTitle}>Select Language</Text>
+                  <Text style={styles.languageTitle}>{t('home.selectLanguage')}</Text>
                   <TouchableOpacity 
                     style={styles.languageOption}
                     onPress={() => changeLanguage('en')}
@@ -322,13 +324,17 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={16}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            onMomentumScrollEnd={onSlideChange}
           />
           {renderDotIndicator()}
         </View>
 
         {/* Menu grid */}
         <View style={styles.menuContainer}>
-          <Text style={styles.sectionTitle}>Services</Text>
           <View style={styles.menuGrid}>
             {menuItems.map(item => (
               <TouchableOpacity
@@ -353,7 +359,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
           activeOpacity={0.7}
         >
           <Ionicons name="log-out-outline" size={20} color="#6B7280" />
-          <Text style={styles.signOutText}>Sign Out</Text>
+          <Text style={styles.signOutText}>{t('home.signOut')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

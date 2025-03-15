@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { WateringProvider } from "../context/WateringContext";
 import { DeviceProvider } from "../context/DeviceContext";
 import { LocationProvider } from "../context/LocationContext";
+import { useTranslation } from "react-i18next"; // Add this import
 import AuthNavigator from "./AuthNavigator";
 import WateringNavigator from "./WateringNavigator";
 import CoconutYieldNavigator from "./CoconutYieldNavigator";
@@ -24,6 +25,8 @@ const Tab = createBottomTabNavigator();
 
 // Main tab navigator when logged in
 const MainTabNavigator = () => {
+  const { t } = useTranslation(); // Add translation hook
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -60,10 +63,26 @@ const MainTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Watering" component={WateringNavigator} />
-      <Tab.Screen name="CoconutYield" component={CoconutYieldNavigator} />
-      <Tab.Screen name="OilYield" component={CopraNavigator} />
+      <Tab.Screen 
+        name="Home" 
+        component={HomeStack} 
+        options={{ title: t("home.home") || "Home" }} 
+      />
+      <Tab.Screen 
+        name="Watering" 
+        component={WateringNavigator} 
+        options={{ title: t("home.waterScheduling") || "Water Scheduling" }} 
+      />
+      <Tab.Screen 
+        name="CoconutYield" 
+        component={CoconutYieldNavigator} 
+        options={{ title: t("home.coconutYield") || "Coconut Yield" }} 
+      />
+      <Tab.Screen 
+        name="OilYield" 
+        component={CopraNavigator} 
+        options={{ title: t("copra.allBatches") || "All Batches" }} 
+      />
       <Tab.Screen
         name="CopraIdentification"
         component={HomeScreen}
@@ -73,7 +92,7 @@ const MainTabNavigator = () => {
             navigation.navigate("Home", { screen: "CopraIdentification" });
           },
         })}
-        options={{ title: "Copra ID" }}
+        options={{ title: t("home.copraIdentification") || "Copra ID" }}
       />
     </Tab.Navigator>
   );
@@ -82,12 +101,25 @@ const MainTabNavigator = () => {
 // Home stack that includes LocationNavigator and DeviceNavigator
 const HomeStack = () => {
   const HomeStackNav = createNativeStackNavigator();
+  const { t } = useTranslation(); // Add translation hook
   
   return (
     <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
-      <HomeStackNav.Screen name="HomeScreen" component={HomeScreen} />
-      <HomeStackNav.Screen name="LocationList" component={LocationNavigator} />
-      <HomeStackNav.Screen name="Devices" component={DeviceNavigator} />
+      <HomeStackNav.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+        options={{ title: t("home.home") || "Home" }} 
+      />
+      <HomeStackNav.Screen 
+        name="LocationList" 
+        component={LocationNavigator} 
+        options={{ title: t("home.locations") || "Locations" }} 
+      />
+      <HomeStackNav.Screen 
+        name="Devices" 
+        component={DeviceNavigator} 
+        options={{ title: t("home.devices") || "Devices" }} 
+      />
     </HomeStackNav.Navigator>
   );
 };
@@ -107,6 +139,7 @@ const MainNavigator = () => {
 
 const AppNavigator = () => {
   const { user, isLoading, logout } = useAuth();
+  const { t } = useTranslation(); // Add translation hook
 
   useEffect(() => {
     const logoutListener = EventRegister.addEventListener("userLogout", () => {
@@ -119,7 +152,7 @@ const AppNavigator = () => {
   }, []);
 
   if (isLoading) {
-    return <Loading fullScreen message="Loading..." />;
+    return <Loading fullScreen message={t("common.loading") || "Loading..."} />;
   }
 
   return (
