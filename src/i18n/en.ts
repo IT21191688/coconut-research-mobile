@@ -848,4 +848,27 @@ export default {
       regular: "Regular watering recommended based on soil conditions.",
     },
   },
+  home: {
+    welcomeBack: "Welcome back",
+    smartFarmManagement: "Smart Farm Management",
+    monitorFarm: "Monitor your coconut farm from anywhere",
+    copraClassification: "Copra Classification",
+    dataInsights: "Get data-driven insights for better results",
+    weatherIntegration: "Weather Integration",
+    optimizeIrrigation: "Optimize irrigation based on forecasts",
+    remoteControl: "Remote Control",
+    automateIrrigation: "Automate irrigation and fertilization",
+    waterScheduling: "Water Scheduling",
+    coconutYield: "Coconut Yield",
+    copraIdentification: "Copra Identification",
+    dryingTime: "Drying Time in Copra",
+    locations: "Locations",
+    devices: "Devices",
+    account: "Account",
+    settings: "Settings",
+    selectLanguage: "Select Language",
+    signOut: "Sign Out"
+  },
+  
+  
 };
