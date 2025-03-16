@@ -154,7 +154,8 @@ export default {
     loading: "Loading...",
     weatherUnavailable: "Weather data unavailable",
     save: "Save",
-    success: "Success"
+    success: "Success",
+    signOut: "Sign Out"
   },
 
   months: [
@@ -875,8 +876,22 @@ export default {
     account: "Account",
     settings: "Settings",
     selectLanguage: "Select Language",
-    signOut: "Sign Out"
+    signOut: "Sign Out",
+    signOutTitle: "Sign Out",
+    signOutConfirmation: "Are you sure you want to sign out?"
   },
-  
-  
+
+  account: {
+    email: "Email Address",
+    phoneNumber: "Phone Number",
+    accountStatus: "Account Status",
+    active: "Active",
+    inactive: "Inactive",
+    editProfile: "Edit Profile",
+    enterPhoneNumber: "Enter phone number",
+    updateProfile: "Update Profile",
+    notProvided: "Not provided"
+  }
+
+
 };
