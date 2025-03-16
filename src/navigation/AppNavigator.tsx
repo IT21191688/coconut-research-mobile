@@ -19,6 +19,7 @@ import { colors } from "../constants/colors";
 import { setLogoutFunction } from "../api/axios";
 import { logout } from "../api/authApi";
 import { EventRegister } from "react-native-event-listeners";
+import AccountScreen from "../components/screens/account/AccountScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -119,6 +120,11 @@ const HomeStack = () => {
         name="Devices" 
         component={DeviceNavigator} 
         options={{ title: t("home.devices") || "Devices" }} 
+      />
+      <HomeStackNav.Screen 
+        name="AccountScreen" 
+        component={AccountScreen} 
+        options={{ title: t("home.account") || "Account" }} 
       />
     </HomeStackNav.Navigator>
   );

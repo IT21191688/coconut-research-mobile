@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EventRegister } from 'react-native-event-listeners';
 
 // Update this with your actual backend URL
-const BASE_URL = 'https://node-backend-1-ymka.onrender.com/api/v1';
+const BASE_URL = 'https://node-backend-zjnf.onrender.com/api/v1';
 // const BASE_URL = 'http://192.168.43.37:7000/api/v1';
 
 
