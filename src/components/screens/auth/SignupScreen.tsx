@@ -15,6 +15,7 @@ type SignupScreenProps = {
 export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); // Add phone state
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +26,8 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
       name,
       email,
       password,
-      confirmPassword
+      confirmPassword,
+      phone // Add phone to validation
     );
 
     if (!validationResult.isValid) {
@@ -35,7 +37,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
     try {
       setIsLoading(true);
-      await register(name, email, password);
+      await register(name, email, password, phone); // Include phone number in registration
       // Navigation will happen automatically through the auth state change
     } catch (error: any) {
       Alert.alert(
@@ -68,6 +70,17 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           keyboardType="email-address"
           autoCapitalize="none"
           leftIcon="mail-outline"
+          autoCorrect={false}
+        />
+
+        {/* Add Phone Number Input */}
+        <Input
+          label="Phone Number"
+          value={phone}
+          onChangeText={setPhone}
+          placeholder="Enter your phone number"
+          keyboardType="phone-pad"
+          leftIcon="call-outline"
           autoCorrect={false}
         />
 
@@ -114,6 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+    marginTop: -100,
   },
   content: {
     flex: 1,

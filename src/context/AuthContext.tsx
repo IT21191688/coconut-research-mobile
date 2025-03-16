@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
 }
@@ -61,9 +61,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, phone?: string) => {
     try {
-      const response = await authApi.register({ name, email, password });
+      const response = await authApi.register({ name, email, password, phone: phone || '' });
       
       // Store auth data
       await AsyncStorage.setItem('token', response.data.token);

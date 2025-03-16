@@ -153,7 +153,8 @@ export default {
     loading: "පූරණය වෙමින්...",
     weatherUnavailable: "කාලගුණ දත්ත නොමැත",
     save: "සුරකින්න",
-    success: "සාර්ථකයි"
+    success: "සාර්ථකයි",
+    signOut: "සයින් අවුට්" 
   },
 
   months: [
@@ -854,27 +855,42 @@ export default {
       regular: "පස් තත්ත්වයන් මත පදනම්ව සාමාන්‍ය ජල සැපයුමක් නිර්දේශ කරයි.",
     },
   },
-   home: {
-      home: "නිවස",
-      welcomeBack: "නැවත සාදරයෙන් පිළිගනිමු",
-      smartFarmManagement: "බුද්ධිමත් ගොවිපොළ කළමනාකරණය",
-      monitorFarm: "ඔබේ පොල් වතු ඕනෑම තැනක සිට නිරීක්ෂණය කරන්න",
-      copraClassification: "කොප්රා වර්ගීකරණය",
-      dataInsights: "වඩා හොඳ ප්‍රතිඵල සඳහා දත්ත මත පදනම් වූ අවබෝධයන් ලබා ගන්න",
-      weatherIntegration: "කාලගුණ ඒකාබද්ධ කිරීම",
-      optimizeIrrigation: "අනාවැකි මත පදනම්ව වාරිමාර්ග ප්‍රශස්ත කරන්න",
-      remoteControl: "දුරස්ථ පාලනය",
-      automateIrrigation: "වාරිමාර්ග සහ පොහොර යෙදීම ස්වයංක්‍රීය කරන්න",
-      waterScheduling: "ජල කාලසටහන",
-      coconutYield: "පොල් අස්වැන්න",
-      copraIdentification: "කොප්රා හඳුනාගැනීම",
-      dryingTime: "කොප්රා වියළීමේ කාලය",
-      locations: "ස්ථාන",
-      devices: "උපකරණ",
-      account: "ගිණුම",
-      settings: "සැකසුම්",
-      selectLanguage: "භාෂාව තෝරන්න",
-      signOut: "වරන්න"
-    }
-    
+  home: {
+    home: "නිවස",
+    welcomeBack: "නැවත සාදරයෙන් පිළිගනිමු",
+    smartFarmManagement: "බුද්ධිමත් ගොවිපොළ කළමනාකරණය",
+    monitorFarm: "ඔබේ පොල් වතු ඕනෑම තැනක සිට නිරීක්ෂණය කරන්න",
+    copraClassification: "කොප්රා වර්ගීකරණය",
+    dataInsights: "වඩා හොඳ ප්‍රතිඵල සඳහා දත්ත මත පදනම් වූ අවබෝධයන් ලබා ගන්න",
+    weatherIntegration: "කාලගුණ ඒකාබද්ධ කිරීම",
+    optimizeIrrigation: "අනාවැකි මත පදනම්ව වාරිමාර්ග ප්‍රශස්ත කරන්න",
+    remoteControl: "දුරස්ථ පාලනය",
+    automateIrrigation: "වාරිමාර්ග සහ පොහොර යෙදීම ස්වයංක්‍රීය කරන්න",
+    waterScheduling: "ජල කාලසටහන",
+    coconutYield: "පොල් අස්වැන්න",
+    copraIdentification: "කොප්රා හඳුනාගැනීම",
+    dryingTime: "කොප්රා වියළීමේ කාලය",
+    locations: "ස්ථාන",
+    devices: "උපකරණ",
+    account: "ගිණුම",
+    settings: "සැකසුම්",
+    selectLanguage: "භාෂාව තෝරන්න",
+    signOut: "වරන්න",
+    signOutTitle: "Sign out",
+    signOutConfirmation: "ඔබට Sign out වීමට විශ්වාසද?"
+  },
+  account: {
+    email: "ඊ-මේල් ලිපිනය",
+    phoneNumber: "දුරකථන අංකය",
+    accountStatus: " ගිණුම් තත්වය",
+    active: "සක්‍රීය",
+    inactive: "අසක්‍රීය",
+    editProfile: "සකසන්න",
+    enterPhoneNumber: "දුරකථන අංකය ඇතුළත් කරන්න",
+    updateProfile: "යාවත්කාලීන කරන්න",
+    notProvided: "ලබා දී නොමැත"
+
+  }
+
+
 };

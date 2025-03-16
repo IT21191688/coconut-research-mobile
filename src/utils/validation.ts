@@ -46,7 +46,8 @@ export interface ValidationError {
     name: string,
     email: string,
     password: string,
-    confirmPassword: string
+    confirmPassword: string,
+    phone?: string
   ): ValidationResult => {
     const errors: ValidationError[] = [];
   
@@ -73,6 +74,18 @@ export interface ValidationError {
   
     if (password !== confirmPassword) {
       errors.push({ field: 'confirmPassword', message: 'Passwords do not match' });
+    }
+
+    // Add phone validation
+    if (phone) {
+      // Allow only digits with optional country code (+) and spaces/dashes
+      const phoneRegex = /^[+]?[\s./0-9]*[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
+      if (!phoneRegex.test(phone)) {
+        errors.push({
+          field: 'phone',
+          message: 'Please enter a valid phone number',
+        });
+      }
     }
   
     return {

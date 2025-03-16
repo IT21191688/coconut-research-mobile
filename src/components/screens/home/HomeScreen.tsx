@@ -9,7 +9,8 @@ import {
   FlatList,
   Animated,
   ScrollView,
-  Modal
+  Modal,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext';
@@ -205,6 +206,28 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
     setShowProfileMenu(false);
   };
 
+  // Function to handle sign out
+  const handleSignOut = () => {
+    // Close the menu first
+    setShowProfileMenu(false);
+    // Show confirmation dialog
+    Alert.alert(
+      t('home.signOutTitle') || "Sign Out",
+      t('home.signOutConfirmation') || "Are you sure you want to sign out?",
+      [
+        {
+          text: t('common.cancel') || "Cancel",
+          style: "cancel"
+        },
+        {
+          text: t('common.signOut') || "Sign Out",
+          onPress: logout,
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -250,7 +273,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
                 style={styles.menuOption}
                 onPress={() => {
                   setShowProfileMenu(false);
-                  navigation.navigate('Profile');
+                  navigation.navigate('AccountScreen');
                 }}
               >
                 <Ionicons name="person-outline" size={20} color="#374151" />
@@ -308,6 +331,17 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
                   </TouchableOpacity>
                 </View>
               )}
+              
+              {/* Sign Out Option - Added to the menu */}
+              <TouchableOpacity 
+                style={[styles.menuOption, styles.signOutOption]}
+                onPress={handleSignOut}
+              >
+                <Ionicons name="log-out-outline" size={20} color="#FF4D4D" />
+                <Text style={[styles.menuOptionText, styles.signOutText]}>
+                  {t('home.signOut')}
+                </Text>
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         </Modal>
@@ -351,16 +385,6 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
             ))}
           </View>
         </View>
-
-        {/* Signout button */}
-        <TouchableOpacity 
-          style={styles.signOutButton} 
-          onPress={logout}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="log-out-outline" size={20} color="#6B7280" />
-          <Text style={styles.signOutText}>{t('home.signOut')}</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -605,6 +629,17 @@ const styles = StyleSheet.create({
   activeLanguage: {
     fontWeight: '600',
     color: '#4CD964',
+  },
+  // Add styles for the sign out option
+  signOutOption: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    marginTop: 8,
+    paddingTop: 12,
+  },
+  
+  signOutText: {
+    color: '#FF4D4D', // Red color for sign out
   },
 });
 
