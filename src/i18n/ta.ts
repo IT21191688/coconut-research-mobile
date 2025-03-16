@@ -157,7 +157,8 @@ export default {
     loading: "ஏற்றுகிறது...",
     weatherUnavailable: "வானிலை தரவு கிடைக்கவில்லை",
     save: "சேமி",
-    success: "வெற்றி"
+    success: "வெற்றி",
+    signOut: "வெளியேறு" 
   },
 
   months: [
@@ -884,6 +885,21 @@ export default {
     account: "கணக்கு",
     settings: "அமைப்புகள்",
     selectLanguage: "மொழியை தேர்ந்தெடுக்கவும்",
-    signOut: "வெளியேறு"
+    signOut: "வெளியேறு",
+    signOutTitle: "வெளியேறு",
+    signOutConfirmation: "நீங்கள் வெளியேற விரும்புகிறீர்களா?"
+  },
+  account: {
+    email: "மின்னஞ்சல் முகவரி",
+    phoneNumber: "தொலைபேசி எண்",
+    accountStatus: "கணக்கு நிலை",
+    active: "செயல்பாட்டு",
+    inactive: "செயலற்ற",
+    editProfile: "ப்ரொபைல் திருத்தவும்",
+    enterPhoneNumber: "தொலைபேசி எண் உள்ளிடவும்",
+    updateProfile: "ப்ரொபைல் புதுப்பிக்கவும்",
+    notProvided: "வழங்கப்படவில்லை",
+
   }
+
 };
