@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,37 +32,70 @@ const calculateAge = (plantationDate: Date): string => {
   return years === 1 ? `${years} year old` : `${years} years old`;
 };
 
-
 const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
   const { t } = useTranslation();
   const [locations, setLocations] = useState<Location[]>([]);
+  const [filteredLocations, setFilteredLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
-    fetchLocations();
+    fetchLocations(1, true);
   }, []);
 
-  const fetchLocations = async () => {
+  useEffect(() => {
+    if (searchQuery === '') {
+      setFilteredLocations(locations);
+    } else {
+      const filtered = locations.filter(location =>
+        location.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredLocations(filtered);
+    }
+  }, [searchQuery, locations]);
+
+  const fetchLocations = async (pageNumber: number, reset: boolean = false) => {
+    if (reset) {
+      setLoading(true);
+    }
+    
     try {
-      const response = await getLocations(1);
-      setLocations(response);
-      setPage(1);
+      const response = await getLocations(pageNumber);
+      
+      if (reset) {
+        setLocations(response);
+      } else {
+        // Filter out duplicates based on _id
+        const existingIds = new Set(locations.map(loc => loc._id));
+        const newLocations = response.filter(loc => !existingIds.has(loc._id));
+        
+        if (newLocations.length === 0) {
+          setHasMore(false);
+          return;
+        }
+        
+        setLocations(prevLocations => [...prevLocations, ...newLocations]);
+      }
+      
+      setPage(pageNumber);
       setHasMore(response.length >= ITEMS_PER_PAGE);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching locations:', error);
+    } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await fetchLocations();
+      await fetchLocations(1, true);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
@@ -70,22 +104,15 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
   }, []);
 
   const loadMoreLocations = async () => {
-    if (!hasMore || loading) return;
+    if (!hasMore || loading || loadingMore) return;
 
+    setLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const response = await getLocations(nextPage);
-
-      if (response.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      setLocations(prevLocations => [...prevLocations, ...response]);
-      setPage(nextPage);
-      setHasMore(response.length >= ITEMS_PER_PAGE);
+      await fetchLocations(nextPage);
     } catch (error) {
       console.error('Error loading more locations:', error);
+      setLoadingMore(false);
     }
   };
 
@@ -132,7 +159,6 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
               ]}
             />
             <Text style={styles.statValue}>{item.soilType}</Text>
-            {/* <Text style={styles.statLabel}>{t('lands.soilType')}</Text> */}
           </View>
         </View>
         <View style={[styles.detailRow, styles.marginTop]}>
@@ -174,8 +200,13 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
       <TouchableOpacity 
         style={styles.loadMoreButton}
         onPress={loadMoreLocations}
+        disabled={loadingMore}
       >
-        <Text style={styles.loadMoreText}>{t('lands.loadMore')}</Text>
+        {loadingMore ? (
+          <ActivityIndicator size="small" color="#4CD964" />
+        ) : (
+          <Text style={styles.loadMoreText}>{t('lands.loadMore')}</Text>
+        )}
       </TouchableOpacity>
     );
   };
@@ -196,23 +227,33 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
         </View>
       ) : (
         <>
-          {/* Instruction text for users */}
           <View style={styles.instructionContainer}>
             <Ionicons name="information-circle-outline" size={20} color="#4CD964" />
             <Text style={styles.instructionText}>
               {t('lands.selectToPredict', 'Please select a location to predict yield')}
             </Text>
           </View>
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search-outline" size={20} color="#6B7280" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t('lands.searchPlaceholder', 'Search locations...')}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
           
           <FlatList
-            data={locations}
+            data={filteredLocations}
             renderItem={renderLocationItem}
             keyExtractor={item => item._id}
             contentContainerStyle={styles.locationsList}
             showsVerticalScrollIndicator={false}
-            ListFooterComponent={hasMore ? renderFooter : null}
-            onEndReached={hasMore ? loadMoreLocations : null}
-            onEndReachedThreshold={0.2}
+            ListFooterComponent={renderFooter}
+            onEndReached={hasMore && !loadingMore ? loadMoreLocations : null}
+            onEndReachedThreshold={0.5}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -225,7 +266,6 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
             }
           />
           
-          {/* Coconut Price Prediction Button */}
           <TouchableOpacity 
             style={styles.pricePredictionButton}
             onPress={() => navigation.navigate('CoconutPricePredict')}
@@ -236,9 +276,8 @@ const CoconutYieldScreen = ({ navigation }: { navigation: NavigationProp<any> })
             </Text>
           </TouchableOpacity>
           
-          {/* Button to navigate to Prediction History page */}
           <TouchableOpacity 
-            style={[styles.historyButton, { marginTop: 12 }]} // Adjusted margin top
+            style={[styles.historyButton, { marginTop: 12 }]}
             onPress={() => navigation.navigate('PredictionHistory')}
           >
             <Ionicons name="analytics-outline" size={20} color="#FFFFFF" />
@@ -423,6 +462,21 @@ const styles = StyleSheet.create({
     color: '#166534', // Dark green text
     marginLeft: 8,
     flex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 16,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#4B5563',
   },
   historyButton: {
     flexDirection: 'row',
