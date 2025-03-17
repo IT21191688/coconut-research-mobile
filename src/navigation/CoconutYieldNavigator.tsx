@@ -6,6 +6,7 @@ import CoconutYieldScreen from '../components/screens/CoconutYield/CoconutYieldS
 import PredictionScreen from '../components/screens/CoconutYield/PredictionScreen';
 import PredictionHistoryScreen from '../components/screens/CoconutYield/PredictionHistoryScreen';
 import CoconutPricePredictScreen from '../components/screens/CoconutPrice/CoconutPricePredictScreen';
+import PricePredictionHistoryScreen from '../components/screens/CoconutPrice/PricePredictionHistoryScreen';
 
 // Add proper typing to the navigator
 type CoconutYieldStackParamList = {
@@ -13,6 +14,7 @@ type CoconutYieldStackParamList = {
   Prediction: { locationId: string; locationName?: string };
   PredictionHistory: { locationId?: string } | undefined;
   CoconutPricePredict: undefined;
+  PricePredictionHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<CoconutYieldStackParamList>();
@@ -50,6 +52,11 @@ const CoconutYieldNavigator = () => {
         name="CoconutPricePredict"
         component={CoconutPricePredictScreen}
         options={{ title: t('price.screenTitle') }}
+      />
+      <Stack.Screen 
+        name="PricePredictionHistory" 
+        component={PricePredictionHistoryScreen}
+        options={{ title: t('price.predictionHistory') }}
       />
     </Stack.Navigator>
   );

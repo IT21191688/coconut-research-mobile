@@ -96,6 +96,12 @@ export default {
     yearPickerLabel: "Year",
     nutsPerHectare: "nuts/hec.",
     predictionStatus: "Prediction Status",
+    location: "Location",
+    year: "Year",
+    month: "Month",
+    filterLocationPlaceholder: "Enter location name...",
+    filterYearPlaceholder: "Enter year...",
+    filterMonthPlaceholder: "Enter month name..."
   },
 
   price: {
@@ -134,6 +140,11 @@ export default {
     tryAgainLater: "Something went wrong. Please try again later.",
     newPrediction: "New Prediction",
     optional: "optional",
+    viewHistory: "View Prediction History",
+    predictionHistory: "Price Prediction History",
+    latest: "Latest",
+    viewTrend: "View Price Trend",
+    priceChart: "Price Chart",
   },
 
   common: {
@@ -155,7 +166,11 @@ export default {
     weatherUnavailable: "Weather data unavailable",
     save: "Save",
     success: "Success",
-    signOut: "Sign Out"
+    signOut: "Sign Out",
+    filter: "Filter",
+    clearAll: "Clear All",
+    filterBy: "Filter By",
+    apply: "Apply",
   },
 
   months: [

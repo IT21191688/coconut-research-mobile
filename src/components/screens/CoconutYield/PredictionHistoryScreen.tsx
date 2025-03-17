@@ -10,7 +10,8 @@ import {
   RefreshControl,
   Alert,
   Modal,
-  TextInput
+  TextInput,
+  ScrollView
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -30,15 +31,24 @@ interface PredictionHistoryScreenProps {
 const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const locationIdParam = route.params?.locationId;
-  
+
   const [predictionHistory, setPredictionHistory] = useState<YieldPredictionHistory[]>([]);
-  const [locationNames, setLocationNames] = useState<{[key: string]: string}>({});
+  const [locationNames, setLocationNames] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [deletingPredictions, setDeletingPredictions] = useState<{[key: string]: boolean}>({});
+  const [deletingPredictions, setDeletingPredictions] = useState<{ [key: string]: boolean }>({});
   const [error, setError] = useState<string | null>(null);
+
+  // Filter states
+  const [nameFilter, setNameFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
+  const [monthFilter, setMonthFilter] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filteredHistory, setFilteredHistory] = useState<YieldPredictionHistory[]>([]);
+
+  // Existing states for modals and other functionality
   const [comparisonModalVisible, setComparisonModalVisible] = useState(false);
   const [comparisonData, setComparisonData] = useState<{
     labels: string[];
@@ -59,31 +69,51 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
   const [actualYieldValue, setActualYieldValue] = useState('');
   const [submittingActualYield, setSubmittingActualYield] = useState(false);
 
+  // Update the fetchPredictionHistory function to properly handle pagination and duplicates
+
   const fetchPredictionHistory = async (pageNum = 1) => {
     try {
       setError(null);
       const isFirstPage = pageNum === 1;
-      
+
       if (isFirstPage) {
         setLoading(true);
       }
-      
+
       // If locationId is provided as a param, filter by that location
       const history = await yieldApi.getPredictionHistory(locationIdParam);
-      
+
       // If it's the first page, replace the data
       if (isFirstPage) {
         setPredictionHistory(history);
+        setFilteredHistory(history); // Also update filtered history
+        setHasMore(history.length >= ITEMS_PER_PAGE);
       } else {
-        // Otherwise append to existing data
-        setPredictionHistory(prev => [...prev, ...history]);
+        // Filter out duplicates based on _id
+        const existingIds = new Set(predictionHistory.map(pred => pred._id));
+        const newItems = history.filter((item: YieldPredictionHistory) => !existingIds.has(item._id));
+
+        // If no new items, we've reached the end
+        if (newItems.length === 0) {
+          setHasMore(false);
+          return;
+        }
+
+        // Otherwise append unique new items
+        const updatedHistory = [...predictionHistory, ...newItems];
+        setPredictionHistory(updatedHistory);
+
+        // Apply current filters to the updated history
+        applyFiltersToHistory(updatedHistory);
+
+        setHasMore(newItems.length >= ITEMS_PER_PAGE);
       }
-      
-      // Check if we have more data to load
-      setHasMore(history.length >= ITEMS_PER_PAGE);
-      
+
+      // Set the current page
+      setPage(pageNum);
+
       // Fetch location names for all predictions
-      await fetchLocationNames(history);
+      await fetchLocationNames(isFirstPage ? history : predictionHistory);
     } catch (error) {
       console.error('Error fetching prediction history:', error);
       setError(t('prediction.errorLoadingHistory'));
@@ -92,20 +122,81 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     }
   };
 
+  // Create a separate function to apply filters to any history array
+  const applyFiltersToHistory = (historyArray: YieldPredictionHistory[]) => {
+    let filtered = [...historyArray];
+
+    // Apply name filter if it exists
+    if (nameFilter) {
+      filtered = filtered.filter(prediction => {
+        const locationName = locationNames[prediction.location] || '';
+        return locationName.toLowerCase().includes(nameFilter.toLowerCase());
+      });
+    }
+
+    // Apply year filter if it exists
+    if (yearFilter) {
+      const yearNum = parseInt(yearFilter);
+      if (!isNaN(yearNum)) {
+        filtered = filtered.filter(prediction => prediction.year === yearNum);
+      }
+    }
+
+    // Apply month filter if it exists
+    if (monthFilter) {
+      filtered = filtered.filter(prediction => {
+        if (!prediction.monthly_predictions || prediction.monthly_predictions.length === 0) return false;
+
+        // Check if any month name contains the filter string
+        return prediction.monthly_predictions.some(monthPrediction =>
+          monthPrediction.month_name.toLowerCase().includes(monthFilter.toLowerCase())
+        );
+      });
+    }
+
+    setFilteredHistory(filtered);
+  };
+
+  // Updated applyFilters to use the shared function
+  const applyFilters = () => {
+    applyFiltersToHistory(predictionHistory);
+  };
+
+  // Update loadMorePredictions to prevent loading when already loading
+  const loadMorePredictions = async () => {
+    if (!hasMore || loading || refreshing) return;
+
+    const nextPage = page + 1;
+    await fetchPredictionHistory(nextPage);
+  };
+
+  // Apply filters whenever filter values or prediction history changes
+  useEffect(() => {
+    applyFiltersToHistory(predictionHistory);
+  }, [nameFilter, yearFilter, monthFilter, predictionHistory, locationNames]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setNameFilter('');
+    setYearFilter('');
+    setMonthFilter('');
+    setShowFilterModal(false);
+  };
+
   // Fetch location names for predictions
   const fetchLocationNames = async (predictions: YieldPredictionHistory[]) => {
     // Extract unique location IDs
     const uniqueLocationIds = [...new Set(predictions.map(p => p.location))];
-    
+
     // Skip locations we already have
     const locationsToFetch = uniqueLocationIds.filter(id => !locationNames[id]);
-    
+
     // If no new locations to fetch, skip
     if (locationsToFetch.length === 0) return;
-    
+
     // Create a copy of existing location names
-    const newLocationNames = {...locationNames};
-    
+    const newLocationNames = { ...locationNames };
+
     // Fetch each location's details
     await Promise.all(
       locationsToFetch.map(async (locationId) => {
@@ -118,9 +209,64 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
         }
       })
     );
-    
+
     // Update state with all the fetched names
     setLocationNames(newLocationNames);
+  };
+
+  // Refresh data
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setPage(1);
+    try {
+      await fetchPredictionHistory(1);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
+  // Handle comparison with last year
+  const handleCompareWithLastYear = (prediction: YieldPredictionHistory) => {
+    // Implement the comparison logic here
+    console.log('Comparing with last year:', prediction);
+  };
+
+  // Handle submitting actual yield
+  const submitActualYield = async () => {
+    if (!selectedPrediction || !actualYieldValue) return;
+
+    setSubmittingActualYield(true);
+    try {
+      // Get month from first monthly prediction or default to 1
+      const firstMonthData = selectedPrediction.monthly_predictions &&
+        selectedPrediction.monthly_predictions.length > 0 ?
+        selectedPrediction.monthly_predictions[0] : null;
+
+      await yieldApi.submitActualYield({
+        yieldPredictionId: selectedPrediction._id,
+        actual_yield: parseFloat(actualYieldValue),
+        year: selectedPrediction.year,
+        month: firstMonthData?.month || 1,
+        locationId: selectedPrediction.location
+      });
+      Alert.alert(t('prediction.actualYieldSuccessTitle'), t('prediction.actualYieldSuccessMessage'));
+      setActualYieldModalVisible(false);
+      setActualYieldValue('');
+      onRefresh();
+    } catch (error) {
+      console.error('Error submitting actual yield:', error);
+      Alert.alert(t('prediction.actualYieldErrorTitle'), t('prediction.actualYieldErrorMessage'));
+    } finally {
+      setSubmittingActualYield(false);
+    }
+  };
+
+  // Handle entering actual yield
+  const handleEnterActualYield = (prediction: YieldPredictionHistory) => {
+    setSelectedPrediction(prediction);
+    setActualYieldModalVisible(true);
   };
 
   // Handle deletion with confirmation
@@ -143,18 +289,18 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             try {
               // Set deleting state for this prediction
               setDeletingPredictions(prev => ({ ...prev, [prediction._id]: true }));
-              
+
               // Call the API to delete the prediction
               await yieldApi.deletePrediction(prediction._id);
-              
+
               // Remove the deleted prediction from state
-              setPredictionHistory(prev => 
+              setPredictionHistory(prev =>
                 prev.filter(item => item._id !== prediction._id)
               );
-              
+
               // Show success feedback
               Alert.alert(
-                t('prediction.deleteSuccessTitle'), 
+                t('prediction.deleteSuccessTitle'),
                 t('prediction.deleteSuccessMessage')
               );
             } catch (error) {
@@ -177,281 +323,83 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     );
   };
 
-  // Refresh data
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    setPage(1);
-    try {
-      await fetchPredictionHistory(1);
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
-
-  // Load more predictions
-  const loadMorePredictions = async () => {
-    if (!hasMore || loading) return;
-    
-    const nextPage = page + 1;
-    setPage(nextPage);
-    await fetchPredictionHistory(nextPage);
-  };
+  // Function already defined below - removing this duplicate declaration
 
   // Initial data fetch
   useEffect(() => {
     fetchPredictionHistory();
   }, [locationIdParam]);
 
-  const handleCompareWithLastYear = (item: YieldPredictionHistory) => {
-    // Find all predictions for the same location
-    const locationPredictions = predictionHistory
-      .filter(p => p.location === item.location)
-      .sort((a, b) => a.year - b.year); // Sort by year
-    
-    // Find a prediction from last year for the same location
-    const lastYearPrediction = predictionHistory.find(
-      p => p.location === item.location && p.year === item.year - 1
+  // Render Filter Button
+  const renderFilterButton = () => (
+    <TouchableOpacity
+      style={styles.filterButton}
+      onPress={() => setShowFilterModal(true)}
+    >
+      <Ionicons name="filter" size={20} color={colors.primary} />
+      <Text style={styles.filterButtonText}>{t('common.filter')}</Text>
+      {(nameFilter || yearFilter || monthFilter) ? (
+        <View style={styles.filterBadge}>
+          <Text style={styles.filterBadgeText}>
+            {[nameFilter, yearFilter, monthFilter].filter(Boolean).length}
+          </Text>
+        </View>
+      ) : null}
+    </TouchableOpacity>
+  );
+
+  // Render Filter Chips
+  const renderFilterChips = () => {
+    if (!nameFilter && !yearFilter && !monthFilter) return null;
+
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filtersContainer}
+        contentContainerStyle={styles.filtersContent}
+      >
+        {nameFilter ? (
+          <View style={styles.filterChip}>
+            <Text style={styles.filterChipText}>{t('prediction.location')}: {nameFilter}</Text>
+            <TouchableOpacity onPress={() => setNameFilter('')}>
+              <Ionicons name="close-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        {yearFilter ? (
+          <View style={styles.filterChip}>
+            <Text style={styles.filterChipText}>{t('prediction.year')}: {yearFilter}</Text>
+            <TouchableOpacity onPress={() => setYearFilter('')}>
+              <Ionicons name="close-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        {monthFilter ? (
+          <View style={styles.filterChip}>
+            <Text style={styles.filterChipText}>{t('prediction.month')}: {monthFilter}</Text>
+            <TouchableOpacity onPress={() => setMonthFilter('')}>
+              <Ionicons name="close-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        <TouchableOpacity style={styles.clearAllChip} onPress={clearFilters}>
+          <Text style={styles.clearAllChipText}>{t('common.clearAll')}</Text>
+        </TouchableOpacity>
+      </ScrollView>
     );
-    
-    const locationName = locationNames[item.location] || t('common.unknownLocation');
-    
-    if (!lastYearPrediction) {
-      // No prediction found for last year - show a more informative alert
-      Alert.alert(
-        t('prediction.noComparisonTitle'),
-        t('prediction.noComparisonMessage', {
-          year: item.year - 1,
-          location: locationName
-        }),
-        [
-          {
-            text: t('common.viewAllData'),
-            onPress: () => {
-              // Still show the chart with available data, but with a message
-              if (locationPredictions.length >= 2) {
-                // Prepare data for chart
-                const labels = locationPredictions.map(p => p.year.toString());
-                const data = locationPredictions.map(p => p.average_prediction);
-                
-                setComparisonData({
-                  labels,
-                  datasets: [
-                    {
-                      data,
-                      color: () => colors.primary,
-                    },
-                  ],
-                  location: locationName,
-                  hasLastYear: false,
-                  currentYear: item.year
-                });
-                
-                // Show modal
-                setComparisonModalVisible(true);
-              } else {
-                // Not enough data for any trend
-                Alert.alert(
-                  t('prediction.insufficientDataTitle'),
-                  t('prediction.insufficientDataMessage')
-                );
-              }
-            }
-          },
-          {
-            text: t('common.ok'),
-            style: 'cancel'
-          }
-        ]
-      );
-      return;
-    }
-    
-    // Proceed with normal comparison since we have last year's data
-    // Calculate percentage change
-    const currentYield = item.average_prediction;
-    const lastYearYield = lastYearPrediction.average_prediction;
-    const percentChange = ((currentYield - lastYearYield) / lastYearYield) * 100;
-    
-    // Prepare data for chart
-    const labels = locationPredictions.map(p => p.year.toString());
-    const data = locationPredictions.map(p => p.average_prediction);
-    
-    // Set data for modal
-    setComparisonData({
-      labels,
-      datasets: [
-        {
-          data,
-          color: () => colors.primary,
-        },
-      ],
-      location: locationName,
-      hasLastYear: true,
-      currentYear: item.year,
-      lastYearValue: lastYearYield,
-      percentChange: percentChange
-    });
-    
-    // Show modal
-    setComparisonModalVisible(true);
-  };
-
-  // Add this helper function
-  const calculateTrendText = (data: number[]) => {
-    if (data.length < 2) return t('prediction.notEnoughData');
-    
-    // Calculate percentage change from first to last point
-    const firstValue = data[0];
-    const lastValue = data[data.length - 1];
-    const percentChange = ((lastValue - firstValue) / firstValue) * 100;
-    
-    // Calculate if trend is increasing, decreasing, or stable
-    if (Math.abs(percentChange) < 5) {
-      return t('prediction.stableTrend');
-    } else if (percentChange > 0) {
-      return t('prediction.increasingTrend', { percent: Math.abs(percentChange).toFixed(1) });
-    } else {
-      return t('prediction.decreasingTrend', { percent: Math.abs(percentChange).toFixed(1) });
-    }
-  };
-
-  // Add this function to handle opening the modal
-  const handleEnterActualYield = (item: YieldPredictionHistory) => {
-    setSelectedPrediction(item);
-    setActualYieldValue('');
-    setActualYieldModalVisible(true);
-  };
-
-  // Add this function to submit the actual yield data
-  const submitActualYield = async () => {
-    if (!selectedPrediction || !actualYieldValue.trim()) {
-      Alert.alert(t('common.error'), t('prediction.enterValidYield'));
-      return;
-    }
-  
-    try {
-      setSubmittingActualYield(true);
-      
-      const actualYield = parseFloat(actualYieldValue);
-      if (isNaN(actualYield)) {
-        Alert.alert(t('common.error'), t('prediction.enterValidNumber'));
-        setSubmittingActualYield(false);
-        return;
-      }
-      
-      // Get the first month from the prediction (typically January)
-      const firstMonth = selectedPrediction.monthly_predictions?.[0];
-      if (!firstMonth) {
-        Alert.alert(t('common.error'), t('prediction.noMonthData'));
-        setSubmittingActualYield(false);
-        return;
-      }
-  
-      // Prepare data for API
-      const actualYieldData = {
-        year: selectedPrediction.year,
-        month: selectedPrediction.monthly_predictions[0].month,
-        actual_yield: actualYield,
-        locationId: selectedPrediction.location,
-        yieldPredictionId: selectedPrediction._id
-      };
-      
-      // Call API
-      await yieldApi.submitActualYield(actualYieldData);
-      
-      // Close modal and show success message
-      setActualYieldModalVisible(false);
-      Alert.alert(
-        t('prediction.success'), 
-        t('prediction.actualYieldAdded')
-      );
-      
-      // Refresh prediction history to show updated data
-      onRefresh();
-      
-    } catch (error) {
-      console.error('Error submitting actual yield:', error);
-      Alert.alert(
-        t('common.error'),
-        t('prediction.failedToAddActualYield')
-      );
-    } finally {
-      setSubmittingActualYield(false);
-    }
-  };
-
-  // First, add this new function to handle comparing with actual yield
-  const handleCompareWithActualYield = async (item: YieldPredictionHistory) => {
-    try {
-      // Fetch actual yield data for this prediction
-      console.log('Fetching actual yield data for prediction:', item._id);
-      
-      const actualYieldData = await yieldApi.getActualYieldByPrediction(item._id);
-      console.log('Actual yield data:', actualYieldData.length);
-      
-      if (actualYieldData.length === 0 || !actualYieldData[0].actual_yield) {
-        console.log('No actual yield data found');
-        
-        // No actual yield data found
-        Alert.alert(
-          t('prediction.noActualYieldTitle'),
-          t('prediction.noActualYieldMessage'),
-          [
-            {
-              text: t('prediction.enterActualYield'),
-              onPress: () => handleEnterActualYield(item)
-            },
-            {
-              text: t('common.cancel'),
-              style: 'cancel'
-            }
-          ]
-        );
-        return;
-      }
-      
-      // Calculate percentage difference
-      const predictedYield = item.average_prediction;
-      const actualYield = actualYieldData[0].actual_yield;
-      const percentDifference = ((predictedYield - actualYield) / actualYield) * 100;
-      
-      // Set comparison data for the modal
-      setComparisonData({
-        labels: [t('prediction.predicted'), t('prediction.actual')],
-        datasets: [
-          {
-            data: [predictedYield, actualYield],
-            color: () => colors.primary,
-          },
-        ],
-        location: locationNames[item.location] || t('common.unknownLocation'),
-        hasActualYield: true,
-        predictionYear: item.year,
-        actualYield: actualYield,
-        predictedYield: predictedYield,
-        percentDifference: percentDifference
-      });
-      
-      // Show modal
-      setComparisonModalVisible(true);
-    } catch (error) {
-      console.error('Error fetching actual yield data:', error);
-      Alert.alert(
-        t('prediction.errorTitle'),
-        t('prediction.errorFetchingActualYield')
-      );
-    }
   };
 
   // Render individual prediction item
   const renderPredictionItem = ({ item }: { item: YieldPredictionHistory }) => {
     // Get the first month from monthly predictions (if it exists)
-    const firstMonth = item.monthly_predictions && item.monthly_predictions.length > 0 
-      ? item.monthly_predictions[0] 
+    const firstMonth = item.monthly_predictions && item.monthly_predictions.length > 0
+      ? item.monthly_predictions[0]
       : null;
-      
+
     return (
       <View style={styles.predictionCard}>
         <View style={styles.cardHeader}>
@@ -459,7 +407,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             <Text style={styles.locationName}>
               {locationNames[item.location] || t('common.loadingLocation')}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => handleDeletePrediction(item)}
               disabled={deletingPredictions[item._id]}
@@ -484,9 +432,9 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             )}
           </View>
         </View>
-        
+
         <View style={styles.cardDivider} />
-        
+
         <View style={styles.cardDetails}>
           <View style={styles.yieldSection}>
             <Text style={styles.yieldValue}>
@@ -494,7 +442,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             </Text>
             <Text style={styles.yieldLabel}>{t('prediction.nutsPerTree')}</Text>
           </View>
-          
+
           <View style={styles.infoSection}>
             <View style={styles.infoRow}>
               <Ionicons name="calendar-outline" size={16} color="#6B7280" />
@@ -502,7 +450,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                 {new Date(item.createdAt).toLocaleDateString()}
               </Text>
             </View>
-            
+
             {firstMonth && (
               <View style={styles.infoRow}>
                 <Ionicons name="checkmark-circle-outline" size={16} color="#4CD964" />
@@ -513,7 +461,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             )}
           </View>
         </View>
-        
+
         {/* Additional prediction details */}
         {firstMonth && (
           <View style={styles.extraDetails}>
@@ -535,8 +483,8 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                 <Text style={styles.factorValue}>{firstMonth.input_data.plant_age} {t('common.years')}</Text>
               </View>
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.compareButton}
               onPress={() => handleCompareWithLastYear(item)}
             >
@@ -545,19 +493,19 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
             </TouchableOpacity>
 
             {/* Add the new button for entering actual yield */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.actualYieldButton}
               onPress={() => handleEnterActualYield(item)}
             >
               <Ionicons name="clipboard-outline" size={16} color="#3B82F6" />
               <Text style={styles.actualYieldButtonText}>
-                  {t('prediction.enterActualYield')}
+                {t('prediction.enterActualYield')}
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.compareButton}
-              onPress={() => handleCompareWithActualYield(item)}
+              onPress={() => handleCompareWithLastYear(item)}
             >
               <Ionicons name="analytics-outline" size={16} color={colors.primary} />
               <Text style={styles.compareButtonText}>{t('prediction.compareWithActualYield')}</Text>
@@ -571,7 +519,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
   // Footer component for loading more
   const renderFooter = () => {
     if (!hasMore) return null;
-    
+
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color={colors.primary} />
@@ -583,7 +531,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
   // Empty state component
   const renderEmptyComponent = () => {
     if (loading) return null;
-    
+
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="analytics-outline" size={60} color="#D1D5DB" />
@@ -601,20 +549,15 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Page Header */}
+      {/* Page Header with Filter Button */}
       <View style={styles.header}>
         {/* <Text style={styles.headerTitle}>{t('prediction.historyTitle')}</Text> */}
-        {locationIdParam && (
-          <TouchableOpacity 
-            style={styles.resetFilterButton}
-            onPress={() => navigation.navigate('PredictionHistory')}
-          >
-            <Ionicons name="close-circle" size={16} color={colors.textSecondary} />
-            <Text style={styles.resetFilterText}>{t('prediction.clearFilter')}</Text>
-          </TouchableOpacity>
-        )}
+        {renderFilterButton()}
       </View>
-      
+
+      {/* Active Filters */}
+      {renderFilterChips()}
+
       {error ? (
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={40} color="#EF4444" />
@@ -633,15 +576,17 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
         </View>
       ) : (
         <FlatList
-          data={predictionHistory}
+          data={filteredHistory}
           renderItem={renderPredictionItem}
           keyExtractor={item => item._id}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyComponent}
           ListFooterComponent={renderFooter}
-          onEndReached={loadMorePredictions}
-          onEndReachedThreshold={0.2}
+          onEndReached={hasMore && !loading && !refreshing ? loadMorePredictions : null}
+          onEndReachedThreshold={0.3}
+          // Adding this key will force FlatList to re-render when the data changes
+          extraData={[loading, refreshing, nameFilter, yearFilter, monthFilter]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -654,6 +599,74 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
           }
         />
       )}
+
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.filterModalOverlay}>
+          <View style={styles.filterModalContent}>
+            <View style={styles.filterModalHeader}>
+              <Text style={styles.filterModalTitle}>{t('common.filterBy')}</Text>
+              <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>{t('prediction.location')}</Text>
+              <TextInput
+                style={styles.filterInput}
+                value={nameFilter}
+                onChangeText={setNameFilter}
+                placeholder={t('prediction.filterLocationPlaceholder')}
+              />
+            </View>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>{t('prediction.year')}</Text>
+              <TextInput
+                style={styles.filterInput}
+                value={yearFilter}
+                onChangeText={setYearFilter}
+                placeholder={t('prediction.filterYearPlaceholder')}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>{t('prediction.month')}</Text>
+              <TextInput
+                style={styles.filterInput}
+                value={monthFilter}
+                onChangeText={setMonthFilter}
+                placeholder={t('prediction.filterMonthPlaceholder')}
+              />
+            </View>
+
+            <View style={styles.filterActions}>
+              <TouchableOpacity
+                style={styles.clearFilterButton}
+                onPress={clearFilters}
+              >
+                <Text style={styles.clearFilterText}>{t('common.clearAll')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.applyFilterButton}
+                onPress={() => setShowFilterModal(false)}
+              >
+                <Text style={styles.applyFilterText}>{t('common.apply')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Other existing modals remain unchanged */}
       {comparisonData && (
         <Modal
           visible={comparisonModalVisible}
@@ -664,14 +677,14 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
-                {comparisonData.hasActualYield 
-                  ? t('prediction.actualComparisonTitle') 
-                  : comparisonData.hasLastYear 
-                    ? t('prediction.comparisonTitle') 
+                {comparisonData.hasActualYield
+                  ? t('prediction.actualComparisonTitle')
+                  : comparisonData.hasLastYear
+                    ? t('prediction.comparisonTitle')
                     : t('prediction.yieldTrendTitle')}
               </Text>
               <Text style={styles.modalSubtitle}>{comparisonData.location}</Text>
-              
+
               {/* Chart visualization */}
               {comparisonData.hasActualYield ? (
                 // Bar chart for actual vs predicted
@@ -681,12 +694,12 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                       <Text style={styles.barLabel}>{t('prediction.predicted')}</Text>
                     </View>
                     <View style={styles.barOuterContainer}>
-                      <View 
+                      <View
                         style={[
-                          styles.bar, 
-                          styles.predictedBar, 
-                          { 
-                            width: `${Math.min(90, (comparisonData.predictedYield! / Math.max(comparisonData.predictedYield!, comparisonData.actualYield!) * 90))}%` 
+                          styles.bar,
+                          styles.predictedBar,
+                          {
+                            width: `${Math.min(90, (comparisonData.predictedYield! / Math.max(comparisonData.predictedYield!, comparisonData.actualYield!) * 90))}%`
                           }
                         ]}
                       >
@@ -694,18 +707,18 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                       </View>
                     </View>
                   </View>
-                  
+
                   <View style={styles.barContainer}>
                     <View style={styles.barLabelContainer}>
                       <Text style={styles.barLabel}>{t('prediction.actual')}</Text>
                     </View>
                     <View style={styles.barOuterContainer}>
-                      <View 
+                      <View
                         style={[
-                          styles.bar, 
-                          styles.actualBar, 
-                          { 
-                            width: `${Math.min(90, (comparisonData.actualYield! / Math.max(comparisonData.predictedYield!, comparisonData.actualYield!) * 90))}%` 
+                          styles.bar,
+                          styles.actualBar,
+                          {
+                            width: `${Math.min(90, (comparisonData.actualYield! / Math.max(comparisonData.predictedYield!, comparisonData.actualYield!) * 90))}%`
                           }
                         ]}
                       >
@@ -746,7 +759,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                   bezier
                 />
               )}
-              
+
               {/* Show different message based on data availability */}
               {comparisonData.hasActualYield ? (
                 <View style={styles.comparisonResult}>
@@ -754,16 +767,16 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                     <Text style={styles.comparisonText}>
                       {t('prediction.accuracyResult', {
                         accuracy: Math.max(0, 100 - Math.abs(comparisonData.percentDifference || 0)).toFixed(1),
-                        direction: (comparisonData.percentDifference || 0) > 0 
-                          ? t('prediction.overestimated') 
+                        direction: (comparisonData.percentDifference || 0) > 0
+                          ? t('prediction.overestimated')
                           : t('prediction.underestimated'),
                         percent: Math.abs(comparisonData.percentDifference || 0).toFixed(1)
                       })}
                     </Text>
-                    <Ionicons 
-                      name={Math.abs(comparisonData.percentDifference || 0) < 10 ? "checkmark-circle" : "alert-circle"} 
-                      size={24} 
-                      color={Math.abs(comparisonData.percentDifference || 0) < 10 ? "#4CD964" : "#FF6B6B"} 
+                    <Ionicons
+                      name={Math.abs(comparisonData.percentDifference || 0) < 10 ? "checkmark-circle" : "alert-circle"}
+                      size={24}
+                      color={Math.abs(comparisonData.percentDifference || 0) < 10 ? "#4CD964" : "#FF6B6B"}
                     />
                   </View>
                 </View>
@@ -775,15 +788,15 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                         currentYear: comparisonData.currentYear,
                         lastYear: (comparisonData.currentYear ?? 0) - 1,
                         change: Math.abs(comparisonData.percentChange || 0).toFixed(1),
-                        direction: (comparisonData.percentChange || 0) > 0 
-                          ? t('prediction.increased') 
+                        direction: (comparisonData.percentChange || 0) > 0
+                          ? t('prediction.increased')
                           : t('prediction.decreased')
                       })}
                     </Text>
-                    <Ionicons 
-                      name={(comparisonData.percentChange || 0) > 0 ? "trending-up" : "trending-down"} 
-                      size={24} 
-                      color={(comparisonData.percentChange || 0) > 0 ? "#4CD964" : "#FF6B6B"} 
+                    <Ionicons
+                      name={(comparisonData.percentChange || 0) > 0 ? "trending-up" : "trending-down"}
+                      size={24}
+                      color={(comparisonData.percentChange || 0) > 0 ? "#4CD964" : "#FF6B6B"}
                     />
                   </View>
                 </View>
@@ -791,7 +804,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                 <View style={styles.comparisonResult}>
                   <View style={styles.comparisonResultInner}>
                     <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
-                    <Text style={[styles.comparisonText, {color: '#6B7280'}]}>
+                    <Text style={[styles.comparisonText, { color: '#6B7280' }]}>
                       {t('prediction.noLastYearData', {
                         year: (comparisonData.currentYear ?? 0) - 1
                       })}
@@ -799,7 +812,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                   </View>
                 </View>
               )}
-              
+
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setComparisonModalVisible(false)}
@@ -856,20 +869,20 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { padding: 20 }]}>
             <Text style={styles.modalTitle}>{t('prediction.addActualYield')}</Text>
-            
+
             {selectedPrediction && (
               <>
                 <Text style={styles.modalSubtitle}>
                   {locationNames[selectedPrediction.location] || t('common.unknownLocation')} - {selectedPrediction.year}
                 </Text>
-                
+
                 <View style={styles.predictedYieldContainer}>
                   <Text style={styles.predictedYieldLabel}>{t('prediction.predictedYield')}:</Text>
                   <Text style={styles.predictedYieldValue}>
                     {selectedPrediction.average_prediction.toFixed(1)} {t('prediction.nutsPerTree')}
                   </Text>
                 </View>
-                
+
                 <View style={styles.inputContainer}>
                   <Text style={styles.inputLabel}>{t('prediction.actualYieldLabel')}:</Text>
                   <TextInput
@@ -881,7 +894,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                     autoFocus
                   />
                 </View>
-                
+
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
                     style={styles.cancelButton}
@@ -889,7 +902,7 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                   >
                     <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
-                  
+
                   <TouchableOpacity
                     style={styles.submitButton}
                     onPress={submitActualYield}
@@ -928,19 +941,142 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
-  resetFilterButton: {
+
+  // New styles for filtering
+  filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+  },
+  filterButtonText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  filterBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
+  },
+  filterBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  filtersContainer: {
+    marginBottom: 16,
+  },
+  filtersContent: {
+    paddingRight: 16,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E0F2FE',
     borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    height: 32,
   },
-  resetFilterText: {
+  filterChipText: {
     fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 4,
+    color: colors.primary,
+    marginRight: 6,
   },
+  clearAllChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEE2E2',
+    borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    height: 32,
+  },
+  clearAllChipText: {
+    fontSize: 12,
+    color: '#EF4444',
+  },
+
+  // Filter Modal Styles
+  filterModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  filterModalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  filterModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  filterModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  filterSection: {
+    marginBottom: 20,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  filterInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  filterActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+  },
+  clearFilterButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 12,
+  },
+  clearFilterText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  applyFilterButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+  },
+  applyFilterText: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '600',
+  },
+
+  // Make sure your existing styles are here too
   listContainer: {
     paddingBottom: 20,
   },
@@ -981,7 +1117,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
-    marginRight : 5,
+    marginRight: 5,
   },
   timeBadges: {
     flexDirection: 'row',
