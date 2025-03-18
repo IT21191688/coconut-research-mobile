@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
+import { useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,6 +13,7 @@ import WateringNavigator from "./WateringNavigator";
 import CoconutYieldNavigator from "./CoconutYieldNavigator";
 import DeviceNavigator from "./DeviceNavigator";
 import LocationNavigator from "./LocationNavigator";
+import CopraGradingNavigator from "./CopraGradingNavigator";
 import CopraNavigator from "./copraNavigator";
 import HomeScreen from "../components/screens/home/HomeScreen";
 import Loading from "../components/common/Loading";
@@ -84,16 +86,10 @@ const MainTabNavigator = () => {
         component={CopraNavigator} 
         options={{ title: t("copra.allBatches") || "All Batches" }} 
       />
-      <Tab.Screen
-        name="CopraIdentification"
-        component={HomeScreen}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate("Home", { screen: "CopraIdentification" });
-          },
-        })}
-        options={{ title: t("home.copraIdentification") || "Copra ID" }}
+      <Tab.Screen 
+        name="CopraIdentification" 
+        component={CopraGradingNavigator}
+        options={{ title: t("copraGrading.title") || "Copra Grading" }}
       />
     </Tab.Navigator>
   );
