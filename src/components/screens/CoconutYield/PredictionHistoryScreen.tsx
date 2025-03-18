@@ -59,13 +59,24 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
   const [actualYieldValue, setActualYieldValue] = useState('');
   const [submittingActualYield, setSubmittingActualYield] = useState(false);
 
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [filterName, setFilterName] = useState('');
+  const [filterMonth, setFilterMonth] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState<{
+    name?: string;
+    month?: string;
+    year?: string;
+  }>({});
+  const [filteredPredictions, setFilteredPredictions] = useState<YieldPredictionHistory[]>([]);
+
   const fetchPredictionHistory = async (pageNum = 1) => {
     try {
       setError(null);
       const isFirstPage = pageNum === 1;
       
       if (isFirstPage) {
-        setLoading(true);
+        // setLoading(true);
       }
       
       // If locationId is provided as a param, filter by that location
@@ -80,7 +91,6 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
       }
       
       // Check if we have more data to load
-      setHasMore(history.length >= ITEMS_PER_PAGE);
       
       // Fetch location names for all predictions
       await fetchLocationNames(history);
@@ -190,19 +200,63 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     }
   }, []);
 
-  // Load more predictions
-  const loadMorePredictions = async () => {
-    if (!hasMore || loading) return;
-    
-    const nextPage = page + 1;
-    setPage(nextPage);
-    await fetchPredictionHistory(nextPage);
-  };
-
   // Initial data fetch
   useEffect(() => {
     fetchPredictionHistory();
   }, [locationIdParam]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [predictionHistory, appliedFilters]);
+
+  const applyFilters = () => {
+    let filtered = [...predictionHistory];
+    
+    if (appliedFilters.name) {
+      filtered = filtered.filter(item => 
+        locationNames[item.location]?.toLowerCase().includes(appliedFilters.name!.toLowerCase())
+      );
+    }
+    
+    if (appliedFilters.month) {
+      filtered = filtered.filter(item => 
+        item.monthly_predictions?.some(mp => 
+          mp.month_name.toLowerCase().includes(appliedFilters.month!.toLowerCase())
+        )
+      );
+    }
+    
+    if (appliedFilters.year) {
+      filtered = filtered.filter(item => 
+        String(item.year).includes(appliedFilters.year!)
+      );
+    }
+    
+    setFilteredPredictions(filtered);
+  };
+
+  const handleApplyFilters = () => {
+    // Create an object with only non-empty filters
+    const filters: {name?: string; month?: string; year?: string} = {};
+    
+    if (filterName.trim()) filters.name = filterName.trim();
+    if (filterMonth.trim()) filters.month = filterMonth.trim();
+    if (filterYear.trim()) filters.year = filterYear.trim();
+    
+    // Apply the filters
+    setAppliedFilters(filters);
+    
+    // Close the filter modal
+    setFilterModalVisible(false);
+  };
+
+  const handleClearFilters = () => {
+    setFilterName('');
+    setFilterMonth('');
+    setFilterYear('');
+    setAppliedFilters({});
+    setFilterModalVisible(false);
+  };
 
   const handleCompareWithLastYear = (item: YieldPredictionHistory) => {
     // Find all predictions for the same location
@@ -574,8 +628,8 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={colors.primary} />
-        <Text style={styles.footerText}>{t('common.loadingMore')}</Text>
+        {/* <ActivityIndicator size="small" color={colors.primary} /> */}
+        {/* <Text style={styles.footerText}>{t('common.loadingMore')}</Text> */}
       </View>
     );
   };
@@ -599,20 +653,30 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
     );
   };
 
+  const FilterBadge = () => {
+    const filterCount = Object.keys(appliedFilters).length;
+    
+    return (
+      <TouchableOpacity 
+        style={styles.filterButton}
+        onPress={() => setFilterModalVisible(true)}
+      >
+        <Ionicons name="options-outline" size={20} color={filterCount > 0 ? colors.primary : colors.textSecondary} />
+        {filterCount > 0 && (
+          <View style={styles.filterCountBadge}>
+            <Text style={styles.filterCountText}>{filterCount}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Page Header */}
       <View style={styles.header}>
         {/* <Text style={styles.headerTitle}>{t('prediction.historyTitle')}</Text> */}
-        {locationIdParam && (
-          <TouchableOpacity 
-            style={styles.resetFilterButton}
-            onPress={() => navigation.navigate('PredictionHistory')}
-          >
-            <Ionicons name="close-circle" size={16} color={colors.textSecondary} />
-            <Text style={styles.resetFilterText}>{t('prediction.clearFilter')}</Text>
-          </TouchableOpacity>
-        )}
+        <FilterBadge />
       </View>
       
       {error ? (
@@ -633,14 +697,13 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
         </View>
       ) : (
         <FlatList
-          data={predictionHistory}
+          data={filteredPredictions.length > 0 || Object.keys(appliedFilters).length > 0 ? 
+            filteredPredictions : predictionHistory}
           renderItem={renderPredictionItem}
           keyExtractor={item => item._id}
           contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmptyComponent}
           ListFooterComponent={renderFooter}
-          onEndReached={loadMorePredictions}
           onEndReachedThreshold={0.2}
           refreshControl={
             <RefreshControl
@@ -648,8 +711,6 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
               onRefresh={onRefresh}
               colors={[colors.primary]}
               tintColor={colors.primary}
-              title={t('common.refreshing')}
-              titleColor={colors.primary}
             />
           }
         />
@@ -904,6 +965,116 @@ const PredictionHistoryScreen: React.FC<PredictionHistoryScreenProps> = ({ navig
                 </View>
               </>
             )}
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={filterModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t('prediction.filterTitle')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('prediction.filterByName')}
+              value={filterName}
+              onChangeText={setFilterName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={t('prediction.filterByMonth')}
+              value={filterMonth}
+              onChangeText={setFilterMonth}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={t('prediction.filterByYear')}
+              value={filterYear}
+              onChangeText={setFilterYear}
+              keyboardType="numeric"
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={handleClearFilters}
+              >
+                <Text style={styles.cancelButtonText}>{t('common.clear')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleApplyFilters}
+              >
+                <Text style={styles.submitButtonText}>{t('common.apply')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* Add this filter modal */}
+      <Modal
+        visible={filterModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <View style={styles.filterModalOverlay}>
+          <View style={styles.filterModalContent}>
+            <View style={styles.filterModalHeader}>
+              <Text style={styles.filterModalTitle}>{t('prediction.filterPredictions')}</Text>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.filterInputGroup}>
+              <Text style={styles.filterLabel}>{t('prediction.locationName')}</Text>
+              <TextInput
+                style={styles.filterInput}
+                placeholder={t('prediction.filterByLocation')}
+                value={filterName}
+                onChangeText={setFilterName}
+              />
+            </View>
+            
+            <View style={styles.filterInputGroup}>
+              <Text style={styles.filterLabel}>{t('prediction.month')}</Text>
+              <TextInput
+                style={styles.filterInput}
+                placeholder={t('prediction.filterByMonth')}
+                value={filterMonth}
+                onChangeText={setFilterMonth}
+              />
+            </View>
+            
+            <View style={styles.filterInputGroup}>
+              <Text style={styles.filterLabel}>{t('prediction.year')}</Text>
+              <TextInput
+                style={styles.filterInput}
+                placeholder={t('prediction.filterByYear')}
+                value={filterYear}
+                onChangeText={setFilterYear}
+                keyboardType="number-pad"
+              />
+            </View>
+            
+            <View style={styles.filterActions}>
+              <TouchableOpacity 
+                style={styles.clearButton}
+                onPress={handleClearFilters}
+              >
+                <Text style={styles.clearButtonText}>{t('common.clearAll')}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.applyButton}
+                onPress={handleApplyFilters}
+              >
+                <Text style={styles.applyButtonText}>{t('common.apply')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -1417,6 +1588,114 @@ const styles = StyleSheet.create({
   barOuterContainer: {
     flex: 1,
     overflow: 'hidden',
+  },
+  filterButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterCountBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  filterCountText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  filterModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  filterModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  filterModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  filterInputGroup: {
+    marginBottom: 16,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  filterInput: {
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  filterActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 16,
+  },
+  clearButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginRight: 12,
+  },
+  clearButtonText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  applyButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  applyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activeFilterBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E0F2FE',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  activeFilterText: {
+    fontSize: 12,
+    color: colors.primary,
+    marginRight: 4,
+  },
+  filterChipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
   },
 });
 
