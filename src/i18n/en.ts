@@ -101,7 +101,12 @@ export default {
     month: "Month",
     filterLocationPlaceholder: "Enter location name...",
     filterYearPlaceholder: "Enter year...",
-    filterMonthPlaceholder: "Enter month name..."
+    filterMonthPlaceholder: "Enter month name...",
+    filterPredictions: "Filter Predictions",
+    filterByLocation: "Search location names",
+    filterByMonth: "Enter month name",
+    filterByYear: "Enter year",
+    locationName: "Location",
   },
 
   price: {
