@@ -96,6 +96,12 @@ export default {
     yearPickerLabel: "වර්ෂය",
     nutsPerHectare: "ගෙඩි/හෙක්.",
     predictionStatus: "පුරෝකථන තත්ත්වය",
+    location: "ස්ථානය",
+    year: "අවුරුද්ද",
+    month: "මාසය",
+    filterLocationPlaceholder: "ස්ථානයේ නම ඇතුළත් කරන්න...",
+    filterYearPlaceholder: "අවුරුද්ද ඇතුළත් කරන්න...",
+    filterMonthPlaceholder: "මාසයේ නම ඇතුළත් කරන්න..."
   },
 
   price: {
@@ -133,6 +139,9 @@ export default {
     tryAgainLater: "යමක් වැරදී ඇත. කරුණාකර පසුව නැවත උත්සාහ කරන්න.",
     newPrediction: "නව පුරෝකථනය",
     optional: "විකල්ප",
+    viewHistory: "ඉතිහාසය බලන්න",
+    predictionHistory: "මිල පුරෝකථන ඉතිහාසය",
+    latest: "නවතම",
   },
 
   common: {
@@ -154,7 +163,11 @@ export default {
     weatherUnavailable: "කාලගුණ දත්ත නොමැත",
     save: "සුරකින්න",
     success: "සාර්ථකයි",
-    signOut: "සයින් අවුට්" 
+    signOut: "සයින් අවුට්",
+    filter: "පෙරහන්",
+    clearAll: "සියල්ල ඉවත් කරන්න",
+    filterBy: "පෙරහන් කරන්න",
+    apply: "අදාළ කරන්න",
   },
 
   months: [
