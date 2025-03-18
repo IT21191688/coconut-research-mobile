@@ -73,7 +73,27 @@ const CopraIdentificationScreen: React.FC = () => {
           </View>
           <Text style={styles.resourceText}>Copra Mold Detection</Text>
         </TouchableOpacity>
+
+        
       </View>
+      <TouchableOpacity
+          style={[styles.resourceButton, {marginTop:5}]}
+          onPress={() => navigation.navigate('Guidelines')}
+        >
+          <View
+            style={[
+              styles.resourceIcon,
+              { backgroundColor: colors.secondary + "20" },
+            ]}
+          >
+            <Ionicons
+              name="hardware-chip-outline"
+              size={24}
+              color={colors.secondary}
+            />
+          </View>
+          <Text style={styles.resourceText}>Copra Mold Detection</Text>
+        </TouchableOpacity>
     </View>
   );
 
