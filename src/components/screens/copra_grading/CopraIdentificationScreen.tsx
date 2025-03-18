@@ -80,6 +80,7 @@ const CopraIdentificationScreen: React.FC = () => {
           <Text style={[styles.resourceText, { color: cardStyles.grading.color }]}>
             Copra Grading
           </Text>
+          <Text style={styles.resourceSubtext}>Grade your copra samples</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -101,52 +102,35 @@ const CopraIdentificationScreen: React.FC = () => {
           <Text style={[styles.resourceText, { color: cardStyles.mold.color }]}>
             Mold Detection
           </Text>
+          <Text style={styles.resourceSubtext}>Check for contamination</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.secondaryButtons}>
-        <TouchableOpacity
-          style={[styles.resourceButton, styles.infoCard]}
-          onPress={() => navigation.navigate('Guidelines')}
+      <TouchableOpacity
+        style={[styles.infoButton, styles.infoCard]}
+        onPress={() => navigation.navigate('Guidelines')}
+      >
+        <View
+          style={[
+            styles.resourceIcon,
+            { backgroundColor: cardStyles.info.bgColor },
+          ]}
         >
-          <View
-            style={[
-              styles.resourceIcon,
-              { backgroundColor: cardStyles.info.bgColor },
-            ]}
-          >
-            <Ionicons
-              name={cardStyles.info.icon}
-              size={26}
-              color={cardStyles.info.color}
-            />
-          </View>
+          <Ionicons
+            name={cardStyles.info.icon}
+            size={32}
+            color={cardStyles.info.color}
+          />
+        </View>
+        <View style={styles.infoTextContainer}>
           <Text style={[styles.resourceText, { color: cardStyles.info.color }]}>
             Copra Information
           </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.resourceButton, styles.guideCard]}
-          onPress={() => navigation.navigate('Instructions')}
-        >
-          <View
-            style={[
-              styles.resourceIcon,
-              { backgroundColor: cardStyles.guide.bgColor },
-            ]}
-          >
-            <Ionicons
-              name={cardStyles.guide.icon}
-              size={26}
-              color={cardStyles.guide.color}
-            />
-          </View>
-          <Text style={[styles.resourceText, { color: cardStyles.guide.color }]}>
-            Copra Guidelines
+          <Text style={styles.resourceSubtext}>
+            Learn about copra grades and quality
           </Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 
@@ -284,6 +268,7 @@ const styles = StyleSheet.create({
   },
   resourceButtonsContainer: {
     marginTop: 8,
+    padding: 16,
   },
   resourceTitle: {
     fontSize: 20,
@@ -296,6 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 16,
+    gap: 12,
   },
   secondaryButtons: {
     flexDirection: "row",
@@ -307,12 +293,45 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 16,
     padding: 20,
-    marginHorizontal: 8,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  infoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  infoTextContainer: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  resourceIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  resourceText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  resourceSubtext: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
   gradingCard: {
     borderLeftWidth: 4,
@@ -329,19 +348,6 @@ const styles = StyleSheet.create({
   guideCard: {
     borderLeftWidth: 4,
     borderLeftColor: cardStyles.guide.color,
-  },
-  resourceIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  resourceText: {
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
   },
   floatingButton: {
     position: "absolute",
