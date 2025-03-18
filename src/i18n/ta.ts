@@ -97,6 +97,12 @@ export default {
     yearPickerLabel: "ஆண்டு",
     nutsPerHectare: "தேங்காய்/ஹெக்.",
     predictionStatus: "கணிப்பு நிலை",
+    location: "இடம்",
+    year: "ஆண்டு",
+    month: "மாதம்",
+    filterLocationPlaceholder: "இடத்தின் பெயரை உள்ளிடவும்...",
+    filterYearPlaceholder: "ஆண்டை உள்ளிடவும்...",
+    filterMonthPlaceholder: "மாத பெயரை உள்ளிடவும்..."
   },
 
   price: {
@@ -137,6 +143,8 @@ export default {
       "ஏதோ தவறாகிவிட்டது. தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும்.",
     newPrediction: "புதிய கணிப்பு",
     optional: "விருப்பத்திற்குரியது",
+    viewHistory: "முன்னறிவிப்பு வரலாற்றை காண்க"
+
   },
 
   common: {
@@ -158,7 +166,11 @@ export default {
     weatherUnavailable: "வானிலை தரவு கிடைக்கவில்லை",
     save: "சேமி",
     success: "வெற்றி",
-    signOut: "வெளியேறு" 
+    signOut: "வெளியேறு",
+    filter: "வடிகட்டி",
+    clearAll: "அனைத்தையும் அழிக்கவும்",
+    filterBy: "வடிகட்டி மூலம்",
+    apply: "விண்ணப்பிக்கவும்",
   },
 
   months: [

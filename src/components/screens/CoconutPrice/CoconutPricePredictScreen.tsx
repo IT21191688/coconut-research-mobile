@@ -180,7 +180,16 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                 >
                     {!result ? (
                         // Input Form View - Restructured
-                        <>                            
+                        <>
+                            {/* View History Button for Results View */}
+                            <TouchableOpacity
+                                style={styles.viewHistoryButton}
+                                onPress={() => navigation.navigate('PricePredictionHistory')}
+                            >
+                                <Ionicons name="time-outline" size={22} color="#FFFFFF" />
+                                <Text style={styles.viewHistoryText}>{t('price.viewHistory')}</Text>
+                            </TouchableOpacity>
+
                             <View style={styles.infoCard}>
                                 <Ionicons name="information-circle-outline" size={24} color="#3B82F6" />
                                 <Text style={styles.infoText}>
@@ -246,7 +255,7 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                         <Text style={styles.inputLabel}>{t('price.inflationRate')}</Text>
                                         <View style={styles.inputWithUnit}>
                                             <TextInput
-                                                style={[styles.input, {flex: 1}]}
+                                                style={[styles.input, { flex: 1 }]}
                                                 value={inflationRate}
                                                 onChangeText={setInflationRate}
                                                 keyboardType="numeric"
@@ -303,7 +312,7 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                                 placeholder="0.00"
                                             />
                                         </View>
-                                        
+
                                         <View style={styles.priceHistoryItem}>
                                             <Text style={styles.priceHistoryMonth}>3 {t('price.months')}</Text>
                                             <TextInput
@@ -314,7 +323,7 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                                 placeholder="0.00"
                                             />
                                         </View>
-                                        
+
                                         <View style={styles.priceHistoryItem}>
                                             <Text style={styles.priceHistoryMonth}>6 {t('price.months')}</Text>
                                             <TextInput
@@ -325,7 +334,7 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                                 placeholder="0.00"
                                             />
                                         </View>
-                                        
+
                                         <View style={styles.priceHistoryItem}>
                                             <Text style={styles.priceHistoryMonth}>12 {t('price.months')}</Text>
                                             <TextInput
@@ -392,26 +401,26 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                     <Ionicons name="stats-chart" size={22} color={colors.primary} />
                                     <Text style={styles.cardTitle}>{t('price.marketFactors')}</Text>
                                 </View>
-                                
+
                                 <View style={styles.metricsGrid}>
                                     <View style={styles.metricItem}>
                                         <Ionicons name="leaf-outline" size={22} color={colors.success} style={styles.metricIcon} />
                                         <Text style={styles.metricValue}>{result.yield_nuts}</Text>
                                         <Text style={styles.metricLabel}>{t('price.yieldNuts')}</Text>
                                     </View>
-                                    
+
                                     <View style={styles.metricItem}>
                                         <Ionicons name="trending-up-outline" size={22} color="#ff6b6b" style={styles.metricIcon} />
                                         <Text style={styles.metricValue}>{result.inflation_rate}%</Text>
                                         <Text style={styles.metricLabel}>{t('price.inflationRate')}</Text>
                                     </View>
-                                    
+
                                     <View style={styles.metricItem}>
                                         <Ionicons name="airplane-outline" size={22} color="#4dabf7" style={styles.metricIcon} />
                                         <Text style={styles.metricValue}>{result.export_volume}</Text>
                                         <Text style={styles.metricLabel}>{t('price.exportVolume')}</Text>
                                     </View>
-                                    
+
                                     <View style={styles.metricItem}>
                                         <Ionicons name="home-outline" size={22} color="#9775fa" style={styles.metricIcon} />
                                         <Text style={styles.metricValue}>{result.domestic_consumption}</Text>
@@ -426,13 +435,13 @@ const CoconutPricePredictScreen: React.FC<CoconutPricePredictScreenProps> = ({ n
                                         <Ionicons name="time" size={22} color={colors.primary} />
                                         <Text style={styles.cardTitle}>{t('price.priceHistory')}</Text>
                                     </View>
-                                    
+
                                     <View style={styles.priceHistoryChart}>
                                         {Object.keys(result.previous_prices).map((month, index) => (
                                             result.previous_prices[month as keyof typeof result.previous_prices] ? (
                                                 <View key={index} style={styles.historyChartItem}>
                                                     <View style={styles.historyChartBar}>
-                                                        <View 
+                                                        <View
                                                             style={[
                                                                 styles.historyChartBarFill,
                                                                 { height: `${Math.min(100, result.previous_prices[month as keyof typeof result.previous_prices] / result.predicted_price * 100)}%` }
@@ -506,7 +515,7 @@ const styles = StyleSheet.create({
         marginLeft: 12,
         lineHeight: 20,
     },
-    
+
     // New Card-Based Design
     card: {
         backgroundColor: '#FFFFFF',
@@ -542,7 +551,7 @@ const styles = StyleSheet.create({
     cardContent: {
         padding: 16,
     },
-    
+
     // Improved Input Styling
     inputContainer: {
         marginBottom: 16,
@@ -613,7 +622,7 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         marginLeft: 10,
     },
-    
+
     // Price History Grid
     priceHistoryGrid: {
         flexDirection: 'row',
@@ -646,7 +655,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#e8ebef',
     },
-    
+
     // Results View Styling
     resultContainer: {
         flex: 1,
@@ -722,7 +731,7 @@ const styles = StyleSheet.create({
     priceIcon: {
         opacity: 0.8,
     },
-    
+
     // Metrics Grid
     metricsGrid: {
         flexDirection: 'row',
@@ -752,7 +761,7 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         textAlign: 'center',
     },
-    
+
     // Price History Chart
     priceHistoryChart: {
         flexDirection: 'row',
@@ -790,7 +799,7 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: colors.textSecondary,
     },
-    
+
     // New Prediction Button
     newPredictionButton: {
         backgroundColor: colors.success,
@@ -805,7 +814,7 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 4,
         marginTop: 10,
-        marginBottom: 40,
+        marginBottom: 16, // Changed from 40 to give space for the history button
     },
     newPredictionText: {
         color: '#FFFFFF',
@@ -814,19 +823,16 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         letterSpacing: 0.4,
     },
-    
+
     // Button container to create clear separation
     buttonContainer: {
         marginTop: 16,
         marginBottom: 40,
         paddingVertical: 8,
-        // backgroundColor: 'rgba(255,255,255,0.7)',
         borderRadius: 20,
         padding: 10,
-        // borderTopWidth: 1,
-        // borderTopColor: '#e0e0e0',
     },
-    
+
     // Enhanced Predict Button with better visibility
     predictButton: {
         backgroundColor: colors.primary,
@@ -840,9 +846,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 8,
         elevation: 8,
-        // borderWidth: 2,
         borderColor: 'rgba(255,255,255,0.7)',
-        marginBottom: 10,
+        marginBottom: 16, // Increased from 10 to give more space between buttons
     },
     predictButtonText: {
         color: '#FFFFFF',
@@ -851,8 +856,49 @@ const styles = StyleSheet.create({
         marginLeft: 12,
         letterSpacing: 0.5,
         textShadowColor: 'rgba(0,0,0,0.2)',
-        textShadowOffset: {width: 0, height: 1},
+        textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 2,
+    },
+    historyButton: {
+        backgroundColor: '#6366F1', // Indigo color that complements the primary color
+        borderRadius: 14,
+        paddingVertical: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    historyButtonText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: '600',
+        marginLeft: 12,
+        letterSpacing: 0.4,
+    },
+    viewHistoryButton: {
+        backgroundColor: '#6366F1', // Indigo color that complements the primary color
+        borderRadius: 14,
+        paddingVertical: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#6366F1',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+        marginBottom: 20,
+    },
+    viewHistoryText: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: '600',
+        marginLeft: 10,
+        letterSpacing: 0.4,
     },
 });
 
