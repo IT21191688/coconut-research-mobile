@@ -3,24 +3,24 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   Image,
-  RefreshControl,
-  Alert,
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../../../constants/colors";
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
 
 const CopraGradingView: React.FC = () => {
   const navigation = useNavigation();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [predictedClass, setPredictedClass] = useState<string | null>(null);
 
   const handleImageCapture = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -39,6 +39,7 @@ const CopraGradingView: React.FC = () => {
 
       if (!result.canceled) {
         setImageUri(result.assets[0].uri);
+        setPredictedClass(null); // Reset previous result
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to capture image');
@@ -62,93 +63,93 @@ const CopraGradingView: React.FC = () => {
 
       if (!result.canceled) {
         setImageUri(result.assets[0].uri);
+        setPredictedClass(null); // Reset previous result
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to select image');
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!imageUri) {
       Alert.alert('Error', 'Please select an image first');
       return;
     }
-    // Handle submission logic here
-    Alert.alert('Success', 'Image submitted for grading');
-    setImageUri(null); // Clear image after submission
+
+    setLoading(true);
+    setPredictedClass(null); // Reset result before new request
+
+    try {
+      const apiUrl = 'http://192.168.43.217:5000/predict_grading';
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: imageUri,
+        name: 'image.jpg',
+        type: 'image/jpeg',
+      });
+
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setPredictedClass(response.data.predicted_class); // Save predicted class
+
+    } catch (error) {
+      Alert.alert('Error', 'Failed to grade copra. Please try again.');
+      console.error('Error uploading image:', error);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const renderDetectionButtons = () => (
-    <View style={styles.resourceButtonsContainer}>
-      <View style={styles.resourceButtons}>
-        <TouchableOpacity
-          style={styles.resourceButton}
-          onPress={handleImageCapture}
-        >
-          <View
-            style={[
-              styles.resourceIcon,
-              { backgroundColor: colors.primary + "20" },
-            ]}
-          >
-            <Ionicons name="camera" size={24} color={colors.primary} />
-          </View>
-          <Text style={styles.resourceText}>Capture Image</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.resourceButton}
-          onPress={handleImageUpload}
-        >
-          <View
-            style={[
-              styles.resourceIcon,
-              { backgroundColor: colors.secondary + "20" },
-            ]}
-          >
-            <Ionicons
-              name="cloud-upload-outline"
-              size={24}
-              color={colors.secondary}
-            />
-          </View>
-          <Text style={styles.resourceText}>Upload Image</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => setRefreshing(false)}
-            tintColor={colors.primary}
-          />
-        }
-      >
-        {renderDetectionButtons()}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.resourceButtonsContainer}>
+          <View style={styles.resourceButtons}>
+            <TouchableOpacity style={styles.resourceButton} onPress={handleImageCapture}>
+              <View style={[styles.resourceIcon, { backgroundColor: colors.primary + "20" }]}>
+                <Ionicons name="camera" size={24} color={colors.primary} />
+              </View>
+              <Text style={styles.resourceText}>Capture Image</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.resourceButton} onPress={handleImageUpload}>
+              <View style={[styles.resourceIcon, { backgroundColor: colors.secondary + "20" }]}>
+                <Ionicons name="cloud-upload-outline" size={24} color={colors.secondary} />
+              </View>
+              <Text style={styles.resourceText}>Upload Image</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {imageUri && (
           <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.selectedImage}
-              resizeMode="contain"
-            />
+            <Image source={{ uri: imageUri }} style={styles.selectedImage} resizeMode="contain" />
           </View>
         )}
 
-        {imageUri && <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleSubmit}
-          disabled={!imageUri}
-        >
-          <Text style={styles.submitButtonText}>Copra Grade Identification</Text>
-        </TouchableOpacity>}
+        {/* Show button only if no predicted class */}
+        {imageUri && !predictedClass && (
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={styles.submitButtonText}>Copra Grade Identification</Text>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Show predicted class result */}
+        {predictedClass && (
+          <View style={styles.resultContainer}>
+            <Text style={styles.resultTitle}>Predicted Grade</Text>
+            <Text style={styles.resultText}>{predictedClass}</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -159,117 +160,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.backgroundLight,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: colors.gray600,
-  },
   scrollContent: {
     padding: 16,
     paddingBottom: 100,
   },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.textPrimary,
-    textAlign: "center",
-
-    marginBottom: 12,
-  },
-  todaySummary: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  countBadge: {
-    flex: 1,
-    alignItems: "center",
-    padding: 12,
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    marginHorizontal: 4,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  countNumber: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  countLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  scheduleCard: {
-    marginBottom: 12,
-  },
-  createButton: {
-    marginTop: 8,
-  },
-  emptyTodayContainer: {
-    alignItems: "center",
-    padding: 32,
-    marginBottom: 16,
-  },
-  emptyTodayTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.textPrimary,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyTodayText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  upcomingTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.textSecondary,
-    marginBottom: 12,
-  },
-  noUpcomingText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: "center",
-    padding: 20,
-  },
-  viewAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray200,
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: "500",
-    marginRight: 4,
-  },
   resourceButtonsContainer: {
     marginTop: 8,
-  },
-  resourceTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.textPrimary,
-    marginBottom: 12,
   },
   resourceButtons: {
     flexDirection: "row",
@@ -300,22 +196,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: colors.textPrimary,
-  },
-  floatingButton: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   imageContainer: {
     marginTop: 20,
@@ -350,6 +230,23 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  resultContainer: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  resultTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  resultText: {
+    fontSize: 16,
+    color: colors.primary,
+    marginTop: 8,
   },
 });
 
