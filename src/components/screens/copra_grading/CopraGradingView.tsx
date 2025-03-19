@@ -108,20 +108,27 @@ const CopraGradingView: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Copra Grading</Text>
+          <Text style={styles.headerSubtitle}>Upload or capture an image for analysis</Text>
+        </View>
+
         <View style={styles.resourceButtonsContainer}>
           <View style={styles.resourceButtons}>
             <TouchableOpacity style={styles.resourceButton} onPress={handleImageCapture}>
-              <View style={[styles.resourceIcon, { backgroundColor: colors.primary + "20" }]}>
-                <Ionicons name="camera" size={24} color={colors.primary} />
+              <View style={[styles.resourceIcon, { backgroundColor: colors.primary + "15" }]}>
+                <Ionicons name="camera" size={28} color={colors.primary} />
               </View>
               <Text style={styles.resourceText}>Capture Image</Text>
+              <Text style={styles.resourceSubtext}>Use camera</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.resourceButton} onPress={handleImageUpload}>
-              <View style={[styles.resourceIcon, { backgroundColor: colors.secondary + "20" }]}>
-                <Ionicons name="cloud-upload-outline" size={24} color={colors.secondary} />
+              <View style={[styles.resourceIcon, { backgroundColor: colors.secondary + "15" }]}>
+                <Ionicons name="images" size={28} color={colors.secondary} />
               </View>
               <Text style={styles.resourceText}>Upload Image</Text>
+              <Text style={styles.resourceSubtext}>From gallery</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -129,25 +136,46 @@ const CopraGradingView: React.FC = () => {
         {imageUri && (
           <View style={styles.imageContainer}>
             <Image source={{ uri: imageUri }} style={styles.selectedImage} resizeMode="contain" />
+            <Text style={styles.imageHint}>Selected image ready for analysis</Text>
           </View>
         )}
 
-        {/* Show button only if no predicted class */}
         {imageUri && !predictedClass && (
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+          <TouchableOpacity 
+            style={[styles.submitButton, loading && styles.submitButtonDisabled]} 
+            onPress={handleSubmit} 
+            disabled={loading}
+          >
             {loading ? (
-              <ActivityIndicator size="small" color={colors.white} />
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color={colors.white} />
+                <Text style={styles.loadingText}>Analyzing...</Text>
+              </View>
             ) : (
-              <Text style={styles.submitButtonText}>Copra Grade Identification</Text>
+              <>
+                <Ionicons name="scan-outline" size={24} color={colors.white} />
+                <Text style={styles.submitButtonText}>Analyze Copra Grade</Text>
+              </>
             )}
           </TouchableOpacity>
         )}
 
-        {/* Show predicted class result */}
         {predictedClass && (
           <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Predicted Grade</Text>
-            <Text style={styles.resultText}>{predictedClass}</Text>
+            <Text style={styles.resultTitle}>Analysis Result</Text>
+            <View style={styles.gradeContainer}>
+              <Text style={styles.gradeLabel}>Grade</Text>
+              <Text style={styles.gradeValue}>{predictedClass}</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.newAnalysisButton}
+              onPress={() => {
+                setImageUri(null);
+                setPredictedClass(null);
+              }}
+            >
+              <Text style={styles.newAnalysisText}>New Analysis</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -162,91 +190,153 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 100,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
   },
   resourceButtonsContainer: {
-    marginTop: 8,
+    marginBottom: 24,
   },
   resourceButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
+    gap: 12,
   },
   resourceButton: {
     flex: 1,
     alignItems: "center",
     backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
+    borderRadius: 16,
+    padding: 20,
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   resourceIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
   },
   resourceText: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 16,
+    fontWeight: "600",
     color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  resourceSubtext: {
+    fontSize: 13,
+    color: colors.textSecondary,
   },
   imageContainer: {
-    marginTop: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: colors.white,
-    padding: 10,
+    padding: 16,
+    marginBottom: 24,
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   selectedImage: {
     width: '100%',
     height: 300,
-    borderRadius: 8,
+    borderRadius: 12,
+    backgroundColor: colors.backgroundLight,
+  },
+  imageHint: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    marginTop: 12,
+    fontSize: 14,
   },
   submitButton: {
-    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 5,
+    gap: 8,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
   },
   submitButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
-  resultContainer: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: colors.white,
-    borderRadius: 12,
+  loadingContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  loadingText: {
+    color: colors.white,
+    fontSize: 16,
+  },
+  resultContainer: {
+    padding: 24,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   resultTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '600',
     color: colors.textPrimary,
+    marginBottom: 16,
   },
-  resultText: {
-    fontSize: 16,
+  gradeContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  gradeLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  gradeValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
     color: colors.primary,
-    marginTop: 8,
+  },
+  newAnalysisButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    backgroundColor: colors.primary + '15',
+  },
+  newAnalysisText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
