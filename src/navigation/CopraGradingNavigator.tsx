@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import CopraIdentificationScreen from '../components/screens/copra_grading/CopraIdentificationScreen';
 import CopraGradingView from '../components/screens/copra_grading/CopraGradingView';
 import CopraMoldDetectionView from '../components/screens/copra_grading/CopraMoldDetectionView';
+import CopraGuidelinesView from '../components/screens/copra_grading/CopraGuidelinesView';
 
 const Stack = createStackNavigator();
 
@@ -37,6 +38,11 @@ const CopraGradingNavigator: React.FC = () => {
         component={CopraMoldDetectionView}
         options={{ title: t('copra.moldDetection') }}
       />
+      <Stack.Screen
+          name="Guidelines"
+          component={CopraGuidelinesView}
+          options={{ title: 'Copra Guidelines' }}
+        />
     </Stack.Navigator>
   );
 };
