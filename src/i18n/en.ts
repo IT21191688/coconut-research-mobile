@@ -766,6 +766,7 @@ export default {
           "Optimal drying temperature is between 30-35°C (86-95°F). Higher temperatures may cause quality loss.",
       },
     },
+    identification: "identification",
   },
   customWatering: {
     // Action buttons
@@ -911,7 +912,8 @@ export default {
     enterPhoneNumber: "Enter phone number",
     updateProfile: "Update Profile",
     notProvided: "Not provided"
-  }
+  },
+  
 
 
 };
