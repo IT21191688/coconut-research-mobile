@@ -1,5 +1,9 @@
 import api from "./axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  initializeFirebaseMessaging,
+  unregisterFCMToken,
+} from "../config/firebaseConfig";
 
 interface LoginCredentials {
   email: string;
@@ -34,8 +38,10 @@ export const login = async (
 
     // Store auth data
     await AsyncStorage.setItem("token", response.data.data.token);
-    await AsyncStorage.setItem('refreshToken', response.data.data.refreshToken);
+    await AsyncStorage.setItem("refreshToken", response.data.data.refreshToken);
     await AsyncStorage.setItem("user", JSON.stringify(response.data.data.user));
+
+    await initializeFirebaseMessaging();
 
     return response.data;
   } catch (error) {
@@ -51,7 +57,7 @@ export const register = async (
 
     // Store auth data
     await AsyncStorage.setItem("token", response.data.data.token);
-    await AsyncStorage.setItem('refreshToken', response.data.data.refreshToken);
+    await AsyncStorage.setItem("refreshToken", response.data.data.refreshToken);
     await AsyncStorage.setItem("user", JSON.stringify(response.data.data.user));
 
     return response.data;

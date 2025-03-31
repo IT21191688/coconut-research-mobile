@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
@@ -20,9 +20,11 @@
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "expo": "~52.0.35",
+    "expo-device": "~7.0.2",
     "expo-intent-launcher": "~12.0.2",
     "expo-linear-gradient": "~14.0.2",
     "expo-location": "~18.0.7",
+    "expo-notifications": "~0.29.14",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
     "i18next": "^24.2.2",
@@ -37,7 +39,9 @@
     "react-native-screens": "~4.4.0",
     "react-native-svg": "^15.8.0",
     "react-native-toast-message": "^2.2.1",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-vector-icons": "^10.2.0",
+     "@react-native-firebase/app": "^16.5.0",
+    "@react-native-firebase/messaging": "^16.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -50,7 +54,11 @@
     "slug": "coconut-farm-mobile",
     "android": {
       "package": "com.yourcompany.coconutfarm",
-      "versionCode": 1
+      "versionCode": 1,
+      "googleServicesFile": "./google-services.json"
+    },
+    "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist"
     }
   },
   "private": true

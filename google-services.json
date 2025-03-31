@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "445129983755",
+    "firebase_url": "https://moisturesens-default-rtdb.firebaseio.com",
+    "project_id": "moisturesens",
+    "storage_bucket": "moisturesens.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445129983755:android:986025b947f7a3712dc40e",
+        "android_client_info": {
+          "package_name": "com.yourcompany.coconutfarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "445129983755-bm0ppd33rk1irbvcftf6r85uvemmaj4s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7IvKC1PQ3HKpV8trk6OK-t9TfQSDvoUc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445129983755-bm0ppd33rk1irbvcftf6r85uvemmaj4s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

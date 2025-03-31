@@ -1,18 +1,16 @@
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EventRegister } from 'react-native-event-listeners';
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { EventRegister } from "react-native-event-listeners";
 
 // Update this with your actual backend URL
-const BASE_URL = 'https://node-backend-1-ymka.onrender.com/api/v1';
-// const BASE_URL = 'http://192.168.43.37:7000/api/v1';
-
+// const BASE_URL = 'https://node-backend-zjnf.onrender.com/api/v1';
+const BASE_URL = "http://192.168.43.37:7000/api/v1";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
-
+    "Content-Type": "application/json",
   },
 });
 
@@ -25,7 +23,7 @@ export const setLogoutFunction = (logout: () => Promise<void>) => {
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -43,8 +41,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
-      EventRegister.emit('userLogout', true);
+      await AsyncStorage.multiRemove(["token", "refreshToken", "user"]);
+      EventRegister.emit("userLogout", true);
       return Promise.reject(error);
     }
     return Promise.reject(error);
