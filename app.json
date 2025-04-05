@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sadeepalakshan.coconutfarmmobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "permissions": [
@@ -36,7 +40,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "a99fe982-2584-47b0-8825-1c2d41b1657b"
+        "projectId": "add1ee5e-a164-463c-9c88-4cbd5e43f25c"
       }
     }
   }
