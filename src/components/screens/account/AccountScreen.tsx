@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   RefreshControl,
   Modal,
   TextInput,
-  Alert
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { getProfile, updateProfile } from '../../../api/userApi';
-import { colors } from '../../../constants/colors';
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import {
+  getProfile,
+  updateProfile,
+  sendTestNotification,
+} from "../../../api/userApi"; // Import the notification API
+import { colors } from "../../../constants/colors";
+import Toast from "react-native-toast-message";
 
 const AccountScreen: React.FC = ({ navigation }: any) => {
   const { t } = useTranslation();
@@ -23,10 +28,11 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+  const [isSendingNotification, setIsSendingNotification] = useState(false);
+
   // New state for update functionality
   const [showEditModal, setShowEditModal] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -38,11 +44,11 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
       setIsLoading(true);
       const profileData = await getProfile();
       setProfile(profileData);
-      setPhoneNumber(profileData.phone || ''); // Set phone number from profile
+      setPhoneNumber(profileData.phone || ""); // Set phone number from profile
       setError(null);
     } catch (err) {
-      setError('Failed to load profile');
-      console.error('Error loading profile:', err);
+      setError("Failed to load profile");
+      console.error("Error loading profile:", err);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -53,7 +59,7 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
     setIsRefreshing(true);
     await loadProfile();
   };
-  
+
   // New function to handle profile update
   const handleUpdateProfile = async () => {
     try {
@@ -61,21 +67,121 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
       await updateProfile({ phone: phoneNumber });
       await loadProfile();
       setShowEditModal(false);
-      Alert.alert(
-        "Success", 
-        "Your profile has been updated successfully.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Success", "Your profile has been updated successfully.", [
+        { text: "OK" },
+      ]);
     } catch (err) {
-      console.error('Error updating profile:', err);
+      console.error("Error updating profile:", err);
       Alert.alert(
-        "Update Failed", 
+        "Update Failed",
         "There was an error updating your profile. Please try again.",
         [{ text: "OK" }]
       );
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  // Function to send test notification via API
+  const handleTestNotification = async () => {
+    try {
+      setIsSendingNotification(true);
+
+      Toast.show({
+        type: "info",
+        text1: "Sending test notification...",
+        visibilityTime: 2000,
+      });
+
+      // First try to use a device ID from the user's profile if available
+      // Otherwise use a test device ID
+      const devices = await getDevicesForUser(); // This would be a function you'd need to implement
+
+      const userId = profile._id;
+      const response = await sendTestNotification(userId);
+
+      if (response.success) {
+        // The actual notification will come through FCM, but show a success toast
+        Toast.show({
+          type: "success",
+          text1: "Notification sent",
+          text2: "You should receive it shortly",
+          visibilityTime: 3000,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Failed to send notification",
+          text2: response.message || "Please try again",
+          visibilityTime: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error sending test notification:", error);
+      Toast.show({
+        type: "error",
+        text1: "Network error",
+        text2: "Could not connect to notification service",
+        visibilityTime: 3000,
+      });
+    } finally {
+      setIsSendingNotification(false);
+    }
+  };
+
+  // Placeholder function - you would need to implement this
+  const getDevicesForUser = async () => {
+    // This would be an API call to get the user's devices
+    // For now, just return an empty array
+    return [];
+  };
+
+  // Function to show a local test notification without API
+  const showLocalTestNotification = () => {
+    Toast.show({
+      type: "info",
+      text1: "Test Moisture Alert",
+      text2: "Soil moisture level at Farm A is 25%. Consider watering soon.",
+      visibilityTime: 10000,
+      autoHide: true,
+      position: "top",
+      topOffset: 60,
+
+      // Style the toast container
+      style: {
+        borderLeftWidth: 8,
+        borderLeftColor: "#2196F3",
+        borderRadius: 12,
+        marginHorizontal: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 8,
+        backgroundColor: "#E3F2FD",
+        padding: 4,
+      },
+
+      // Title styling
+      text1Style: {
+        fontSize: 17,
+        fontWeight: "bold",
+        color: "#0D47A1",
+        paddingTop: 4,
+        paddingLeft: 8,
+        paddingRight: 8,
+      },
+
+      // Message styling
+      text2Style: {
+        fontSize: 15,
+        color: "#1565C0",
+        paddingBottom: 8,
+        paddingLeft: 8,
+        paddingRight: 8,
+        lineHeight: 20,
+      },
+    });
   };
 
   return (
@@ -88,15 +194,14 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
         >
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('home.account')}</Text>
+        <Text style={styles.headerTitle}>{t("home.account")}</Text>
         <TouchableOpacity
           style={styles.editButton}
           onPress={() => setShowEditModal(true)}
-        >
-        </TouchableOpacity>
+        ></TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
@@ -109,17 +214,18 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
         {isLoading && !isRefreshing ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>{t('common.loading') || 'Loading profile information...'}</Text>
+            <Text style={styles.loadingText}>
+              {t("common.loading") || "Loading profile information..."}
+            </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle-outline" size={64} color="#FF4D4D" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity 
-              style={styles.retryButton}
-              onPress={loadProfile}
-            >
-              <Text style={styles.retryButtonText}>{t('common.retry') || 'Retry'}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadProfile}>
+              <Text style={styles.retryButtonText}>
+                {t("common.retry") || "Retry"}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : profile ? (
@@ -137,10 +243,14 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
               <View style={styles.infoCard}>
                 <View style={styles.infoItem}>
                   <View style={styles.infoIconContainer}>
-                    <Ionicons name="mail-outline" size={20} color={colors.primary} />
+                    <Ionicons
+                      name="mail-outline"
+                      size={20}
+                      color={colors.primary}
+                    />
                   </View>
                   <View style={styles.infoTextContainer}>
-                    <Text style={styles.infoLabel}>{t('account.email')}</Text>
+                    <Text style={styles.infoLabel}>{t("account.email")}</Text>
                     <Text style={styles.infoValue}>{profile.email}</Text>
                   </View>
                 </View>
@@ -152,17 +262,27 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
                     <Ionicons name="call-outline" size={20} color="#4CD964" />
                   </View>
                   <View style={styles.infoTextContainer}>
-                    <Text style={styles.infoLabel}>{t('account.phoneNumber')}</Text>
-                    <Text style={styles.infoValue}>{profile.phone || t('account.notProvided') || 'Not provided'}</Text>
+                    <Text style={styles.infoLabel}>
+                      {t("account.phoneNumber")}
+                    </Text>
+                    <Text style={styles.infoValue}>
+                      {profile.phone ||
+                        t("account.notProvided") ||
+                        "Not provided"}
+                    </Text>
                   </View>
                   <TouchableOpacity
                     onPress={() => {
-                      setPhoneNumber(profile.phone || '');
+                      setPhoneNumber(profile.phone || "");
                       setShowEditModal(true);
                     }}
                     style={styles.editIconButton}
                   >
-                    <Ionicons name="create-outline" size={18} color={colors.primary} />
+                    <Ionicons
+                      name="create-outline"
+                      size={18}
+                      color={colors.primary}
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -170,29 +290,85 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
 
                 <View style={styles.infoItem}>
                   <View style={styles.infoIconContainer}>
-                    <Ionicons 
-                      name={profile.isActive ? "checkmark-circle-outline" : "close-circle-outline"} 
-                      size={20} 
-                      color={profile.isActive ? "#4CD964" : "#FF4D4D"} 
+                    <Ionicons
+                      name={
+                        profile.isActive
+                          ? "checkmark-circle-outline"
+                          : "close-circle-outline"
+                      }
+                      size={20}
+                      color={profile.isActive ? "#4CD964" : "#FF4D4D"}
                     />
                   </View>
                   <View style={styles.infoTextContainer}>
-                    <Text style={styles.infoLabel}>{t('account.accountStatus')}</Text>
-                    <Text style={[
-                      styles.infoValue, 
-                      {color: profile.isActive ? "#4CD964" : "#FF4D4D"}
-                    ]}>
-                      {profile.isActive ? t('account.active') : t('account.inactive')}
+                    <Text style={styles.infoLabel}>
+                      {t("account.accountStatus")}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.infoValue,
+                        { color: profile.isActive ? "#4CD964" : "#FF4D4D" },
+                      ]}
+                    >
+                      {profile.isActive
+                        ? t("account.active")
+                        : t("account.inactive")}
                     </Text>
                   </View>
                 </View>
+              </View>
+
+              {/* Test Notification Buttons */}
+              <View style={styles.notificationButtonsContainer}>
+                {/* API Notification Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.testNotificationButton,
+                    isSendingNotification && styles.disabledButton,
+                  ]}
+                  onPress={handleTestNotification}
+                  disabled={isSendingNotification}
+                >
+                  {isSendingNotification ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <>
+                      <Ionicons name="cloud-outline" size={20} color="white" />
+                      <Text style={styles.testNotificationText}>
+                        Send API Notification
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                {/* Local Notification Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.testNotificationButton,
+                    styles.localNotificationButton,
+                  ]}
+                  onPress={showLocalTestNotification}
+                >
+                  <Ionicons
+                    name="phone-portrait-outline"
+                    size={20}
+                    color="white"
+                  />
+                  <Text style={styles.testNotificationText}>
+                    Show Local Notification
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 
             {/* Version info at bottom of screen */}
             <View style={styles.versionContainer}>
-              <Text style={styles.versionText}>Coconut Research Mobile v1.0.0</Text>
-              <Text style={styles.copyrightText}>© {new Date().getFullYear()} Coconut Research Project</Text>
+              <Text style={styles.versionText}>
+                Coconut Research Mobile v1.0.0
+              </Text>
+              <Text style={styles.copyrightText}>
+                © {new Date().getFullYear()} Coconut Research Project
+              </Text>
             </View>
           </View>
         ) : null}
@@ -208,22 +384,24 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('account.editProfile')}</Text>
-              <TouchableOpacity 
+              <Text style={styles.modalTitle}>{t("account.editProfile")}</Text>
+              <TouchableOpacity
                 onPress={() => setShowEditModal(false)}
                 style={styles.modalCloseButton}
               >
                 <Ionicons name="close" size={24} color="#374151" />
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>{t('account.phoneNumber')}</Text>
+              <Text style={styles.inputLabel}>{t("account.phoneNumber")}</Text>
               <TextInput
                 style={styles.input}
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
-                placeholder={t('account.enterPhoneNumber') || "Enter phone number"}
+                placeholder={
+                  t("account.enterPhoneNumber") || "Enter phone number"
+                }
                 keyboardType="phone-pad"
               />
             </View>
@@ -231,7 +409,7 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
             <TouchableOpacity
               style={[
                 styles.updateButton,
-                (isUpdating || !phoneNumber) && styles.disabledButton
+                (isUpdating || !phoneNumber) && styles.disabledButton,
               ]}
               onPress={handleUpdateProfile}
               disabled={isUpdating || !phoneNumber}
@@ -239,7 +417,9 @@ const AccountScreen: React.FC = ({ navigation }: any) => {
               {isUpdating ? (
                 <ActivityIndicator size="small" color="white" />
               ) : (
-                <Text style={styles.updateButtonText}>{t('account.updateProfile') || "Update Profile"}</Text>
+                <Text style={styles.updateButtonText}>
+                  {t("account.updateProfile") || "Update Profile"}
+                </Text>
               )}
             </TouchableOpacity>
           </View>
@@ -253,25 +433,25 @@ const styles = StyleSheet.create({
   // Existing styles...
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontWeight: "bold",
+    color: "#111827",
   },
   editButton: {
     padding: 4,
@@ -286,26 +466,26 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 40,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 40,
   },
   errorText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
+    color: "#6B7280",
+    textAlign: "center",
   },
   retryButton: {
     marginTop: 16,
@@ -315,14 +495,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   retryButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: "white",
+    fontWeight: "600",
   },
   profileContainer: {
     flex: 1,
   },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   avatarContainer: {
@@ -330,10 +510,10 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -341,39 +521,39 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 40,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   nameText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontWeight: "bold",
+    color: "#111827",
   },
   infoContainer: {
     flex: 1,
   },
   infoCard: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
   infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
   },
   infoIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
   },
   infoTextContainer: {
@@ -381,58 +561,58 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
-    color: '#111827',
-    fontWeight: '500',
+    color: "#111827",
+    fontWeight: "500",
   },
   editIconButton: {
     padding: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: "#E5E7EB",
   },
   versionContainer: {
     marginTop: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   versionText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
     marginBottom: 4,
   },
   copyrightText: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: "#9CA3AF",
   },
-  
-  // New styles for edit functionality
+
+  // Edit functionality styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     paddingBottom: 30,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontWeight: "bold",
+    color: "#111827",
   },
   modalCloseButton: {
     padding: 4,
@@ -442,30 +622,60 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 16,
-    color: '#374151',
+    color: "#374151",
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: "#D1D5DB",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
   },
   updateButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
     padding: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   disabledButton: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: "#9CA3AF",
   },
   updateButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
+  },
+
+  // Notification button styles
+  notificationButtonsContainer: {
+    marginTop: 20,
+    gap: 12,
+  },
+  testNotificationButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2196F3",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  localNotificationButton: {
+    backgroundColor: "#4CAF50", // Green color for local notifications
+  },
+  testNotificationText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
 });
 
