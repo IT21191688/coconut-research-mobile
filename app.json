@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "coconut-farm-mobile",
+    "name": "Coco Tech",
     "slug": "coconut-farm-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sadeepalakshan.coconutfarmmobile"
+      "package": "com.thanujadha20.coconutfarmmobile"
     },
     "plugins": [
       "@react-native-firebase/app",
