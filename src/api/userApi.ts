@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 
 interface User {
   _id: string;
@@ -15,7 +15,7 @@ interface UpdateUserData {
   name?: string;
   email?: string;
   password?: string;
-  phone?: string;  // Add phone field
+  phone?: string; // Add phone field
 }
 
 interface UserResponse {
@@ -41,19 +41,21 @@ export interface ProfileResponse {
 
 export const getCurrentUser = async (): Promise<User> => {
   try {
-    const response = await api.get<UserResponse>('/users/me');
+    const response = await api.get<UserResponse>("/users/me");
     return response.data.data.user;
   } catch (error) {
     throw error;
   }
 };
 
-export const updateProfile = async (userData: UpdateUserData): Promise<User> => {
+export const updateProfile = async (
+  userData: UpdateUserData
+): Promise<User> => {
   try {
-    const response = await api.put<UserResponse>('users/profile', userData);
+    const response = await api.put<UserResponse>("users/profile", userData);
     return response.data.data.user;
   } catch (error) {
-    console.error('Error updating profile:', error);
+    console.error("Error updating profile:", error);
     throw error;
   }
 };
@@ -63,7 +65,7 @@ export const changePassword = async (
   newPassword: string
 ): Promise<void> => {
   try {
-    await api.post('/users/change-password', {
+    await api.post("/users/change-password", {
       currentPassword,
       newPassword,
     });
@@ -76,7 +78,7 @@ export const changePassword = async (
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     const response = await api.get<{ status: string; data: { users: User[] } }>(
-      '/users'
+      "/users"
     );
     return response.data.data.users;
   } catch (error) {
@@ -117,12 +119,40 @@ export const deleteUser = async (userId: string): Promise<void> => {
  * Get current user profile
  * Fetches the authenticated user's profile information
  */
-export const getProfile = async (): Promise<ProfileResponse['data']['user']> => {
+export const getProfile = async (): Promise<
+  ProfileResponse["data"]["user"]
+> => {
   try {
-    const response = await api.get<ProfileResponse>('users/profile');
+    const response = await api.get<ProfileResponse>("users/profile");
     return response.data.data.user;
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error("Error fetching user profile:", error);
+    throw error;
+  }
+};
+
+/**
+ * Send a general test notification to a specific user
+ */
+export const sendTestNotification = async (
+  userId: string,
+  data: {
+    title?: string;
+    body?: string;
+    data?: Record<string, string>;
+  } = {}
+): Promise<any> => {
+  try {
+    const response = await api.post<any>("/notifications/test", {
+      userId, // Include userId in the request
+      title: data.title || "Test Notification",
+      body:
+        data.body || "This is a test notification from Coconut Research Mobile",
+      data: data.data || {},
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error sending test notification:", error);
     throw error;
   }
 };

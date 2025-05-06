@@ -1,44 +1,47 @@
 {
   "expo": {
-    "name": "Coco Tech",
+    "name": "coconut-farm-mobile",
     "slug": "coconut-farm-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/app-icon.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/app-icon.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sadeepalakshan.coconutfarmmobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "permissions": [
         "INTERNET",
-        "INTERNET"
+        "ACCESS_NOTIFICATION_POLICY"
       ],
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/app-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.thanujadha20.coconutfarmmobile"
+      "package": "com.sadeepalakshan.coconutfarmmobile"
     },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "3dd7a429-053a-4cdf-abde-1c7d86b90c98"
+        "projectId": "add1ee5e-a164-463c-9c88-4cbd5e43f25c"
       }
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/3dd7a429-053a-4cdf-abde-1c7d86b90c98"
     }
   }
 }

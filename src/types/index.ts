@@ -9,7 +9,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 }
-
+//   "projectId": "a99fe982-2584-47b0-8825-1c2d41b1657b"
 export interface AuthResponse {
   status: string;
   data: {
