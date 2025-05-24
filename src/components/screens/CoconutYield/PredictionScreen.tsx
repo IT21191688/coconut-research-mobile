@@ -615,10 +615,6 @@ const PredictionScreen: React.FC<PredictionScreenProps> = ({ route, navigation }
                     <Text style={styles.factorLabel}>Soil Type</Text>
                     <Text style={styles.factorValue}>Type {prediction.input_data.soil_type}</Text>
                   </View>
-                  <View style={styles.factorRow}>
-                    <Text style={styles.factorLabel}>Seasonal Factor</Text>
-                    <Text style={styles.factorValue}>{prediction.seasonal_factor.toFixed(2)}</Text>
-                  </View>
                 </View>
               </View>
             ))}
