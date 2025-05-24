@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 interface LoginCredentials {
   email: string;
   password: string;
+  fcmToken?: string; // Optional FCM token
 }
 
 interface RegisterData {
@@ -11,6 +12,7 @@ interface RegisterData {
   email: string;
   password: string;
   phone: string;
+  fcmToken?: string; // Optional FCM token
 }
 
 interface AuthResponse {
@@ -21,6 +23,7 @@ interface AuthResponse {
       name: string;
       email: string;
       role: string;
+      fcmToken?: string;
     };
     token: string;
     refreshToken: string;
@@ -31,12 +34,25 @@ export const login = async (
   credentials: LoginCredentials
 ): Promise<AuthResponse> => {
   try {
+    // Get FCM token from device if not provided
+    if (!credentials.fcmToken) {
+      const storedFcmToken = await AsyncStorage.getItem("fcmToken");
+      if (storedFcmToken) {
+        credentials.fcmToken = storedFcmToken;
+      }
+    }
+
     const response = await api.post<AuthResponse>("/auth/login", credentials);
 
     // Store auth data
     await AsyncStorage.setItem("token", response.data.data.token);
-    await AsyncStorage.setItem('refreshToken', response.data.data.refreshToken);
+    await AsyncStorage.setItem("refreshToken", response.data.data.refreshToken);
     await AsyncStorage.setItem("user", JSON.stringify(response.data.data.user));
+
+    // Store FCM token if returned
+    if (response.data.data.user.fcmToken) {
+      await AsyncStorage.setItem("fcmToken", response.data.data.user.fcmToken);
+    }
 
     return response.data;
   } catch (error) {
@@ -48,12 +64,22 @@ export const register = async (
   userData: RegisterData
 ): Promise<AuthResponse> => {
   try {
+    if (!userData.fcmToken) {
+      const storedFcmToken = await AsyncStorage.getItem("fcmToken");
+      if (storedFcmToken) {
+        userData.fcmToken = storedFcmToken;
+      }
+    }
+
     const response = await api.post<AuthResponse>("/auth/register", userData);
 
-    // Store auth data
     await AsyncStorage.setItem("token", response.data.data.token);
-    await AsyncStorage.setItem('refreshToken', response.data.data.refreshToken);
+    await AsyncStorage.setItem("refreshToken", response.data.data.refreshToken);
     await AsyncStorage.setItem("user", JSON.stringify(response.data.data.user));
+
+    if (response.data.data.user.fcmToken) {
+      await AsyncStorage.setItem("fcmToken", response.data.data.user.fcmToken);
+    }
 
     return response.data;
   } catch (error) {
