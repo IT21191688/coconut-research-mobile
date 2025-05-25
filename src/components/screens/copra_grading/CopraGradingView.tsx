@@ -86,7 +86,8 @@ const CopraGradingView: React.FC = () => {
     setPredictedClass(null); // Reset result before new request
 
     try {
-      const apiUrl = "http://192.168.43.217:5000/predict_grading";
+      const apiUrl =
+        "https://29fc-212-104-229-33.ngrok-free.app/predict_grading";
 
       const formData: any = new FormData();
       formData.append("file", {
