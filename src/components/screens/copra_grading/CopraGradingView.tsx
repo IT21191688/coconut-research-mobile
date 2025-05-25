@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,48 @@ const CopraGradingView: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [predictedClass, setPredictedClass] = useState<string | null>(null);
+
+  const [apiUrl, setApiUrl] = useState<string>("");
+
+  // Add this useEffect to fetch URL on component mount
+  useEffect(() => {
+    fetchApiUrl();
+  }, []);
+
+  // Simple fetch function for getting API URL
+  const fetchApiUrl = async () => {
+    try {
+      const response = await fetch(
+        "https://node-backend-zjnf.onrender.com/api/v1/auth/get-url",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        // Use url1 for prediction API
+        setApiUrl(data.data.url1);
+        console.log("Fetched API URL:", data.data.url1);
+      } else {
+        console.error("Failed to fetch URL:", data.message);
+        // Use fallback URL
+        setApiUrl("https://fallback-url.ngrok-free.app");
+      }
+    } catch (error) {
+      console.error("Error fetching API URL:", error);
+      // Use fallback URL
+      setApiUrl("https://d6dc-212-104-228-76.ngrok-free.app");
+    }
+  };
 
   const handleImageCapture = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -86,8 +128,7 @@ const CopraGradingView: React.FC = () => {
     setPredictedClass(null); // Reset result before new request
 
     try {
-      const apiUrl =
-        "https://d6dc-212-104-228-76.ngrok-free.app/predict_grading";
+      const apiUrls = `${apiUrl}/predict_grading`;
 
       const formData: any = new FormData();
       formData.append("file", {
@@ -96,7 +137,7 @@ const CopraGradingView: React.FC = () => {
         type: "image/jpeg",
       });
 
-      const response = await axios.post(apiUrl, formData, {
+      const response = await axios.post(apiUrls, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
