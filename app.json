@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "coconut-farm-mobile",
+    "name": "Coco Tech App",
     "slug": "coconut-farm-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/app-image.jpg",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/app-image.jpg",
+      "image": "./assets/app-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
