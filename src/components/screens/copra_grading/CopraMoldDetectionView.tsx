@@ -89,7 +89,7 @@ const CopraMoldDetectionView: React.FC = () => {
     setMoldResult(null); // Reset result before new request
 
     try {
-      const apiUrl = "https://29fc-212-104-229-33.ngrok-free.app/predict_mold";
+      const apiUrl = "https://d6dc-212-104-228-76.ngrok-free.app/predict_mold";
 
       const formData: any = new FormData();
       formData.append("file", {
