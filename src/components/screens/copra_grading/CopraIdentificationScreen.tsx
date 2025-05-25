@@ -22,29 +22,29 @@ import { DEVICE_ROUTES } from "../../../constants/routes";
 
 const cardStyles = {
   grading: {
-    icon: "analytics-outline",
+    icon: "analytics-outline" as const,
     color: "#4CAF50",
     bgColor: "#E8F5E9",
   },
   mold: {
-    icon: "scan-outline",
+    icon: "scan-outline" as const,
     color: "#2196F3",
     bgColor: "#E3F2FD",
   },
   info: {
-    icon: "information-circle-outline",
+    icon: "information-circle-outline" as const,
     color: "#FF9800",
     bgColor: "#FFF3E0",
   },
   guide: {
-    icon: "book-outline",
+    icon: "book-outline" as const,
     color: "#9C27B0",
     bgColor: "#F3E5F5",
   },
 };
 
 const CopraIdentificationScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation: any = useNavigation();
 
   const handleViewCopraGrading = () => {
     // Navigate to the LocationNavigator's main screen
@@ -58,7 +58,9 @@ const CopraIdentificationScreen: React.FC = () => {
 
   const renderDetectionButtons = () => (
     <View style={styles.resourceButtonsContainer}>
-      <Text style={styles.resourceTitle}>Do you have questions about copra?</Text>
+      <Text style={styles.resourceTitle}>
+        Do you have questions about copra?
+      </Text>
 
       <View style={styles.resourceButtons}>
         <TouchableOpacity
@@ -71,13 +73,15 @@ const CopraIdentificationScreen: React.FC = () => {
               { backgroundColor: cardStyles.grading.bgColor },
             ]}
           >
-            <Ionicons 
-              name={cardStyles.grading.icon} 
-              size={40} 
-              color={cardStyles.grading.color} 
+            <Ionicons
+              name={cardStyles.grading.icon}
+              size={40}
+              color={cardStyles.grading.color}
             />
           </View>
-          <Text style={[styles.resourceText, { color: cardStyles.grading.color }]}>
+          <Text
+            style={[styles.resourceText, { color: cardStyles.grading.color }]}
+          >
             Copra Grading
           </Text>
           <Text style={styles.resourceSubtext}>Grade your copra samples</Text>
@@ -93,10 +97,10 @@ const CopraIdentificationScreen: React.FC = () => {
               { backgroundColor: cardStyles.mold.bgColor },
             ]}
           >
-            <Ionicons 
-              name={cardStyles.mold.icon} 
-              size={40} 
-              color={cardStyles.mold.color} 
+            <Ionicons
+              name={cardStyles.mold.icon}
+              size={40}
+              color={cardStyles.mold.color}
             />
           </View>
           <Text style={[styles.resourceText, { color: cardStyles.mold.color }]}>
@@ -108,7 +112,7 @@ const CopraIdentificationScreen: React.FC = () => {
 
       <TouchableOpacity
         style={[styles.infoButton, styles.infoCard]}
-        onPress={() => navigation.navigate('Guidelines')}
+        onPress={() => navigation.navigate("Guidelines")}
       >
         <View
           style={[
@@ -136,11 +140,7 @@ const CopraIdentificationScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-
-      >
-
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.welcomeSection}>
           <View style={styles.welcomeContainer}>
             <Text style={styles.welcomeSubtitle}>Welcome to</Text>
@@ -153,7 +153,6 @@ const CopraIdentificationScreen: React.FC = () => {
 
         {renderDetectionButtons()}
       </ScrollView>
-
     </SafeAreaView>
   );
 };
@@ -161,7 +160,7 @@ const CopraIdentificationScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.backgroundLight,
+    backgroundColor: colors.light,
   },
   loadingContainer: {
     flex: 1,
@@ -171,7 +170,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: colors.gray600,
+    color: colors.textSecondary,
   },
   scrollContent: {
     padding: 16,
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 8,
     marginHorizontal: 4,
-    shadowColor: colors.black,
+    shadowColor: colors.dark,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -258,7 +257,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.gray200,
+    borderTopColor: colors.border,
   },
   viewAllText: {
     fontSize: 14,
@@ -293,19 +292,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 16,
     padding: 20,
-    shadowColor: colors.black,
+    shadowColor: colors.dark,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
   },
   infoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: 16,
     padding: 20,
-    shadowColor: colors.black,
+    shadowColor: colors.dark,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -331,7 +330,7 @@ const styles = StyleSheet.create({
   resourceSubtext: {
     fontSize: 13,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   gradingCard: {
     borderLeftWidth: 4,
@@ -359,7 +358,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: colors.black,
+    shadowColor: colors.dark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -373,8 +372,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 20,
     padding: 24,
-    alignItems: 'center',
-    shadowColor: colors.black,
+    alignItems: "center",
+    shadowColor: colors.dark,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -384,20 +383,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.textSecondary,
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   welcomeTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 0.5,
   },
   welcomeDescription: {
     fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
 });
